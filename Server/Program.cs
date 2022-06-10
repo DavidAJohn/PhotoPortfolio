@@ -1,5 +1,3 @@
-using PhotoPortfolio.Server.Data;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<MongoContext>();
