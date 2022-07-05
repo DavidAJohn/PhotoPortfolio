@@ -2,10 +2,8 @@
 
 <!-- navbar -->
 <nav class="bg-gray-700" id="navbar-top">
-
     <div class="md:container">
-        <!-- start container -->
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
             <div class="relative flex items-center justify-between h-16">
 
                 <!-- Hamburger button for mobile menu -->
@@ -21,17 +19,30 @@
                     </button>
                 </div>
 
-                <!-- Site name and logo -->
-                <SiteBranding />
-
-                <!-- Login/Register/User Details -->
-                <div class="flex flex-row items-center h-16">
-                    <LoginDisplay />
+                <!-- Site name & logo, site links and social media icons -->
+                <div class="flex items-start w-1/4">
+                    <div class="pl-0">
+                        <SiteBranding />
+                    </div>
                 </div>
+                <div class="flex flex-nowrap justify-center w-2/4 text-gray-50">
+                    <div class="px-4 font-semibold hover:text-gray-200">
+                        <span><NavLink href="#" class="hover:text-gray-200">Gallery</NavLink></span>
+                    </div>
+                    <div class="px-4 font-semibold hover:text-gray-200">
+                        <span><NavLink href="#" class="hover:text-gray-200">About Me</NavLink></span>
+                    </div>
+                    <div class="px-4 font-semibold hover:text-gray-200">
+                        <span><NavLink href="#" class="hover:text-gray-200">Contact Me</NavLink></span>
+                    </div>
+                </div>
+                <div class="hidden w-0 md:flex md:justify-end md:w-1/4">
+                    <SocialMediaIcons />
+                </div>
+
             </div>
         </div>
-    </div> 
-    <!-- end container -->
+    </div>
 </nav>
 
 <!-- main body content -->
