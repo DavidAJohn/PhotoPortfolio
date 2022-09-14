@@ -1,0 +1,42 @@
+﻿<div class="custom-modal-container">
+    @if (!String.IsNullOrWhiteSpace(Title))
+    {
+        <div class="modal-title">
+            @Title
+        </div>
+    }
+    <div class="image-container">
+        <img src="images/@PhotoId" />
+    </div>
+    <div class="modal-buttons mt-4">
+        <button @onclick="Confirm" type="button" class="bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4">@ConfirmButtonText</button>
+        <button @onclick="Cancel" type="button" class="btn btn-secondary btn-sm">@CancelButtonText</button>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
+
+    [Parameter]
+    public string PhotoId { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string ConfirmButtonText { get; set; } = "Buy Photo";
+
+    [Parameter]
+    public string CancelButtonText { get; set; } = "Close";
+
+    void Confirm()
+    {
+        ModalInstance.CloseAsync(ModalResult.Ok($"Confirm"));
+    }
+
+    void Cancel()
+    {
+        ModalInstance.CancelAsync();
+    }
+}

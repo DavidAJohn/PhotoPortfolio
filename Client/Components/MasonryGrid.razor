@@ -1,0 +1,89 @@
+﻿<div class="mt-8 mb-32">
+
+    <div class="my-8 w-full mx-auto font-bold text-base uppercase text-center">
+        My Favourite Recent Photos
+    </div>
+    <div class="columns-3 space-y-4 w-1/2 mx-auto">
+        <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto("nikon-dslr.jpg", "nikon-dslr.jpg"))">
+            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/nikon-dslr.jpg" />
+            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                View
+            </div>
+        </div>
+        <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto("full-range.jpg", "full-range.jpg"))">
+            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/full-range.jpg" />
+            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                View
+            </div>
+        </div>
+        <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto("mirrorless-cameras.jpg", "mirrorless-cameras.jpg"))">
+            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/mirrorless-cameras.jpg" />
+            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                View
+            </div>
+        </div>
+        <div class="group relative overflow-hidden hover:cursor-pointer">
+            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/full-range.jpg" />
+            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                View
+            </div>
+        </div>
+        <div class="group relative overflow-hidden hover:cursor-pointer">
+            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/mirrorless-cameras.jpg" />
+            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                View
+            </div>
+        </div>
+        <div class="group relative overflow-hidden hover:cursor-pointer">
+            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/nikon-dslr.jpg" />
+            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                View
+            </div>
+        </div>
+        <div class="group relative overflow-hidden hover:cursor-pointer">
+            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/nikon-dslr.jpg" />
+            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                View
+            </div>
+        </div>
+        <div class="group relative overflow-hidden hover:cursor-pointer">
+            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/full-range.jpg" />
+            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                View
+            </div>
+        </div>
+        <div class="group relative overflow-hidden hover:cursor-pointer">
+            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/mirrorless-cameras.jpg" />
+            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                View
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    [CascadingParameter]
+    public IModalService Modal { get; set; }
+
+    private async Task ShowPhoto(string photoId, string title)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(LightboxModal.PhotoId), photoId);
+        parameters.Add(nameof(LightboxModal.Title), string.IsNullOrWhiteSpace(title) ? "" : title);
+
+        var options = new ModalOptions()
+            {
+                Animation = ModalAnimation.FadeInOut(0.5),
+                Class = "custom-modal-container"
+            };
+
+        var lightboxModal = Modal.Show<LightboxModal>("", parameters, options);
+        var result = await lightboxModal.Result;
+
+        if (!result.Cancelled)
+        {
+            Console.WriteLine(result.Data);
+        }
+    }
+}

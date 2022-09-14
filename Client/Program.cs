@@ -1,3 +1,4 @@
+using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -19,5 +20,7 @@ builder.Services.AddMsalAuthentication(options =>
     options.ProviderOptions.DefaultAccessTokenScopes.Add("api://6a199035-51cf-46f8-b027-9e50080aa135/API.Access");
     options.ProviderOptions.LoginMode = "redirect";
 });
+
+builder.Services.AddBlazoredModal();
 
 await builder.Build().RunAsync();

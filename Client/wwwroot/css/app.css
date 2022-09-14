@@ -62,3 +62,48 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+/* Blazored.Modal */
+
+.custom-modal-container {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    z-index: 102;
+    margin-bottom: 10px;
+}
+
+.blazored-modal-overlay {
+    z-index: 101;
+    background-color: rgba(0,0,0,0.95) !important;
+}
+
+.blazored-modal-header {
+    display: flex;
+    flex-direction: column;
+    margin: -100px;
+}
+
+.blazored-modal-close {
+    color: white;
+    font-size: 2.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.modal-title {
+    z-index: 103;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.modal-buttons {
+    z-index: 104;
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 20px;
+}
+
+.image-container {
+    max-height: 75vh;
+    width: auto;
+}
