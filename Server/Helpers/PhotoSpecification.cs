@@ -14,14 +14,14 @@ public class PhotoSpecification
 
         if (photoParams != null) // now we potentially add conditions which would filter the records
         {
-            if (photoParams.GalleryId is not null)
-            {
-                predicate = predicate.And(p => p.GalleryId.Equals(photoParams.GalleryId));
-            }
+            //if (photoParams.GalleryId is not null)
+            //{
+            //    predicate = predicate.And(p => p.GalleryId.Equals(photoParams.GalleryId));
+            //}
 
-            if (photoParams.Name is not null)
+            if (photoParams.Title is not null)
             {
-                predicate = predicate.Or(p => p.Name.Contains(photoParams.Name));
+                predicate = predicate.Or(p => p.Title.Contains(photoParams.Title));
             }
 
         }

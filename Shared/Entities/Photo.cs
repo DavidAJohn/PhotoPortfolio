@@ -1,11 +1,14 @@
-﻿namespace PhotoPortfolio.Shared.Entities;
+﻿using PhotoPortfolio.Shared.Models;
+
+namespace PhotoPortfolio.Shared.Entities;
 
 public class Photo : BaseEntity
 {
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string? Caption { get; set; }
+    public string FileName { get; set; } = string.Empty;
     public string? Uri { get; set; }
     public string? GalleryId { get; set; }
     public DateTime DateAdded { get; set; } = DateTime.UtcNow;
-    public bool ShowAsFavourite { get; set; } = false;
+    public PhotoMetadata? Metadata { get; set; }
 }
