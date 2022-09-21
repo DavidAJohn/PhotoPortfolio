@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EditorConfigFiles Remove="R:\Repos\PhotoPortfolio\Shared\.editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="R:\Repos\PhotoPortfolio\Shared\.editorconfig" />
   </ItemGroup>
 </Project>

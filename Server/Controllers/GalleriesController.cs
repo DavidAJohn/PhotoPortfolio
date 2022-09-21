@@ -19,9 +19,16 @@ public class GalleriesController : BaseApiController
     }
 
     [HttpGet("{id}")]
-    public async Task<Gallery> GetGalleryById(string id)
+    public async Task<IActionResult> GetGalleryById(string id)
     {
-        return await _repository.GetSingleAsync(x => x.Id == id);
+        var gallery = await _repository.GetGalleryWithPhotos(id);
+
+        if (gallery == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(gallery);
     }
 
     [HttpPost]

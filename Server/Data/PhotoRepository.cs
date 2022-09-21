@@ -27,8 +27,9 @@ public class PhotoRepository : BaseRepository<Photo>, IPhotoRepository
             SortByPredicate = photoParams.SortBy.ToLower() switch
             {
                 "dateadded" => p => p.DateAdded,
-                "name" => p => p.Name,
-                _ => p => p.Name,
+                "title" => p => p.Title,
+                "filename" => p => p.FileName,
+                _ => p => p.FileName
             };
         }
 
@@ -50,7 +51,7 @@ public class PhotoRepository : BaseRepository<Photo>, IPhotoRepository
 
         return await _photos
             .Find(filter)
-            .SortBy(p => p.Name)
+            .SortBy(p => p.Title)
             .ToListAsync();
     }
 }
