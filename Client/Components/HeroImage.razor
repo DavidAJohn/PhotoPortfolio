@@ -1,0 +1,16 @@
+﻿<div class="w-full h-96 overflow-hidden relative">
+    <img class="object-scale-down" src="images/@Image" />
+    <h1 class="absolute text-5xl text-white top-10 left-10">@HeadlineText</h1>
+</div>
+
+@code {
+    [Parameter]
+    public string Image { get; set; }
+
+    [Parameter]
+    public string HeadlineText { get; set; }
+
+    [Parameter]
+    public string SubTitleText { get; set; }
+
+}
