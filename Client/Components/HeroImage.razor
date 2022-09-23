@@ -1,16 +1,22 @@
 ﻿<div class="w-full h-96 overflow-hidden relative">
-    <img class="object-scale-down" src="images/@Image" />
-    <h1 class="absolute text-5xl text-white top-10 left-10">@HeadlineText</h1>
+    <img src="images/@ImageUri" class="z-0" />
+    <span class="absolute text-5xl @TextColour top-10 left-10 z-10">@HeadlineText</span>
+    <span class="absolute text-2xl @TextColour top-24 left-10 z-10">@SubTitleText</span>
 </div>
 
 @code {
     [Parameter]
-    public string Image { get; set; }
+    public string ImageUri { get; set; }
 
     [Parameter]
-    public string HeadlineText { get; set; }
+    public string HeadlineText { get; set; } = string.Empty;
 
     [Parameter]
-    public string SubTitleText { get; set; }
+    public string SubTitleText { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool TextDarkMode { get; set; } = false;
+
+    private string? TextColour => TextDarkMode ? "text-slate-900" : "text-white";
 
 }

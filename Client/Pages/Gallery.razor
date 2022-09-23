@@ -1,8 +1,15 @@
 ﻿@page "/gallery"
 
-<HeroImage Image="mark-harpur-unsplash.jpg" HeadlineText="Gallery" SubTitleText="View galleries of images by theme" />
+<HeroImage 
+    ImageUri="mark-harpur-unsplash.jpg" 
+    HeadlineText="Gallery" 
+    SubTitleText="View photographs around a theme"
+    TextDarkMode=false
+/>
 
-<MasonryGrid />
+<div class="pt-16">
+    <MasonryGrid />
+</div>
 
 @code {
 
