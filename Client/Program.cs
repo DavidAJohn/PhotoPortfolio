@@ -2,6 +2,7 @@ using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor.Services;
 using PhotoPortfolio.Client;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -22,5 +23,7 @@ builder.Services.AddMsalAuthentication(options =>
 });
 
 builder.Services.AddBlazoredModal();
+
+builder.Services.AddMudServices();
 
 await builder.Build().RunAsync();
