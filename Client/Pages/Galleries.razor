@@ -1,0 +1,54 @@
+﻿@page "/galleries/{Id}"
+
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+
+@inject IGalleryService galleryService
+
+@if (errorMessage != "")
+{
+    <div class="mx-2 animate-pulse">
+        <div class="alert-box" role="alert">
+            <span class="block sm:inline">@errorMessage</span>
+        </div>
+    </div>
+}
+
+@if (gallery is not null)
+{
+    <HeroImage ImageUri="mark-harpur-unsplash.jpg"
+           HeadlineText=@gallery.Name
+           SubTitleText=@gallery.Description
+           TextDarkMode=false />
+
+    <div class="pt-16">
+        <MasonryGrid />
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private Gallery gallery = null!;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGallery();
+    }
+
+    private async Task GetGallery()
+    {
+        try
+        {
+            gallery = await galleryService.GetGalleryByIdAsync(Id);
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not retrieve gallery details";
+        }
+    }
+}
