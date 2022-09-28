@@ -1,6 +1,8 @@
-﻿using MongoDB.Bson;
+﻿using LinqKit;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using PhotoPortfolio.Shared.Entities;
+using System.Linq.Expressions;
 
 namespace PhotoPortfolio.Server.Data;
 
@@ -14,12 +16,21 @@ public class GalleryRepository : BaseRepository<Gallery>, IGalleryRepository
         _context = context;
     }
 
-    public async Task<Gallery> GetGalleryWithPhotos(string id)
+    public async Task<Gallery> GetGalleryWithPhotos(string id, bool includePrivate = false)
     {
         if (ObjectId.TryParse(id, out _)) //check that id is a valid 24 character hex string
         {
             var galleries = _context.Database.GetCollection<Gallery>(_collectionName);
-            var filter = Builders<Gallery>.Filter.Where(g => g.Id == id);
+
+            Expression<Func<Gallery, bool>> predicate = PredicateBuilder.New<Gallery>(g => g.Id == id);
+
+            if (!includePrivate)
+            {
+                predicate = predicate.And(g => g.Public == true);
+            }
+
+            var filter = Builders<Gallery>.Filter
+                .Where(predicate);
 
             var bsonDoc = await galleries
                 .Aggregate()
@@ -35,5 +46,13 @@ public class GalleryRepository : BaseRepository<Gallery>, IGalleryRepository
         }
 
         return null!;
+    }
+
+    public async Task<List<Gallery>> GetPublicGalleries()
+    {
+        var collection = _context.Database.GetCollection<Gallery>(_collectionName);
+        var galleries = await collection.Find(g => g.Public == true).ToListAsync();
+
+        return galleries;
     }
 }

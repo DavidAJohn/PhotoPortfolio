@@ -15,10 +15,10 @@ public class GalleriesController : BaseApiController
     [HttpGet]
     public async Task<List<Gallery>> GetPublicGalleries()
     {
-        return await _repository.GetAllAsync();
+        return await _repository.GetPublicGalleries();
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:length(24)}")]
     public async Task<IActionResult> GetGalleryById(string id)
     {
         var gallery = await _repository.GetGalleryWithPhotos(id);

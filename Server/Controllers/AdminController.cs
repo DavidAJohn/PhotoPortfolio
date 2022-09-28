@@ -20,10 +20,10 @@ public class AdminController : BaseApiController
         return await _repository.GetAllAsync();
     }
 
-    [HttpGet("galleries/{id}")]
+    [HttpGet("galleries/{id:length(24)}")]
     public async Task<IActionResult> GetGalleryById(string id)
     {
-        var gallery = await _repository.GetGalleryWithPhotos(id);
+        var gallery = await _repository.GetGalleryWithPhotos(id, true);
 
         if (gallery == null)
         {
