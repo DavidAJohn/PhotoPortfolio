@@ -1,12 +1,38 @@
 ﻿@page "/gallery"
 
+@using PhotoPortfolio.Shared.Models
+
 <HeroImage ImageUri="/images/mark-harpur-unsplash.jpg"
            HeadlineText="Gallery"
            SubTitleText="View photographs around a theme"
            TextDarkMode=false />
 
+<TextBlock BlockItems="TextBlockItems" />
+
 <GalleryList />
 
 @code {
+    private List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
 
+    protected override void OnInitialized()
+    {
+        TextBlockItems.Add(new TextBlockItem 
+            {
+                TextContent = "Welcome to the Gallery",
+                TextColour = "#366136",
+                TextSize = "3xl",
+                TextWeight = "bold",
+                TextAlignment = "center"
+            });
+
+        TextBlockItems.Add(new TextBlockItem
+            {
+                TextContent = "Here are my favourite photographs, arranged around different themes.",
+                TextColour = "#070907",
+                TextSize = "xl",
+                TextWeight = "normal",
+                TextAlignment = "center"
+            });
+    }
+    
 }

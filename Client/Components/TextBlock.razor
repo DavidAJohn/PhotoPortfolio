@@ -1,0 +1,16 @@
+﻿@using PhotoPortfolio.Shared.Models
+
+<div class="py-8">
+    @foreach (TextBlockItem item in BlockItems)
+    {
+        <div class="p-[1rem] text-@item.TextSize text-@item.TextAlignment font-@item.TextWeight">
+            <span style="color: @item.TextColour">@item.TextContent</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<TextBlockItem> BlockItems { get; set; } = null!;
+
+}
