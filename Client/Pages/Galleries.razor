@@ -16,7 +16,7 @@
 
 @if (gallery is not null)
 {
-    <HeroImage ImageUri="mark-harpur-unsplash.jpg"
+    <HeroImage ImageUri=@gallery.HeaderImage
            HeadlineText=@gallery.Name
            SubTitleText=@gallery.Description
            TextDarkMode=false />
