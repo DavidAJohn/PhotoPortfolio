@@ -1,5 +1,5 @@
 ﻿<div class="w-full h-96 overflow-hidden relative">
-    <div class="absolute inset-0 w-full h-full object-fill object-center bg-gray-400 bg-opacity-30 bg-cover bg-center bg-blend-multiply" style="background-image: url( @ImageUri );"></div>
+    <div class="absolute inset-0 w-full h-full object-fill object-center bg-gray-400 bg-opacity-30 bg-cover @ImageVerticalAlign bg-blend-multiply" style="background-image: url( @ImageUri );"></div>
     <span class="absolute text-5xl @TextColour top-10 left-10 z-10">@HeadlineText</span>
     <span class="absolute text-2xl @TextColour top-24 left-10 z-10">@SubTitleText</span>
 </div>
@@ -7,6 +7,9 @@
 @code {
     [Parameter]
     public string ImageUri { get; set; }
+
+    [Parameter]
+    public string ImageAlign { get; set; } = "center";
 
     [Parameter]
     public string HeadlineText { get; set; } = string.Empty;
@@ -19,4 +22,16 @@
 
     private string? TextColour => TextDarkMode ? "text-slate-900" : "text-white";
 
+    private string? ImageVerticalAlign = "bg-center";
+
+    protected override void OnInitialized()
+    {
+        ImageVerticalAlign = ImageAlign.ToLowerInvariant() switch
+        {
+            "center" => "bg-center",
+            "bottom" => "bg-bottom",
+            "top" => "bg-top",
+            _ => "bg-center",
+        };
+    }
 }
