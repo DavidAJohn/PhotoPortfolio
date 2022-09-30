@@ -2,6 +2,7 @@
 
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models
 
 @inject IGalleryService galleryService
 
@@ -26,7 +27,9 @@
         <GalleryBreadcrumb GalleryName=@gallery.Name />
     </div>
 
-    <div class="pt-8">
+    <TextBlock BlockItems="TextBlockItems" />
+
+    <div class="pt-4">
         <MasonryGrid />
     </div>
 }
@@ -38,6 +41,8 @@
     private Gallery gallery = null!;
     private string errorMessage = "";
 
+    private List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+
     protected override async Task OnInitializedAsync()
     {
         await GetGallery();
@@ -48,7 +53,25 @@
         try
         {
             gallery = await galleryService.GetGalleryByIdAsync(Id);
-            errorMessage = "";
+
+            if (gallery is null)
+            {
+                errorMessage = "Could not retrieve gallery details";
+            }
+            else
+            {
+                // also pass the gallery name to the TextBlock component
+                TextBlockItems.Add(new TextBlockItem
+                    {
+                        TextContent = gallery.Name,
+                        TextColour = "#366136",
+                        TextSize = "3xl",
+                        TextWeight = "bold",
+                        TextAlignment = "center"
+                    });
+
+                errorMessage = "";
+            }
         }
         catch (Exception ex)
         {
