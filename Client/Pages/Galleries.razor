@@ -22,7 +22,11 @@
            SubTitleText=@gallery.Description
            TextDarkMode=false />
 
-    <div class="pt-16">
+    <div class="pt-12">
+        <GalleryBreadcrumb GalleryName=@gallery.Name />
+    </div>
+
+    <div class="pt-8">
         <MasonryGrid />
     </div>
 }
