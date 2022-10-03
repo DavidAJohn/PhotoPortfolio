@@ -1,25 +1,57 @@
-﻿<MudCarousel Class="mud-width-full" Style="height:350px;" ShowArrows="@arrows" ShowBullets="@bullets" EnableSwipeGesture="@enableSwipeGesture" AutoCycle="@autocycle" TData="object">
-    <MudCarouselItem Transition="transition" Color="@Color.Primary">
-        <div class="d-flex" style="height:100%">
-            <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />
-        </div>
-    </MudCarouselItem>
-    <MudCarouselItem Transition="transition" Color="@Color.Secondary">
-        <div class="d-flex" style="height:100%">
-            <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />
-        </div>
-    </MudCarouselItem>
-    <MudCarouselItem Transition="transition">
-        <div class="d-flex" style="height:100%">
-            <MudIcon Class="mx-auto my-auto" Icon="@Icons.Custom.Brands.MudBlazor" Color="@Color.Primary" Size="@Size.Large" />
-        </div>
-    </MudCarouselItem>
+﻿@using PhotoPortfolio.Shared.Models
+
+<MudCarousel 
+    Class="mud-width-full" 
+    Style=@($"height:{Height}")
+    ShowArrows="@ShowNextPrevArrows"
+    ShowBullets="@ShowNavBullets"
+    EnableSwipeGesture="@EnableSwipeGesture" 
+    AutoCycle="@Autocycle"
+    AutoCycleTime=@(new TimeSpan(0, 0, 0, ImageDisplayTime, 0))
+    TData="object"
+>
+    @foreach(CarouselItem image in ImageList)
+    {
+        <MudCarouselItem Transition="Transition.Custom" CustomTransitionEnter="@AnimationEntrance" CustomTransitionExit="@AnimationExit">
+            <div class=@(
+                 image.ImageAlign switch
+                 {
+                    ImageAlignment.Top => "absolute left-0 top-0",
+                    ImageAlignment.Middle => "absolute left-0 top-0 lg:inset-y-0 lg:left-0 lg:-top-32",
+                    ImageAlignment.Bottom => "absolute left-0 lg:inset-x-0 lg:bottom-0",
+                    _ => "absolute left-0 top-0 lg:inset-y-0 lg:left-0 lg:-top-32"
+                 })
+            >
+                <MudImage Src=@image.Uri ObjectFit="@ImageFit" />
+            </div>
+        </MudCarouselItem>
+    }
 </MudCarousel>
 
 @code {
-    private bool arrows = true;
-    private bool bullets = true;
-    private bool enableSwipeGesture = true;
-    private bool autocycle = true;
-    private Transition transition = Transition.Fade;
- }
+    [Parameter]
+    public string Height { get; set; } = "80vh"; // overall carousel height (applied directly as a 'height:' style)
+
+    [Parameter]
+    public bool Autocycle { get; set; } = true; // automatically cycle through the images?
+
+    [Parameter]
+    public int ImageDisplayTime { get; set; } = 10; // time (in secs) to display each image
+
+    [Parameter]
+    public bool ShowNextPrevArrows { get; set; } = true; // display next/previous arrows?
+
+    [Parameter]
+    public bool ShowNavBullets { get; set; } = true; // display image navigation bullets?
+
+    [Parameter]
+    public bool EnableSwipeGesture { get; set; } = true; // enable swipe gestures for touch screens?
+
+    [Parameter]
+    public List<CarouselItem> ImageList { get; set; } = new List<CarouselItem>(); // list of image URIs (and alignment) to be included in carousel
+
+    private ObjectFit ImageFit = ObjectFit.Cover; // ensures that images fit the screen width (best to leave this alone)
+
+    private string AnimationEntrance = "fadeIn"; // see 'wwwroot/css/carousel.css' for more options
+    private string AnimationExit = "fadeOut"; // see 'wwwroot/css/carousel.css' for more options
+}

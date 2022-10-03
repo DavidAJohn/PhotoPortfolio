@@ -1,0 +1,59 @@
+﻿/* Custom animation for MudBlazor Carousel: https://www.mudblazor.com/components/carousel#custom-transition */ 
+/* For more custom animation options: https://animate.style */
+
+@import url("https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css");
+
+.fadeIn {
+    animation-duration: 2s;
+    animation-name: fadeIn;
+}
+
+.fadeOut {
+    animation-duration: 2s;
+    animation-name: fadeOut;
+}
+
+/* Additional animation options: */
+
+/*
+.bounceIn {
+    opacity: 0;
+    animation-delay: 0.5s;
+    animation-duration: 0.5s;
+    animation-name: bounceIn;
+    animation-fill-mode: forwards;
+}
+
+.bounceOut {
+    animation-duration: 0.5s;
+    animation-name: bounceOut;
+    animation-fill-mode: forwards;
+}
+
+.backInDown {
+    opacity: 0;
+    animation-delay: 0.5s;
+    animation-duration: 0.5s;
+    animation-name: backInDown;
+    animation-fill-mode: forwards;
+}
+
+.backOutDown {
+    animation-duration: 0.5s;
+    animation-name: backOutDown;
+    animation-fill-mode: forwards;
+}
+
+.rotateIn {
+    opacity: 0;
+    animation-delay: 0.5s;
+    animation-duration: 0.5s;
+    animation-name: rotateIn;
+    animation-fill-mode: forwards;
+}
+
+.rotateOut {
+    animation-duration: 0.5s;
+    animation-name: rotateOut;
+    animation-fill-mode: forwards;
+}*/

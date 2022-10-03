@@ -1,7 +1,28 @@
 ﻿@page "/"
+@using PhotoPortfolio.Shared.Models
 
 <div class="min-h-screen w-full">
-    <Carousel />
+    <Carousel ShowNavBullets=false ImageList="@ImageList" />
+
+    <div class="my-8 flex justify-center mx-auto">
+        <!-- https://heroicons.com: chevron-double-down -->
+        <svg class="w-8 h-8 animate-pulse" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M15.707 4.293a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 011.414-1.414L10 8.586l4.293-4.293a1 1 0 011.414 0zm0 6a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 111.414-1.414L10 14.586l4.293-4.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+         </svg>
+    </div>
+
     <Biography />
+
     <MasonryGrid Title="My Favourite Recent Photos" />
 </div>
+
+@code {
+    public List<CarouselItem> ImageList = new List<CarouselItem>();
+    
+    protected override void OnInitialized()
+    {
+        ImageList.Add(new CarouselItem { Uri = "images/mark-harpur-unsplash.jpg", ImageAlign = ImageAlignment.Middle });
+        ImageList.Add(new CarouselItem { Uri = "images/rei-kim-X5CyweAStIY-unsplash.jpg", ImageAlign = ImageAlignment.Bottom });
+        ImageList.Add(new CarouselItem { Uri = "images/scott-carroll-favQn8WgRyk-unsplash.jpg", ImageAlign = ImageAlignment.Middle });
+    }
+}
