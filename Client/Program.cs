@@ -27,6 +27,7 @@ builder.Services.AddMsalAuthentication(options =>
 });
 
 builder.Services.AddScoped<IGalleryService, GalleryService>();
+builder.Services.AddScoped<IPhotoService, PhotoService>();
 
 builder.Services.AddBlazoredModal();
 
