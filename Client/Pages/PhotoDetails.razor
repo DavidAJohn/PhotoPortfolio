@@ -1,0 +1,75 @@
+﻿@page "/photo/{Id}"
+
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+
+@inject IPhotoService photoService
+
+<HeroImage ImageUri="/images/bank-phrom-Tzm3Oyu_6sk-unsplash.jpg"
+           ImageAlign="bottom"
+           HeadlineText="Prints"
+           SubTitleText="Purchase prints, wallart, canvas, etc."
+           TextDarkMode=false />
+
+<div class="md:container">
+    @if (errorMessage != "")
+    {
+        <div class="alert alert-danger" role="alert">
+            <h4>@errorMessage</h4>
+        </div>
+    }
+    else if (photo == null)
+    {
+        <text>Loading photo details...</text>
+    }
+    else
+    {
+        <div class="my-24 grid sm:grid-cols-1 lg:grid-cols-2 gap-16">
+            <div class="mx-4 flex justify-end">
+                <img src="@photo.Uri" class="h-96" />
+            </div>
+            <div>
+                <div class="text-2xl font-bold mb-4">@photo.Title</div>
+                <div class="mb-4">
+                    <span class="block text-gray-500 text-base">Tags:
+                        @if (photo.Metadata?.Tags is not null)
+                        {
+                            @foreach (string tag in photo.Metadata.Tags)
+                            {
+                                @($"{tag} ")
+                            }
+                        }
+                    </span>
+                </div>
+                <div class="text-base mb-4 text-justify">@photo.Caption</div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    private Photo photo = null!;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetPhotoById();
+    }
+
+    private async Task GetPhotoById()
+    {
+        try
+        {
+            photo = await photoService.GetPhotoByIdAsync(Id);
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not find this photo";
+        }
+    }
+}

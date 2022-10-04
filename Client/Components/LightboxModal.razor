@@ -1,4 +1,6 @@
-﻿<div class="custom-modal-container">
+﻿@inject NavigationManager navigationManager
+
+<div class="custom-modal-container">
     @if (!String.IsNullOrWhiteSpace(Title))
     {
         <div class="modal-title">
@@ -10,7 +12,7 @@
     </div>
     <div class="modal-buttons mt-4">
         <button @onclick="Confirm" type="button" class="bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4">@ConfirmButtonText</button>
-        <button @onclick="Cancel" type="button" class="btn btn-secondary btn-sm">@CancelButtonText</button>
+        <button @onclick="Cancel" type="button" class="bg-red-500/70 text-white text-sm py-1 px-2 rounded-sm">@CancelButtonText</button>
     </div>
 </div>
 
@@ -19,13 +21,13 @@
     BlazoredModalInstance ModalInstance { get; set; }
 
     [Parameter]
-    public string PhotoId { get; set; }
+    public string PhotoId { get; set; } = string.Empty;
 
     [Parameter]
-    public string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
 
     [Parameter]
-    public string ConfirmButtonText { get; set; } = "Buy Photo";
+    public string ConfirmButtonText { get; set; } = "Buy Prints, etc.";
 
     [Parameter]
     public string CancelButtonText { get; set; } = "Close";
@@ -33,6 +35,7 @@
     void Confirm()
     {
         ModalInstance.CloseAsync(ModalResult.Ok($"Confirm"));
+        navigationManager.NavigateTo($"/photo/{PhotoId}");
     }
 
     void Cancel()
