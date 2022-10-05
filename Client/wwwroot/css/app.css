@@ -79,7 +79,7 @@ a, .btn-link {
 .blazored-modal-header {
     display: flex;
     flex-direction: column;
-    margin: -100px;
+    margin: -75px;
 }
 
 .blazored-modal-close {
@@ -98,7 +98,7 @@ a, .btn-link {
     z-index: 104;
     display: flex;
     justify-content: flex-end;
-    margin-right: 20px;
+    padding-left: 20px;
 }
 
 .image-container {

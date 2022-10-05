@@ -1,19 +1,32 @@
-﻿@inject NavigationManager navigationManager
+﻿@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+
+@inject IPhotoService photoService
+@inject NavigationManager navigationManager
 
 <div class="custom-modal-container">
-    @if (!String.IsNullOrWhiteSpace(Title))
+    @if (photo is not null)
     {
-        <div class="modal-title">
-            @Title
+        @if (!String.IsNullOrWhiteSpace(@photo.Title))
+        {
+            <div class="modal-title pl-[1rem] md:pl-0">
+                @photo.Title
+            </div>
+        }
+    
+        <div class="px-[1rem] lg:px-0">
+            <img src=@photo.Uri class="image-container" />
+        </div>
+
+        <div class="modal-buttons mt-4 pr-[1rem] md:pr-0">
+            <button @onclick="Confirm" type="button" class="bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4">
+                @ConfirmButtonText
+            </button>
+            <button @onclick="Cancel" type="button" class="bg-red-500/70 text-white text-sm py-1 px-2 rounded-sm">
+                @CancelButtonText
+            </button>
         </div>
     }
-    <div class="image-container">
-        <img src="images/@PhotoId" />
-    </div>
-    <div class="modal-buttons mt-4">
-        <button @onclick="Confirm" type="button" class="bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4">@ConfirmButtonText</button>
-        <button @onclick="Cancel" type="button" class="bg-red-500/70 text-white text-sm py-1 px-2 rounded-sm">@CancelButtonText</button>
-    </div>
 </div>
 
 @code {
@@ -24,13 +37,13 @@
     public string PhotoId { get; set; } = string.Empty;
 
     [Parameter]
-    public string Title { get; set; } = string.Empty;
-
-    [Parameter]
     public string ConfirmButtonText { get; set; } = "Buy Prints, etc.";
 
     [Parameter]
     public string CancelButtonText { get; set; } = "Close";
+
+    private Photo photo = null!;
+    private string errorMessage = "";
 
     void Confirm()
     {
@@ -41,5 +54,24 @@
     void Cancel()
     {
         ModalInstance.CancelAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetPhotoById();
+    }
+
+    private async Task GetPhotoById()
+    {
+        try
+        {
+            photo = await photoService.GetPhotoByIdAsync(PhotoId);
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not find this photo";
+        }
     }
 }
