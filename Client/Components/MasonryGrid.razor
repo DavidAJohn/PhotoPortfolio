@@ -1,79 +1,73 @@
-﻿<div class="mt-8 mb-32 mx-auto">
+﻿@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
 
+@inject IGalleryService galleryService
+
+<div class="mt-8 mb-32 mx-auto">
     <div class="mt-8 mb-16 w-full mx-auto font-bold text-base uppercase text-center">
         @Title
     </div>
     <div class="columns-1 lg:columns-3 space-y-2 lg:space-y-4 p-4 md:p-0 md:w-1/2 mx-auto">
-        <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto("nikon-dslr.jpg", "nikon-dslr.jpg"))">
-            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/nikon-dslr.jpg" />
-            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                View
-            </div>
-        </div>
-        <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto("full-range.jpg", "full-range.jpg"))">
-            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/full-range.jpg" />
-            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                View
-            </div>
-        </div>
-        <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto("mirrorless-cameras.jpg", "mirrorless-cameras.jpg"))">
-            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/mirrorless-cameras.jpg" />
-            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                View
-            </div>
-        </div>
-        <div class="group relative overflow-hidden hover:cursor-pointer">
-            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/full-range.jpg" />
-            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                View
-            </div>
-        </div>
-        <div class="group relative overflow-hidden hover:cursor-pointer">
-            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/mirrorless-cameras.jpg" />
-            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                View
-            </div>
-        </div>
-        <div class="group relative overflow-hidden hover:cursor-pointer">
-            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/nikon-dslr.jpg" />
-            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                View
-            </div>
-        </div>
-        <div class="group relative overflow-hidden hover:cursor-pointer">
-            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/nikon-dslr.jpg" />
-            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                View
-            </div>
-        </div>
-        <div class="group relative overflow-hidden hover:cursor-pointer">
-            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/full-range.jpg" />
-            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                View
-            </div>
-        </div>
-        <div class="group relative overflow-hidden hover:cursor-pointer">
-            <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src="/images/mirrorless-cameras.jpg" />
-            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                View
-            </div>
-        </div>
+        @if (photos is not null)
+        {
+            @foreach (Photo photo in photos)
+            {
+                <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto(photo.Id))">
+                    <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src=@photo.Uri />
+                    <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                        View
+                    </div>
+                </div>
+            }
+        }
     </div>
-
 </div>
 
 @code {
     [CascadingParameter]
-    public IModalService Modal { get; set; }
+    public IModalService Modal { get; set; } = null!;
 
     [Parameter]
-    public string Title { get; set; }
+    public string GalleryId { get; set; } = "62791e80cc28b5b11025378a"; // landscapes gallery
 
-    private async Task ShowPhoto(string photoId, string title)
+    [Parameter]
+    public string Title { get; set; } = "";
+
+    private List<Photo> photos;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGalleryPhotos();
+    }
+
+    private async Task GetGalleryPhotos()
+    {
+        try
+        {
+            var gallery = await galleryService.GetGalleryByIdAsync(GalleryId);
+
+            if (gallery is not null) 
+            {
+                photos = gallery.Photos;
+                errorMessage = "";
+            }
+            else 
+            {
+                errorMessage = "No images found for this gallery";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "No images found for this gallery";
+        }
+    }
+
+    private async Task ShowPhoto(string photoId)
     {
         var parameters = new ModalParameters();
         parameters.Add(nameof(LightboxModal.PhotoId), photoId);
-        parameters.Add(nameof(LightboxModal.Title), string.IsNullOrWhiteSpace(title) ? "" : title);
 
         var options = new ModalOptions()
             {
