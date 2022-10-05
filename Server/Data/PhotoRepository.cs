@@ -29,7 +29,8 @@ public class PhotoRepository : BaseRepository<Photo>, IPhotoRepository
                 "dateadded" => p => p.DateAdded,
                 "title" => p => p.Title,
                 "filename" => p => p.FileName,
-                _ => p => p.FileName
+                "datetaken" => p => p.Metadata.DateTaken,
+                _ => p => p.DateAdded
             };
         }
 
