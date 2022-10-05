@@ -34,13 +34,14 @@ public class GalleryRepository : BaseRepository<Gallery>, IGalleryRepository
 
             var bsonDoc = await galleries
                 .Aggregate()
-                .Match(filter)
-                .Lookup("photos", "string", "string", "Photos")
+                .Match(filter) 
+                .Lookup("photos", "GalleryId", "Id", "Photos") // just joins the two collections/tables without filtering
                 .FirstOrDefaultAsync();
 
             if (bsonDoc is null) return null!;
 
             var gallery = BsonSerializer.Deserialize<Gallery>(bsonDoc);
+            gallery.Photos = gallery.Photos.Where(p => p.GalleryId == id).ToList();
 
             return gallery;
         }
