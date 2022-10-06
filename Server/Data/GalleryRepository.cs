@@ -1,6 +1,5 @@
 ﻿using LinqKit;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using PhotoPortfolio.Shared.Entities;
 using System.Linq.Expressions;
 
@@ -10,10 +9,12 @@ public class GalleryRepository : BaseRepository<Gallery>, IGalleryRepository
 {
     private readonly static string _collectionName = "galleries";
     private readonly MongoContext _context;
+    private readonly IPhotoRepository _photoRepository;
 
-    public GalleryRepository(MongoContext context) : base(context, _collectionName)
+    public GalleryRepository(MongoContext context, IPhotoRepository photoRepository) : base(context, _collectionName)
     {
         _context = context;
+        _photoRepository = photoRepository;
     }
 
     public async Task<Gallery> GetGalleryWithPhotos(string id, bool includePrivate = false)
@@ -29,19 +30,19 @@ public class GalleryRepository : BaseRepository<Gallery>, IGalleryRepository
                 predicate = predicate.And(g => g.Public == true);
             }
 
-            var filter = Builders<Gallery>.Filter
-                .Where(predicate);
+            var gallery = await galleries.Find(predicate).FirstOrDefaultAsync();
 
-            var bsonDoc = await galleries
-                .Aggregate()
-                .Match(filter) 
-                .Lookup("photos", "GalleryId", "Id", "Photos") // just joins the two collections/tables without filtering
-                .FirstOrDefaultAsync();
+            if (gallery is null) return null!;
 
-            if (bsonDoc is null) return null!;
+            // now get the photos for that gallery, using its sort parameters
+            PhotoSpecificationParams photoParams = new()
+            {
+                GalleryId = gallery.Id,
+                SortBy = gallery.SortBy,
+                SortOrder = gallery.SortOrder
+            };
 
-            var gallery = BsonSerializer.Deserialize<Gallery>(bsonDoc);
-            gallery.Photos = gallery.Photos.Where(p => p.GalleryId == id).ToList();
+            gallery.Photos = await _photoRepository.GetFilteredPhotosAsync(photoParams);
 
             return gallery;
         }
