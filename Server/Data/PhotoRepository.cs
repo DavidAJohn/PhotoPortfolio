@@ -30,6 +30,7 @@ public class PhotoRepository : BaseRepository<Photo>, IPhotoRepository
                 "title" => p => p.Title,
                 "filename" => p => p.FileName,
                 "datetaken" => p => p.Metadata.DateTaken,
+                "custom" => p => p.GallerySortOrder,
                 _ => p => p.DateAdded
             };
         }
@@ -52,7 +53,7 @@ public class PhotoRepository : BaseRepository<Photo>, IPhotoRepository
 
         return await _photos
             .Find(filter)
-            .SortBy(p => p.Title)
+            .SortBy(p => p.DateAdded)
             .ToListAsync();
     }
 }
