@@ -12,7 +12,7 @@
 
                 <!-- Hamburger button for mobile menu -->
                 <div class="absolute inset-y-0 left-0 flex items-center md:hidden" @onclick="ToggleNavMenu">
-                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
                         <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -24,18 +24,18 @@
                 </div>
 
                 <!-- Site name & logo, site links and social media icons -->
-                <div class="flex flex-nowrap w-1/4 text-gray-50">
+                <div class="flex flex-nowrap hidden md:flex md:justify-start w-1/4 text-gray-50">
                     <div class="px-4 font-semibold hover:text-gray-200">
                         <span><NavLink href="/gallery" class="hover:text-gray-200">Gallery</NavLink></span>
                     </div>
                     <div class="px-4 font-semibold hover:text-gray-200">
-                        <span><NavLink href="#" class="hover:text-gray-200">About Me</NavLink></span>
+                        <span><NavLink href="#" class="hover:text-gray-200">Contact Me</NavLink></span>
                     </div>
                 </div>
-                <div class="flex justify-center w-2/4">
+                <div class="flex justify-center w-full lg:w-2/4">
                     <div class="px-0">
                         <NavLink href="/">
-                            <img src="/images/photo_portfolio_logo_white_cropped.png" class="h-10" />
+                            <img src="/images/photo_portfolio_logo_white_cropped.png" class="h-8 lg:h-10" />
                         </NavLink>
                     </div>
                 </div>
@@ -45,6 +45,11 @@
 
             </div>
         </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="md:hidden @NavMenuCssClass" id="mobile-menu">
+        <MobileMenu />
     </div>
 </nav>
 
@@ -61,7 +66,7 @@
 @code {
     private bool collapseNavMenu = true;
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string NavMenuCssClass => collapseNavMenu ? "block" : "hidden";
 
     private void ToggleNavMenu()
     {
