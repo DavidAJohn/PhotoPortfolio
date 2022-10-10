@@ -2,7 +2,10 @@
 @using PhotoPortfolio.Shared.Models
 
 <div class="min-h-screen w-full">
-    <Carousel ShowNavBullets=false ImageList="@ImageList" />
+    <Carousel 
+        ImageList="@ImageList"
+        ShowNavBullets=false  
+    />
 
     <div class="my-8 flex justify-center mx-auto">
         <!-- https://heroicons.com: chevron-double-down -->
@@ -13,7 +16,10 @@
 
     <Biography />
 
-    <MasonryGrid Title="My Favourite Recent Photos" />
+    <MasonryGrid 
+        GalleryId="62791e80cc28b5b11025378a" 
+        Title="My Favourite Recent Photos" 
+     />
 </div>
 
 @code {
@@ -21,8 +27,8 @@
     
     protected override void OnInitialized()
     {
-        ImageList.Add(new CarouselItem { Uri = "images/mark-harpur-unsplash.jpg", ImageAlign = ImageAlignment.Middle });
-        ImageList.Add(new CarouselItem { Uri = "images/rei-kim-X5CyweAStIY-unsplash.jpg", ImageAlign = ImageAlignment.Bottom });
-        ImageList.Add(new CarouselItem { Uri = "images/scott-carroll-favQn8WgRyk-unsplash.jpg", ImageAlign = ImageAlignment.Middle });
+        ImageList.Add(new CarouselItem { Uri = "https://photoportfolioimgs.blob.core.windows.net/repo/mark-harpur-K2s_YE031CA-unsplash.jpg", ImageAlign = ImageAlignment.Middle });
+        ImageList.Add(new CarouselItem { Uri = "https://photoportfolioimgs.blob.core.windows.net/repo/rei-kim-X5CyweAStIY-unsplash.jpg", ImageAlign = ImageAlignment.Bottom });
+        ImageList.Add(new CarouselItem { Uri = "https://photoportfolioimgs.blob.core.windows.net/repo/scott-carroll-favQn8WgRyk-unsplash.jpg", ImageAlign = ImageAlignment.Middle });
     }
 }
