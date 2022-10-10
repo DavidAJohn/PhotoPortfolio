@@ -3,7 +3,7 @@
 <div class="py-4">
     @foreach (TextBlockItem item in BlockItems)
     {
-        <div class="p-[1rem] text-@item.TextSize text-@item.TextAlignment font-@item.TextWeight">
+        <div class="p-[1rem] @GetResponsiveTextSizes(@item.TextSize) text-@item.TextAlignment font-@item.TextWeight">
             <span style="color: @item.TextColour">@item.TextContent</span>
         </div>
     }
@@ -15,4 +15,18 @@
     [Parameter]
     public List<TextBlockItem> BlockItems { get; set; } = null!;
 
+    protected string GetResponsiveTextSizes(string textSize)
+    {
+        var TextSizes = textSize.ToLowerInvariant() switch
+        {
+            "5xl" => "text-2xl md:text-3xl lg:text-5xl ",
+            "4xl" => "text-xl md:text-2xl lg:text-4xl ",
+            "3xl" => "text-lg md:text-xl lg:text-3xl ",
+            "2xl" => "text-base md:text-lg lg:text-2xl ",
+            "xl" => "text-sm md:text-base lg:text-xl ",
+            _ => "text-base md:text-lg lg:text-2xl ",
+        };
+
+        return TextSizes;
+    }
 }
