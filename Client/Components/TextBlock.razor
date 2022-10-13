@@ -1,6 +1,7 @@
 ﻿@using PhotoPortfolio.Shared.Models
 
-<div class="py-4">
+<div class="pt-12 pb-2 lg:pb-4 @(DarkMode ? " bg-gray-700" : " ")"
+>
     @foreach (TextBlockItem item in BlockItems)
     {
         <div class="p-[1rem] 
@@ -16,11 +17,14 @@
     }
 </div>
 <!-- hidden div to ensure we have all possible text size values included in wwwroot/css/tailwind.css-->
-<div class="hidden text-white text-sm text-base text-lg text-xl text-2xl text-3xl text-4xl text-5xl">x</div>
+<div class="hidden text-sm text-base text-lg text-xl text-2xl text-3xl text-4xl text-5xl">x</div>
 
 @code {
     [Parameter]
     public List<TextBlockItem> BlockItems { get; set; } = null!;
+
+    [Parameter]
+    public bool DarkMode { get; set; } = false;
 
     protected string GetResponsiveTextSizes(string textSize)
     {

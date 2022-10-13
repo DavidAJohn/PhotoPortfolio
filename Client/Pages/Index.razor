@@ -16,20 +16,45 @@
 
     <Biography />
 
-    <MasonryGrid 
-        GalleryId="6334c9aa0257ef74a2250641"
-        Title="My Favourite Recent Photos"
-        DarkMode=true 
+
+    <TextBlock BlockItems="TextBlockItems"
+               DarkMode=true 
+    />
+
+    <MasonryGrid GalleryId="6334c9aa0257ef74a2250641"
+                 DarkMode=true 
     />
 </div>
 
 @code {
-    public List<CarouselItem> ImageList = new List<CarouselItem>();
+    private List<CarouselItem> ImageList = new List<CarouselItem>();
+    private List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
     
     protected override void OnInitialized()
     {
+        // Carousel image list
         ImageList.Add(new CarouselItem { Uri = "https://photoportfolioimgs.blob.core.windows.net/repo/mark-harpur-K2s_YE031CA-unsplash.jpg", ImageAlign = ImageAlignment.Middle });
         ImageList.Add(new CarouselItem { Uri = "https://photoportfolioimgs.blob.core.windows.net/repo/rei-kim-X5CyweAStIY-unsplash.jpg", ImageAlign = ImageAlignment.Bottom });
         ImageList.Add(new CarouselItem { Uri = "https://photoportfolioimgs.blob.core.windows.net/repo/scott-carroll-favQn8WgRyk-unsplash.jpg", ImageAlign = ImageAlignment.Middle });
+
+        // TextBlock items
+        TextBlockItems.Add(new TextBlockItem
+            {
+                TextContent = "Favourites",
+                TextColour = "#9eb9d7",
+                TextSize = "2xl",
+                TextWeight = "bold",
+                TextAlignment = "center",
+                TextUppercase = true
+            });
+
+        TextBlockItems.Add(new TextBlockItem
+            {
+                TextContent = "My Favourite Recent Photographs",
+                TextColour = "rgb(248 250 252)",
+                TextSize = "2xl",
+                TextWeight = "normal",
+                TextAlignment = "center"
+            });
     }
 }
