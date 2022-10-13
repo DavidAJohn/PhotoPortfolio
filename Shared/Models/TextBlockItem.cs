@@ -10,4 +10,5 @@ public class TextBlockItem
     public string TextSize { get; set; } = "md";
     public string TextWeight { get; set; } = "normal";
     public string TextAlignment { get; set; } = "left";
+    public bool TextUppercase { get; set; } = false;
 }

@@ -3,7 +3,14 @@
 <div class="py-4">
     @foreach (TextBlockItem item in BlockItems)
     {
-        <div class="p-[1rem] @GetResponsiveTextSizes(@item.TextSize) text-@item.TextAlignment font-@item.TextWeight">
+        <div class="p-[1rem] 
+            @GetResponsiveTextSizes(@item.TextSize) 
+            text-@item.TextAlignment 
+            font-@item.TextWeight
+            @(
+                item.TextUppercase ? " uppercase" : " normal-case"
+            )"
+        >
             <span style="color: @item.TextColour">@item.TextContent</span>
         </div>
     }
