@@ -1,0 +1,16 @@
+﻿@inherits TestContext
+
+@using PhotoPortfolio.Shared.Models
+
+@code {
+    [Fact]
+    public void HeroImage_Correctly_Renders_Supplied_HeadlineText()
+    {
+        var cut = Render(@<HeroImage ImageUri="" HeadlineText="Test Headline" />);
+
+        var headlineSpan = cut.Find("#hero-headline");
+
+        Assert.Equal("Test Headline", headlineSpan.TextContent);
+    }
+
+}
