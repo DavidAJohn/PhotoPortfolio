@@ -1,23 +1,22 @@
 ﻿@using PhotoPortfolio.Shared.Models
 
-<div class="pt-12 pb-2 lg:pb-4 @(DarkMode ? " bg-gray-700" : " ")"
->
-    @foreach (TextBlockItem item in BlockItems)
-    {
-        <div class="p-[1rem] 
-            @GetResponsiveTextSizes(@item.TextSize) 
-            text-@item.TextAlignment 
+@if (BlockItems is not null)
+{
+    <div class="pt-12 pb-2 lg:pb-4 @(DarkMode ? " bg-gray-700" : " ")" id="text-block-container">
+        @foreach (TextBlockItem item in BlockItems)
+        {
+            <div class="p-[1rem] text-block-item
+            @GetResponsiveTextSizes(@item.TextSize)
+            text-@item.TextAlignment
             font-@item.TextWeight
             @(
                 item.TextUppercase ? " uppercase" : " normal-case"
-            )"
-        >
-            <span style="color: @item.TextColour">@item.TextContent</span>
-        </div>
-    }
-</div>
-<!-- hidden div to ensure we have all possible text size values included in wwwroot/css/tailwind.css-->
-<div class="hidden text-sm text-base text-lg text-xl text-2xl text-3xl text-4xl text-5xl">x</div>
+            )">
+                <span style="color: @item.TextColour" id="text-block-content">@item.TextContent</span>
+            </div>
+        }
+    </div>
+}
 
 @code {
     [Parameter]

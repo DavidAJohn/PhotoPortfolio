@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoPortfolio.Client", "Cl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoPortfolio.Shared", "Shared\PhotoPortfolio.Shared.csproj", "{E98D409B-7CDA-433D-9225-B768D34D50AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoPortfolio.Tests", "Tests\PhotoPortfolio.Tests.csproj", "{BA5D1E42-072A-4181-8F4E-67BDEF30AFA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoPortfolio.Tests", "Tests\PhotoPortfolio.Tests.csproj", "{BA5D1E42-072A-4181-8F4E-67BDEF30AFA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

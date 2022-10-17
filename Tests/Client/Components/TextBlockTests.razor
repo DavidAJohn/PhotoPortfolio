@@ -1,0 +1,172 @@
+﻿@inherits TestContext
+
+@using PhotoPortfolio.Shared.Models
+
+@code {
+    private TextBlockItem CreateTextBlockItem(
+        string textContent, 
+        string textColour, 
+        string textSize, 
+        string textWeight, 
+        string textAlignment,
+        bool textUpperCase = false)
+    {
+        return new TextBlockItem
+            {
+                TextContent = textContent,
+                TextColour = textColour,
+                TextSize = textSize,
+                TextWeight = textWeight,
+                TextAlignment = textAlignment,
+                TextUppercase = textUpperCase
+            };
+    }
+
+    [Fact]
+    public void TextBlock_Is_Not_Displayed_If_TextBlockItems_Is_Null()
+    {
+        var cut = Render(@<TextBlock />);
+
+        cut.MarkupMatches("");
+    }
+
+    [Fact]
+    public void TextBlock_Is_Displayed_If_TextBlockItems_Is_NOT_Null()
+    {
+        TextBlockItem item = CreateTextBlockItem("Testing", "#366136", "3xl", "bold", "center");
+
+        List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+        TextBlockItems.Add(item);
+
+        var cut = Render(@<TextBlock BlockItems="TextBlockItems" />);
+
+        var element = cut.Find("#text-block-container");
+
+        element.MarkupMatches(
+            @<div class:ignore="" id="text-block-container" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void TextBlock_Correctly_Renders_DarkMode()
+    {
+        TextBlockItem item = CreateTextBlockItem("Testing", "#366136", "3xl", "bold", "center");
+
+        List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+        TextBlockItems.Add(item);
+
+        var cut = Render(@<TextBlock BlockItems="TextBlockItems" DarkMode=true />);
+
+        var element = cut.Find("#text-block-container");
+
+        element.MarkupMatches(
+            @<div class:regex="bg-gray-\d{3}" id="text-block-container" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void TextBlock_Correctly_Renders_Expected_Text_Context()
+    {
+        TextBlockItem item = CreateTextBlockItem("Testing", "#366136", "3xl", "bold", "center");
+
+        List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+        TextBlockItems.Add(item);
+
+        var cut = Render(@<TextBlock BlockItems="TextBlockItems" />);
+
+        var element = cut.Find("#text-block-content");
+
+        element.MarkupMatches(
+            @<span style:ignore="" id="text-block-content">Testing</span>
+        );
+    }
+
+    [Fact]
+    public void TextBlock_Displays_Expected_Number_Of_TextBlockItems()
+    {
+        TextBlockItem item1 = CreateTextBlockItem("Testing 1", "#366136", "3xl", "bold", "center");
+        TextBlockItem item2 = CreateTextBlockItem("Testing 2", "#366136", "3xl", "bold", "center");
+
+        List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+        TextBlockItems.Add(item1);
+        TextBlockItems.Add(item2);
+
+        var cut = Render(@<TextBlock BlockItems="TextBlockItems" />);
+        var items = cut.FindAll(".text-block-item");
+
+        Assert.Equal(2, items.Count);
+    }
+
+    [Fact]
+    public void TextBlock_Displays_TextBlockItem_As_Upper_Case_When_Specified()
+    {
+        TextBlockItem item1 = CreateTextBlockItem("Testing 1", "#366136", "3xl", "bold", "center", true);
+
+        List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+        TextBlockItems.Add(item1);
+
+        var cut = Render(@<TextBlock BlockItems="TextBlockItems" />);
+
+        var element = cut.Find(".text-block-item");
+
+        element.MarkupMatches(
+            @<div class:regex="uppercase" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void TextBlock_Displays_TextBlockItem_As_Normal_Case_When_Not_Specified()
+    {
+        TextBlockItem item1 = CreateTextBlockItem("Testing 1", "#366136", "3xl", "bold", "center");
+
+        List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+        TextBlockItems.Add(item1);
+
+        var cut = Render(@<TextBlock BlockItems="TextBlockItems" />);
+
+        var element = cut.Find(".text-block-item");
+
+        element.MarkupMatches(
+            @<div class:regex="normal-case" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void TextBlock_Displays_TextBlockItem_With_Expected_TextSize()
+    {
+        TextBlockItem item1 = CreateTextBlockItem("Testing 1", "#366136", "5xl", "bold", "center");
+
+        List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+        TextBlockItems.Add(item1);
+
+        var cut = Render(@<TextBlock BlockItems="TextBlockItems" />);
+
+        var element = cut.Find(".text-block-item");
+
+        element.MarkupMatches(
+            @<div class:regex="lg:text-5xl" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void TextBlock_Displays_TextBlockItem_With_Expected_TextSize_On_Unexpected_Value()
+    {
+        TextBlockItem item1 = CreateTextBlockItem(
+            "Testing 1", 
+            "#366136", 
+            "test", // unexpected TextSize value
+            "bold", 
+            "center");
+
+        List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+        TextBlockItems.Add(item1);
+
+        var cut = Render(@<TextBlock BlockItems="TextBlockItems" />);
+
+        var element = cut.Find(".text-block-item");
+
+        element.MarkupMatches(
+            @<div class:regex="lg:text-2xl" diff:ignoreChildren></div>
+        );
+    }
+}
