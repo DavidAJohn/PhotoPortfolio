@@ -8,9 +8,124 @@
     {
         var cut = Render(@<HeroImage ImageUri="" HeadlineText="Test Headline" />);
 
-        var headlineSpan = cut.Find("#hero-headline");
+        var element = cut.Find("#hero-headline");
 
-        Assert.Equal("Test Headline", headlineSpan.TextContent);
+        Assert.Equal("Test Headline", element.TextContent);
     }
 
+    [Fact]
+    public void HeroImage_Correctly_Renders_Supplied_SubTitleText()
+    {
+        var cut = Render(@<HeroImage ImageUri="" SubTitleText="Test SubTitle" />);
+
+        var element = cut.Find("#hero-subtitle");
+
+        Assert.Equal("Test SubTitle", element.TextContent);
+    }
+
+    [Fact]
+    public void HeroImage_Does_Not_Show_SubTitleText_When_Empty()
+    {
+        var cut = Render(@<HeroImage ImageUri="" SubTitleText="" />);
+
+        var element = cut.Find("#hero-subtitle");
+
+        Assert.Equal("", element.TextContent);
+    }
+
+    [Fact]
+    public void HeroImage_Correctly_Renders_HeadlineText_When_TextDarkMode_False()
+    {
+        var cut = Render(@<HeroImage ImageUri="" HeadlineText="Test Headline" TextDarkMode=false />);
+
+        var element = cut.Find("#hero-headline");
+
+        element.MarkupMatches(
+            @<span class:regex="text-white" id:ignore="">Test Headline</span>
+        );
+    }
+
+    [Fact]
+    public void HeroImage_Correctly_Renders_HeadlineText_When_TextDarkMode_True()
+    {
+        var cut = Render(@<HeroImage ImageUri="" HeadlineText="Test Headline" TextDarkMode=true />);
+
+        var element = cut.Find("#hero-headline");
+
+        element.MarkupMatches(
+            @<span class:regex="text-slate-\d{3}" id:ignore="">Test Headline</span>
+        );
+    }
+
+    [Fact]
+    public void HeroImage_Correctly_Aligns_Image_To_Center()
+    {
+        var cut = Render(@<HeroImage ImageUri="" ImageAlign="center" />);
+
+        var element = cut.Find("#hero-bg");
+
+        element.MarkupMatches(
+            @<div class:regex="bg-center" style:ignore="" id:ignore=""></div>
+        );
+    }
+
+    [Fact]
+    public void HeroImage_Correctly_Aligns_Image_To_Top()
+    {
+        var cut = Render(@<HeroImage ImageUri="" ImageAlign="top" />);
+
+        var element = cut.Find("#hero-bg");
+
+        element.MarkupMatches(
+            @<div class:regex="bg-top" style:ignore="" id:ignore=""></div>
+        );
+    }
+
+    [Fact]
+    public void HeroImage_Correctly_Aligns_Image_To_Bottom()
+    {
+        var cut = Render(@<HeroImage ImageUri="" ImageAlign="bottom" />);
+
+        var element = cut.Find("#hero-bg");
+
+        element.MarkupMatches(
+            @<div class:regex="bg-bottom" style:ignore="" id:ignore=""></div>
+        );
+    }
+
+    [Fact]
+    public void HeroImage_Aligns_Image_To_Center_When_ImageAlign_Not_Supplied()
+    {
+        var cut = Render(@<HeroImage ImageUri="" />);
+
+        var element = cut.Find("#hero-bg");
+
+        element.MarkupMatches(
+            @<div class:regex="bg-center" style:ignore="" id:ignore=""></div>
+        );
+    }
+
+    [Fact]
+    public void HeroImage_Aligns_Image_To_Center_When_Unexpected_Value_Supplied()
+    {
+        var cut = Render(@<HeroImage ImageUri="" ImageAlign="test" />);
+
+        var element = cut.Find("#hero-bg");
+
+        element.MarkupMatches(
+            @<div class:regex="bg-center" style:ignore="" id:ignore=""></div>
+        );
+    }
+
+    [Fact]
+    public void HeroImage_Correctly_Converts_Input_Value_To_Lower_Case()
+    {
+        var cut = Render(@<HeroImage ImageUri="" ImageAlign="Top" />);
+
+        var element = cut.Find("#hero-bg");
+
+        element.MarkupMatches(
+            @<div class:regex="bg-top" style:ignore="" id:ignore=""></div>
+        );
+    }
 }

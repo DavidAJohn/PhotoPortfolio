@@ -1,12 +1,12 @@
 ﻿<div class="w-full h-96 overflow-hidden relative" id="hero-image">
-    <div class="absolute inset-0 w-full h-full object-fill object-center bg-gray-400 bg-opacity-30 bg-cover @ImageVerticalAlign bg-blend-multiply" style="background-image: url( @ImageUri );"></div>
+    <div class="absolute inset-0 w-full h-full object-fill object-center bg-gray-400 bg-opacity-30 bg-cover @ImageVerticalAlign bg-blend-multiply" style="background-image: url( @ImageUri );" id="hero-bg"></div>
     <span class="absolute text-2xl md:text-3xl lg:text-5xl font-medium @TextColour top-10 left-10 z-10" id="hero-headline">@HeadlineText</span>
     <span class="absolute text-base md:text-lg lg:text-2xl @TextColour top-24 left-10 z-10" id="hero-subtitle">@SubTitleText</span>
 </div>
 
 @code {
     [Parameter]
-    public string ImageUri { get; set; }
+    public string ImageUri { get; set; } = string.Empty;
 
     [Parameter]
     public string ImageAlign { get; set; } = "center";
