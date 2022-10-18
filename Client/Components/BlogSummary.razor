@@ -1,0 +1,53 @@
+﻿@using PhotoPortfolio.Shared.Models
+
+<div class="w-full mx-auto -mt-24">
+    <TextBlock BlockItems="TextBlockItems"
+               DarkMode=false />
+</div>
+<div class="columns-1 lg:columns-3 space-y-4 lg:space-y-8 p-4 md:p-0 md:w-1/2 mx-auto mt-8 mb-16">
+    <div class="group relative overflow-hidden hover:cursor-pointer brightness-90">
+        <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105 z-0" src="https://photoportfolioimgs.blob.core.windows.net/repo/mark-harpur-K2s_YE031CA-unsplash.jpg" />
+        <div class="absolute text-lg text-gray-50 top-3/4 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+            Blog Title
+        </div>
+    </div>
+    <div class="group relative overflow-hidden hover:cursor-pointer brightness-90">
+        <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105 z-0" src="https://photoportfolioimgs.blob.core.windows.net/repo/ashim-d-silva-WeYamle9fDM-unsplash.jpg" />
+        <div class="absolute text-lg text-gray-50 top-3/4 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+            Blog Title
+        </div>
+    </div>
+    <div class="group relative overflow-hidden hover:cursor-pointer brightness-90">
+        <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105 z-0" src="https://photoportfolioimgs.blob.core.windows.net/repo/scott-carroll-favQn8WgRyk-unsplash.jpg" />
+        <div class="absolute text-lg text-gray-50 top-3/4 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+            Blog Title
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<TextBlockItem> TextBlockItems = new List<TextBlockItem>();
+
+    protected override void OnInitialized()
+    {
+        // TextBlock items
+        TextBlockItems.Add(new TextBlockItem
+            {
+                TextContent = "Blog",
+                TextColour = "#50749e",
+                TextSize = "2xl",
+                TextWeight = "bold",
+                TextAlignment = "center",
+                TextUppercase = true
+            });
+
+        TextBlockItems.Add(new TextBlockItem
+            {
+                TextContent = "Thoughts On Photography",
+                TextColour = "#2e3238",
+                TextSize = "2xl",
+                TextWeight = "normal",
+                TextAlignment = "center"
+            });
+    }
+}
