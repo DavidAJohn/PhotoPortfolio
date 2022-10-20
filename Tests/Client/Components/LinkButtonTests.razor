@@ -1,0 +1,39 @@
+﻿@inherits TestContext
+
+@code {
+    [Fact]
+    public void LinkButton_Displays_Expected_Link_Text()
+    {
+        var cut = Render(@<LinkButton LinkText="Test Link" />);
+
+        var element = cut.Find("#link-button-text");
+
+        element.MarkupMatches(
+            @<span class:ignore="" id="link-button-text">Test Link</span>
+        );
+    }
+
+    [Fact]
+    public void LinkButton_Adds_Expected_Uri()
+    {
+        var cut = Render(@<LinkButton Uri="/test" />);
+
+        var element = cut.Find("#link-button-uri");
+
+        element.MarkupMatches(
+            @<a href="/test" class:ignore="" id="link-button-uri" diff:ignoreChildren></a>
+        );
+    }
+
+    [Fact]
+    public void LinkButton_Adds_Hash_Href_When_Uri_Not_Specified()
+    {
+        var cut = Render(@<LinkButton />);
+
+        var element = cut.Find("#link-button-uri");
+
+        element.MarkupMatches(
+            @<a href="#" class:ignore="" id="link-button-uri" diff:ignoreChildren></a>
+        );
+    }
+}
