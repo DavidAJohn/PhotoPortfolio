@@ -15,11 +15,13 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI", client => client.BaseAddress = 
     new Uri(builder.HostEnvironment.BaseAddress + "api/"))
-    .AddPolicyHandler(GetRetryPolicy());
+    .AddPolicyHandler(GetRetryPolicy())
+    .AddPolicyHandler(GetCircuitBreakerPolicy());
 
 builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI.Secure", client => client.BaseAddress = 
     new Uri(builder.HostEnvironment.BaseAddress + "api/"))
     .AddPolicyHandler(GetRetryPolicy())
+    .AddPolicyHandler(GetCircuitBreakerPolicy())
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 // Supply HttpClient instances that include access tokens when making requests to the server project
@@ -54,4 +56,14 @@ IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
                     TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))  // exponential backoff (2, 4, 8, 16, 32 secs)
                   + TimeSpan.FromMilliseconds(jitter.Next(0, 1000))  // plus some jitter: up to 1 second
             );
+}
+
+IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .CircuitBreakerAsync(
+            handledEventsAllowedBeforeBreaking: 5,
+            durationOfBreak: TimeSpan.FromSeconds(30)
+        );
 }
