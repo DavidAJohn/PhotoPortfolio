@@ -6,14 +6,20 @@ using MudBlazor.Services;
 using PhotoPortfolio.Client;
 using PhotoPortfolio.Client.Contracts;
 using PhotoPortfolio.Client.Services;
+using Polly.Extensions.Http;
+using Polly;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress + "api/"));
+builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI", client => client.BaseAddress = 
+    new Uri(builder.HostEnvironment.BaseAddress + "api/"))
+    .AddPolicyHandler(GetRetryPolicy());
 
-builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI.Secure", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress + "api/"))
+builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI.Secure", client => client.BaseAddress = 
+    new Uri(builder.HostEnvironment.BaseAddress + "api/"))
+    .AddPolicyHandler(GetRetryPolicy())
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 // Supply HttpClient instances that include access tokens when making requests to the server project
@@ -34,3 +40,18 @@ builder.Services.AddBlazoredModal();
 builder.Services.AddMudServices();
 
 await builder.Build().RunAsync();
+
+IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    // Retry with jitter: https://github.com/App-vNext/Polly/wiki/Retry-with-jitter
+    Random jitter = new Random();
+
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .WaitAndRetryAsync(
+            retryCount: 5,
+            sleepDurationProvider: retryAttempt =>
+                    TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))  // exponential backoff (2, 4, 8, 16, 32 secs)
+                  + TimeSpan.FromMilliseconds(jitter.Next(0, 1000))  // plus some jitter: up to 1 second
+            );
+}
