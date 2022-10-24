@@ -1,0 +1,135 @@
+﻿@inherits TestContext
+
+@using PhotoPortfolio.Shared.Models
+
+@code {
+    private DropdownItem CreateDropdownItem(
+        int id,
+        string optionName,
+        string optionRef
+        )
+    {
+        return new DropdownItem
+            {
+                Id = id,
+                OptionName = optionName,
+                OptionRef = optionRef
+            };
+    }
+
+    [Fact]
+    public void Dropdown_Is_Not_Displayed_If_DropdownItems_Is_Null()
+    {
+        var cut = Render(@<Dropdown />);
+
+        cut.MarkupMatches("");
+    }
+
+    [Fact]
+    public void Dropdown_Is_Displayed_If_DropdownItems_Is_NOT_Null()
+    {
+        DropdownItem item = CreateDropdownItem(1, "Test Name", "Test Ref");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item);
+
+        var cut = Render(@<Dropdown DropdownItems="DropdownItems" />);
+
+        var element = cut.Find("#dropdown-container");
+
+        element.MarkupMatches(
+            @<div class:ignore="" id="dropdown-container" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void Dropdown_Correctly_Renders_Supplied_Title()
+    {
+        DropdownItem item = CreateDropdownItem(1, "Test Name", "Test Ref");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item);
+
+        var cut = Render(@<Dropdown DropdownTitle="Test Title" DropdownItems="DropdownItems" />);
+
+        var element = cut.Find("#dropdown-button");
+
+        element.MarkupMatches(
+            @<button class:ignore="" type:ignore="" id="dropdown-button">
+                Test Title
+                <svg diff:ignore=""></svg>
+            </button>
+        );
+    }
+
+    [Fact]
+    public void Dropdown_Displays_Expected_Number_Of_DropdownItems()
+    {
+        DropdownItem item1 = CreateDropdownItem(1, "Test Name 1", "Test Ref 1");
+        DropdownItem item2 = CreateDropdownItem(2, "Test Name 2", "Test Ref 2");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item1);
+        DropdownItems.Add(item2);
+
+        var cut = Render(@<Dropdown DropdownTitle="Test Title" DropdownItems="DropdownItems" />);
+        var items = cut.FindAll(".dropdown-item");
+
+        Assert.Equal(2, items.Count);
+    }
+
+    [Fact]
+    public void Dropdown_Correctly_Adds_DropdownTransformClasses()
+    {
+        DropdownItem item1 = CreateDropdownItem(1, "Test Name 1", "Test Ref 1");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item1);
+
+        var cut = Render(@<Dropdown DropdownTitle="Test Title" DropdownItems="DropdownItems" />);
+        var element = cut.Find("#dropdown-menu");
+
+        element.MarkupMatches(
+            @<div class:regex="transform opacity-\d+" id="dropdown-menu" role:ignore="" tabindex:ignore="" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void Dropdown_Correctly_Toggles_On_When_Button_Is_Clicked_Initially()
+    {
+        DropdownItem item1 = CreateDropdownItem(1, "Test Name 1", "Test Ref 1");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item1);
+
+        var cut = Render(@<Dropdown DropdownTitle="Test Title" DropdownItems="DropdownItems" />);
+        var buttonElement = cut.Find("#dropdown-button");
+        var menuElement = cut.Find("#dropdown-menu");
+
+        buttonElement.Click();
+
+        menuElement.MarkupMatches(
+            @<div class:regex="transform opacity-[1-9]\d{1}" id="dropdown-menu" role:ignore="" tabindex:ignore="" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void Dropdown_Correctly_Toggles_Off_When_Button_Is_Clicked_Twice()
+    {
+        DropdownItem item1 = CreateDropdownItem(1, "Test Name 1", "Test Ref 1");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item1);
+
+        var cut = Render(@<Dropdown DropdownTitle="Test Title" DropdownItems="DropdownItems" />);
+        var buttonElement = cut.Find("#dropdown-button");
+        var menuElement = cut.Find("#dropdown-menu");
+
+        buttonElement.Click();
+        buttonElement.Click(); // note the second click
+
+        menuElement.MarkupMatches(
+            @<div class:regex="transform opacity-0" id="dropdown-menu" role:ignore="" tabindex:ignore="" diff:ignoreChildren></div>
+        );
+    }
+}
