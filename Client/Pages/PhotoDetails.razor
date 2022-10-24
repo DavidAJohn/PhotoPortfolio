@@ -2,6 +2,7 @@
 
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models
 
 @inject IPhotoService photoService
 
@@ -30,18 +31,13 @@
             </div>
             <div>
                 <div class="text-2xl font-bold mb-4">@photo.Title</div>
-                <div class="mb-4">
-                    <span class="block text-gray-500 text-base">Tags:
-                        @if (photo.Metadata?.Tags is not null)
-                        {
-                            @foreach (string tag in photo.Metadata.Tags)
-                            {
-                                @($"{tag} ")
-                            }
-                        }
-                    </span>
+                <div class="text-base mb-8 text-justify">@photo.Caption</div>
+
+                <Dropdown DropdownTitle="Available as:" DropdownOptions="dropdownOptions" />
+
+                <div class="mt-8 text-base text-slate-800 italic" id="product-description">
+                    Choose an option above to see further details, including prices.
                 </div>
-                <div class="text-base mb-4 text-justify">@photo.Caption</div>
             </div>
         </div>
     }
@@ -54,9 +50,16 @@
     private Photo photo = null!;
     private string errorMessage = "";
 
+    private List<DropdownItem> dropdownOptions = new();
+
     protected override async Task OnInitializedAsync()
     {
         await GetPhotoById();
+    }
+
+    protected override void OnInitialized()
+    {
+        GetProductsForPhoto();
     }
 
     private async Task GetPhotoById()
@@ -71,5 +74,20 @@
             Console.WriteLine(ex.Message);
             errorMessage = "Could not find this photo";
         }
+    }
+
+    private void GetProductsForPhoto()
+    {
+        dropdownOptions.Add(new DropdownItem 
+            {
+                OptionName = "Fine Art Print (16x24in)",
+                OptionRef = "GLOBAL-FAP-16X24"
+            });
+
+        dropdownOptions.Add(new DropdownItem
+            {
+                OptionName = "Fine Art Print (20x30in)",
+                OptionRef = "GLOBAL-FAP-20X30"
+            });
     }
 }
