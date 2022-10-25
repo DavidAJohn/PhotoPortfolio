@@ -132,4 +132,25 @@
             @<div class:regex="transform opacity-0" id="dropdown-menu" role:ignore="" tabindex:ignore="" diff:ignoreChildren></div>
         );
     }
+
+    [Fact]
+    public void Dropdown_EventCallback_Is_Invoked_Correctly()
+    {
+        DropdownItem item1 = CreateDropdownItem(1, "Test Name 1", "Test Ref 1");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item1);
+
+        var eventCalled = false;
+
+        var element = RenderComponent<Dropdown>(parameters => parameters
+            .Add(p => p.DropdownTitle, "Test Title")
+            .Add(p => p.DropdownItems, DropdownItems)
+            .Add(p => p.SelectedOption, () => { eventCalled = true; }));
+
+        element.Find(".dropdown-item").Click();
+
+        Assert.True(eventCalled);
+    }
+
 }
