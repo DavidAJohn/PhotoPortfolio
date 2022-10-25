@@ -16,11 +16,17 @@
 
         @if (DropdownItems != null)
         {
-            <div class="origin-top-left absolute left-0 w-72 rounded-sm shadow-lg bg-white focus:outline-none z-10 @DropdownTransformClass" role="menu" tabindex="-1" id="dropdown-menu">
+            <div class="origin-top-left absolute left-0 w-72 rounded-sm shadow-lg bg-white focus:outline-none @DropdownTransformClass" role="menu" tabindex="-1" id="dropdown-menu">
                 <div class="divide-y divide-slate-300" role="none">
                     @foreach (DropdownItem item in DropdownItems)
                     {
-                        <div class="dropdown-item text-gray-700 block py-2 px-2 text-base hover:cursor-pointer hover:bg-gray-100" id="menu-item-@(@item.Id)" role="menuitem" tabindex="-1">@item.OptionName</div>
+                        <div class="dropdown-item text-gray-700 block py-2 px-2 text-base hover:cursor-pointer hover:bg-gray-100" 
+                            id="menu-item-@(@item.Id)"
+                            @onclick="() => OnSelectedOption(item)"
+                            role="menuitem" 
+                            tabindex="-1">
+                            @item.OptionName
+                         </div>
                     }
                 </div>
             </div>
@@ -35,13 +41,21 @@
     [Parameter]
     public List<DropdownItem> DropdownItems { get; set; } = null!;
 
+    [Parameter]
+    public EventCallback<string> SelectedOption { get; set; }
+
     private bool collapseDropdown = true;
 
-    private string DropdownTransformClass => collapseDropdown ? "transform opacity-0 scale-100 transition ease-out duration-100" : "transform opacity-100 scale-95 transition ease-in duration-100";
+    private string DropdownTransformClass => collapseDropdown ? "transform opacity-0 scale-100 transition ease-out duration-100 z-0" : "transform opacity-100 scale-95 transition ease-in duration-100 z-10";
 
     private void ToggleDropdown()
     {
         collapseDropdown = !collapseDropdown;
     }
 
+    private async Task OnSelectedOption(DropdownItem item)
+    {
+        await SelectedOption.InvokeAsync(item.OptionRef);
+        collapseDropdown = true;
+    }
 }

@@ -33,10 +33,10 @@
                 <div class="text-2xl font-bold mb-4">@photo.Title</div>
                 <div class="text-base mb-8 text-justify">@photo.Caption</div>
 
-                <Dropdown DropdownTitle="Available as:" DropdownOptions="dropdownOptions" />
+                <Dropdown DropdownTitle="Available as:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
 
-                <div class="mt-8 text-base text-slate-800 italic" id="product-description">
-                    Choose an option above to see further details, including prices.
+                <div class="mt-8 text-base text-slate-800" id="product-description">
+                    @descriptionText
                 </div>
             </div>
         </div>
@@ -51,6 +51,8 @@
     private string errorMessage = "";
 
     private List<DropdownItem> dropdownOptions = new();
+
+    private string descriptionText = "Choose an option above to see further details, including prices.";
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,5 +91,10 @@
                 OptionName = "Fine Art Print (20x30in)",
                 OptionRef = "GLOBAL-FAP-20X30"
             });
+    }
+
+    private async Task SelectedOption(string sku)
+    {
+        descriptionText = sku;
     }
 }
