@@ -18,6 +18,12 @@ module.exports = {
                 '128': '32rem',
                 '144': '36rem',
             },
+            height: {
+                '112': '28rem',
+                '128': '32rem',
+                '144': '36rem',
+                '160': '40rem'
+            },
             borderRadius: {
                 '4xl': '2rem',
             }
