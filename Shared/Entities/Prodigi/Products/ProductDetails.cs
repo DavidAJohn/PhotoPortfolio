@@ -1,4 +1,4 @@
-﻿namespace PhotoPortfolio.Shared.Entities.Prodigi;
+﻿namespace PhotoPortfolio.Shared.Entities.Prodigi.Products;
 
 public class ProductDetails
 {
