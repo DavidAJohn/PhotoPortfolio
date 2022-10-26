@@ -5,6 +5,7 @@
 @using PhotoPortfolio.Shared.Models
 
 @inject IPhotoService photoService
+@inject IProductService productService
 
 <HeroImage ImageUri="https://photoportfolioimgs.blob.core.windows.net/repo/bank-phrom-Tzm3Oyu_6sk-unsplash.jpg"
            ImageAlign="bottom"
@@ -33,11 +34,21 @@
                 <div class="text-xl lg:text-2xl font-bold mb-4">@photo.Title</div>
                 <div class="text-sm lg:text-base mb-8 text-justify">@photo.Caption</div>
 
-                <Dropdown DropdownTitle="Available as:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
+                @if (dropdownOptions.Count > 0)
+                {
+                    <Dropdown DropdownTitle="Available as:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
 
-                <div class="mt-8 text-sm lg:text-base text-slate-800" id="product-description">
-                    @descriptionText
-                </div>
+                    <div class="mt-8 text-sm lg:text-base text-slate-800" id="product-description">
+                        @descriptionText
+                    </div>
+                }
+                else
+                {
+                    <div class="mt-8 text-sm lg:text-base text-red-500 italic">
+                        Sorry, this image is not currently available for purchase
+                    </div>
+                }
+
             </div>
         </div>
     }
@@ -57,11 +68,7 @@
     protected override async Task OnInitializedAsync()
     {
         await GetPhotoById();
-    }
-
-    protected override void OnInitialized()
-    {
-        GetProductsForPhoto();
+        await GetProductsForPhoto();
     }
 
     private async Task GetPhotoById()
@@ -78,23 +85,37 @@
         }
     }
 
-    private void GetProductsForPhoto()
+    private async Task GetProductsForPhoto()
     {
-        dropdownOptions.Add(new DropdownItem 
-            {
-                OptionName = "Fine Art Print (16x24in)",
-                OptionRef = "GLOBAL-FAP-16X24"
-            });
+        try
+        {
+            var products = await productService.GetProductsForPhotoAsync(Id);
 
-        dropdownOptions.Add(new DropdownItem
+            foreach (var product in products)
             {
-                OptionName = "Fine Art Print (20x30in)",
-                OptionRef = "GLOBAL-FAP-20X30"
-            });
+                dropdownOptions.Add(new DropdownItem
+                    {
+                        OptionName = product.CustomDescription,
+                        OptionRef = product.ProdigiSku
+                    });
+            }
+
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not find products for this photo";
+        }
     }
 
-    private async Task SelectedOption(string sku)
+    private void SelectedOption(string sku)
     {
-        descriptionText = sku;
+        var product = dropdownOptions.First(d => d.OptionRef == sku);
+
+        if (product is not null)
+        {
+            descriptionText = product.OptionName;
+        }
     }
 }
