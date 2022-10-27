@@ -19,10 +19,10 @@
         </div>
 
         <div class="modal-buttons mt-4 pr-[1rem] md:pr-0">
-            <button @onclick="Confirm" type="button" class="bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4">
+            <button @onclick="Confirm" type="button" id="lightbox-confirm" class="bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4">
                 @ConfirmButtonText
             </button>
-            <button @onclick="Cancel" type="button" class="bg-red-500/70 text-white text-sm py-1 px-2 rounded-sm">
+            <button @onclick="Cancel" type="button" id="lightbox-cancel" class="bg-red-500/70 text-white text-sm py-1 px-2 rounded-sm">
                 @CancelButtonText
             </button>
         </div>
@@ -48,7 +48,7 @@
     void Confirm()
     {
         ModalInstance.CloseAsync(ModalResult.Ok($"Confirm"));
-        navigationManager.NavigateTo($"/photo/{PhotoId}");
+        navigationManager.NavigateTo($"/photo/{PhotoId}#photo");
     }
 
     void Cancel()
