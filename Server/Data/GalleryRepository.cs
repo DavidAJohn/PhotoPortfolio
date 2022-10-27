@@ -53,7 +53,9 @@ public class GalleryRepository : BaseRepository<Gallery>, IGalleryRepository
     public async Task<List<Gallery>> GetPublicGalleries()
     {
         var collection = _context.Database.GetCollection<Gallery>(_collectionName);
-        var galleries = await collection.Find(g => g.Public == true).ToListAsync();
+        var galleries = await collection
+            .Find(g => g.Public == true && g.DisplayInGalleryList != false)
+            .ToListAsync();
 
         return galleries;
     }

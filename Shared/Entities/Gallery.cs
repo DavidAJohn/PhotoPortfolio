@@ -12,4 +12,5 @@ public class Gallery : BaseEntity
     public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
     public List<Photo> Photos { get; set; } = null!;
     public bool Public { get; set; } = false;
+    public bool DisplayInGalleryList { get; set; } = false;
 }
