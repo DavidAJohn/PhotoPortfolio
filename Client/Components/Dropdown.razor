@@ -46,7 +46,9 @@
 
     private bool collapseDropdown = true;
 
-    private string DropdownTransformClass => collapseDropdown ? "transform opacity-0 scale-100 transition ease-out duration-100 z-0" : "transform opacity-100 scale-95 transition ease-in duration-100 z-10";
+    private string DropdownTransformClass => collapseDropdown 
+        ? "transform opacity-0 scale-100 transition ease-out duration-100 z-0 hidden" 
+        : "transform opacity-100 scale-95 transition ease-in duration-100 z-10 block";
 
     private void ToggleDropdown()
     {
