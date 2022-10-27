@@ -38,6 +38,9 @@
                 {
                     <Dropdown DropdownTitle="Available as:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
 
+                    <div class="text-base lg:text-lg font-semibold mt-8" id="product-title">
+                        @optionSelectedText
+                    </div>
                     <div class="mt-8 text-sm lg:text-base text-slate-800" id="product-description">
                         @descriptionText
                     </div>
@@ -63,6 +66,9 @@
 
     private List<DropdownItem> dropdownOptions = new();
 
+    private List<Product> products = new();
+
+    private string optionSelectedText = "";
     private string descriptionText = "Choose an option above to see further details, including prices.";
 
     protected override async Task OnInitializedAsync()
@@ -89,7 +95,7 @@
     {
         try
         {
-            var products = await productService.GetProductsForPhotoAsync(Id);
+            products = await productService.GetProductsForPhotoAsync(Id);
 
             foreach (var product in products)
             {
@@ -111,11 +117,16 @@
 
     private void SelectedOption(string sku)
     {
-        var product = dropdownOptions.First(d => d.OptionRef == sku);
+        var product = products.FirstOrDefault(p => p.ProdigiSku == sku);
 
         if (product is not null)
         {
-            descriptionText = product.OptionName;
+            optionSelectedText = product.CustomDescription;
+            descriptionText = product.FurtherDetails;
+        }
+        else 
+        {
+            descriptionText = "Sorry, details for this product could not be found";
         }
     }
 }
