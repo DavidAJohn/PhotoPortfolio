@@ -41,7 +41,7 @@
                     @if (!optionSelected)
                     {
                         <div class="mt-4 text-sm lg:text-base text-slate-800 font-semibold italic" id="product-instructions">
-                            Choose an option above to see further details, including prices.
+                            @initialInstructionsText
                         </div>
                     }
                     else
@@ -70,18 +70,21 @@
                         </div>
 
                         <div class="mt-8 flex flex-row justify-start lg:flex-col w-160" id="product-images-container">
-                            <div class="product-asset">
-                                <img class="h-56" src="https://photoportfolioimgs.blob.core.windows.net/repo/63470ed50918b77fbb77295a-mockup-global-fap-16x24.png" />
-                            </div>
-                            <div class="product-asset">
-                                <img class="h-32" src="https://photoportfolioimgs.blob.core.windows.net/repo/global-fap-16x24-asset-01.jpg" />
-                            </div>
-                            <div class="product-asset">
-                                <img class="h-32" src="https://photoportfolioimgs.blob.core.windows.net/repo/global-fap-16x24-asset-02.jpg" />
-                            </div>
-                            <div class="product-asset">
-                                <img class="h-32" src="https://photoportfolioimgs.blob.core.windows.net/repo/global-fap-16x24-asset-03.jpg" />
-                            </div>
+                            @if (product.MockupImageUri != "")
+                            {
+                                <div class="product-asset">
+                                    <img class="h-56" src="@product.MockupImageUri" />
+                                </div>
+                            }
+                            @if (product.ProdigiImageAssetUris.Count > 0)
+                            {
+                                foreach (var imageAssetUri in product.ProdigiImageAssetUris)
+                                {
+                                    <div class="product-asset">
+                                        <img class="h-32" src="@imageAssetUri" />
+                                    </div>
+                                }
+                            }
                         </div>
                     }
                 }
@@ -91,7 +94,6 @@
                         Sorry, this image is not currently available for purchase
                     </div>
                 }
-
             </div>
         </div>
     }
@@ -107,6 +109,9 @@
     private List<DropdownItem> dropdownOptions = new();
 
     private List<Product> products = new();
+    private Product product = new();
+
+    private string initialInstructionsText = "Choose an option above to see further details, including prices.";
 
     private bool optionSelected = false;
     private string optionSelectedText = "";
@@ -158,17 +163,21 @@
 
     private void SelectedOption(string sku)
     {
-        var product = products.FirstOrDefault(p => p.ProdigiSku == sku);
+        if (products is not null)
+        {
+            product = products.FirstOrDefault(p => p.ProdigiSku == sku, null!);
 
-        if (product is not null)
-        {
-            optionSelected = true;
-            optionSelectedText = product.CustomDescription;
-            descriptionText = product.FurtherDetails;
+            if (product is not null)
+            {
+                optionSelected = true;
+                optionSelectedText = product.CustomDescription;
+                descriptionText = product.FurtherDetails;
+            }
+            else
+            {
+                initialInstructionsText = "Sorry, details for this product could not be found";
+            }
         }
-        else 
-        {
-            descriptionText = "Sorry, details for this product could not be found";
-        }
+        
     }
 }
