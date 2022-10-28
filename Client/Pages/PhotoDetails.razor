@@ -46,46 +46,55 @@
                     }
                     else
                     {
-                        <div class="text-base lg:text-lg font-semibold mt-4 italic" id="product-title">
-                            @optionSelectedText
-                        </div>
+                        if (product is not null)
+                        {
+                            <div class="text-base lg:text-lg font-semibold mt-4 italic" id="product-title">
+                                @product.CustomDescription
+                            </div>
 
-                        <div class="text-sm lg:text-base font-bold mt-8 text-slate-500" id="product-price">
-                            Price: £14.94 (inc VAT & Standard Delivery)
-                        </div>
+                            <div class="text-sm lg:text-base font-bold mt-8 text-slate-500" id="product-price">
+                                Price: £14.94 (inc VAT & Standard Delivery)
+                            </div>
 
-                        <div class="mt-4 mb-8" id="product-purchase-button">
-                            <button class="flex flex-row justify-start items-center bg-emerald-800 p-2 rounded-sm sm:text-center hover:opacity-90">
-                                <span class="text-gray-50 ml-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </span>
-                                <span class="text-gray-50 text-sm ml-3 mr-2">Add to Basket</span>
-                            </button>
-                        </div>
+                            <div class="mt-4 mb-8" id="product-purchase-button">
+                                <button class="flex flex-row justify-start items-center bg-emerald-800 p-2 rounded-sm sm:text-center hover:opacity-90">
+                                    <span class="text-gray-50 ml-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </span>
+                                    <span class="text-gray-50 text-sm ml-3 mr-2">Add to Basket</span>
+                                </button>
+                            </div>
 
-                        <div class="mt-8 text-sm lg:text-base text-slate-800" id="product-description">
-                            @descriptionText
-                        </div>
+                            <div class="mt-8 text-sm lg:text-base text-slate-800" id="product-description">
+                                @product.FurtherDetails
+                            </div>
 
-                        <div class="mt-8 flex flex-row justify-start lg:flex-col w-160" id="product-images-container">
-                            @if (product.MockupImageUri != "")
-                            {
-                                <div class="product-asset">
-                                    <img class="h-56" src="@product.MockupImageUri" />
-                                </div>
-                            }
-                            @if (product.ProdigiImageAssetUris.Count > 0)
-                            {
-                                foreach (var imageAssetUri in product.ProdigiImageAssetUris)
+                            <div class="mt-8 flex flex-row justify-start lg:flex-col w-160" id="product-images-container">
+                                @if (product.MockupImageUri != "")
                                 {
-                                    <div class="product-asset">
-                                        <img class="h-32" src="@imageAssetUri" />
+                                    <div class="product-mockup">
+                                        <img class="h-56" src="@product.MockupImageUri" />
                                     </div>
                                 }
-                            }
-                        </div>
+                                @if (product.ProdigiImageAssetUris.Count > 0)
+                                {
+                                    foreach (var imageAssetUri in product.ProdigiImageAssetUris)
+                                    {
+                                        <div class="product-asset">
+                                            <img class="h-32" src="@imageAssetUri" />
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
+                        else 
+                        {
+                            <div class="mt-4 text-sm lg:text-base text-slate-800 font-semibold italic">
+                                Unfortunately, we could not find further details for the selected product
+                            </div>
+                        }
                     }
                 }
                 else
@@ -114,8 +123,6 @@
     private string initialInstructionsText = "Choose an option above to see further details, including prices.";
 
     private bool optionSelected = false;
-    private string optionSelectedText = "";
-    private string descriptionText = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,7 +150,7 @@
         {
             products = await productService.GetProductsForPhotoAsync(Id);
 
-            foreach (var product in products)
+            foreach (Product product in products)
             {
                 dropdownOptions.Add(new DropdownItem
                     {
@@ -170,8 +177,6 @@
             if (product is not null)
             {
                 optionSelected = true;
-                optionSelectedText = product.CustomDescription;
-                descriptionText = product.FurtherDetails;
             }
             else
             {
