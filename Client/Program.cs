@@ -8,6 +8,7 @@ using PhotoPortfolio.Client.Contracts;
 using PhotoPortfolio.Client.Services;
 using Polly.Extensions.Http;
 using Polly;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -18,11 +19,14 @@ builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI", client => client.Base
     .AddPolicyHandler(GetRetryPolicy())
     .AddPolicyHandler(GetCircuitBreakerPolicy());
 
-builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI.Secure", client => client.BaseAddress = 
-    new Uri(builder.HostEnvironment.BaseAddress + "api/"))
+builder.Services.AddHttpClient("Prodigi.PrintAPIv4", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("Prodigi:Api_Uri"));
+    client.DefaultRequestHeaders.Add("Content-Type", "application/json");
+    client.DefaultRequestHeaders.Add("X-API-Key", builder.Configuration.GetValue<string>("Prodigi:X_Api_Key"));
+})
     .AddPolicyHandler(GetRetryPolicy())
-    .AddPolicyHandler(GetCircuitBreakerPolicy())
-    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+    .AddPolicyHandler(GetCircuitBreakerPolicy());
 
 // Supply HttpClient instances that include access tokens when making requests to the server project
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("PhotoPortfolio.ServerAPI.Secure"));
@@ -37,6 +41,7 @@ builder.Services.AddMsalAuthentication(options =>
 builder.Services.AddScoped<IGalleryService, GalleryService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IQuoteService, QuoteService>();
 
 builder.Services.AddBlazoredModal();
 

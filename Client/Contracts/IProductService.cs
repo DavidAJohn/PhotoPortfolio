@@ -1,9 +1,8 @@
 ﻿using PhotoPortfolio.Shared.Entities;
 
-namespace PhotoPortfolio.Client.Contracts
+namespace PhotoPortfolio.Client.Contracts;
+
+public interface IProductService
 {
-    public interface IProductService
-    {
-        Task<List<Product>> GetProductsForPhotoAsync(string photoId);
-    }
+    Task<List<Product>> GetProductsForPhotoAsync(string photoId);
 }
