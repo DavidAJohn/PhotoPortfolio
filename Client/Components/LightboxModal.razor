@@ -48,7 +48,7 @@
     void Confirm()
     {
         ModalInstance.CloseAsync(ModalResult.Ok($"Confirm"));
-        navigationManager.NavigateTo($"/photo/{PhotoId}#photo");
+        navigationManager.NavigateTo($"/photo/{PhotoId}", true); // forceLoad to remove modal page scroll
     }
 
     void Cancel()
