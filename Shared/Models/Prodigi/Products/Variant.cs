@@ -1,4 +1,6 @@
-﻿namespace PhotoPortfolio.Shared.Entities.Prodigi.Products;
+﻿using PhotoPortfolio.Shared.Models.Prodigi.Common;
+
+namespace PhotoPortfolio.Shared.Models.Prodigi.Products;
 
 public class Variant
 {

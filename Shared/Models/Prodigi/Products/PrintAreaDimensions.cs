@@ -1,4 +1,4 @@
-﻿namespace PhotoPortfolio.Shared.Entities.Prodigi.Products;
+﻿namespace PhotoPortfolio.Shared.Models.Prodigi.Products;
 
 public class PrintAreaDimensions
 {
