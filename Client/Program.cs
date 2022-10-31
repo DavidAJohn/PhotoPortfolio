@@ -1,14 +1,12 @@
 using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using PhotoPortfolio.Client;
 using PhotoPortfolio.Client.Contracts;
 using PhotoPortfolio.Client.Services;
-using Polly.Extensions.Http;
 using Polly;
-using Microsoft.Extensions.DependencyInjection;
+using Polly.Extensions.Http;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -19,12 +17,10 @@ builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI", client => client.Base
     .AddPolicyHandler(GetRetryPolicy())
     .AddPolicyHandler(GetCircuitBreakerPolicy());
 
-builder.Services.AddHttpClient("Prodigi.PrintAPIv4", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("Prodigi:Api_Uri"));
-    client.DefaultRequestHeaders.Add("Content-Type", "application/json");
-    client.DefaultRequestHeaders.Add("X-API-Key", builder.Configuration.GetValue<string>("Prodigi:X_Api_Key"));
-})
+// Specify an HttpClient to access the Prodigi Print API - 
+// this uses Ocelot in the Server project as a proxy, allowing the API Key to remain secure
+builder.Services.AddHttpClient("Prodigi.PrintAPI", client => client.BaseAddress = 
+    new Uri(builder.HostEnvironment.BaseAddress + "prodigi/"))
     .AddPolicyHandler(GetRetryPolicy())
     .AddPolicyHandler(GetCircuitBreakerPolicy());
 
