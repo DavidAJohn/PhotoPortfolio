@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
+using Ocelot.Cache.CacheManager;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +14,14 @@ builder.Services.Configure<JwtBearerOptions>(
     {
         options.TokenValidationParameters.NameClaimType = "name";
     });
+
+builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", true, true);
+
+builder.Services.AddOcelot(builder.Configuration)
+                .AddCacheManager(settings => settings.WithDictionaryHandle());
+
+builder.Services.ConfigureOcelotPlaceholders(builder.Configuration); // custom extension: ./Helpers/FileConfigurationExtensions
 
 builder.Services.AddSingleton<MongoContext>();
 
@@ -48,5 +59,10 @@ app.UseAuthorization();
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
+
+app.MapWhen(context => context.Request.Path.StartsWithSegments("/prodigi"), appBuilder =>
+{
+    appBuilder.UseOcelot();
+});
 
 app.Run();

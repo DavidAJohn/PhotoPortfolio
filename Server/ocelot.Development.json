@@ -1,0 +1,31 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/v4.0/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "api.sandbox.prodigi.com",
+          "Port": "443"
+        }
+      ],
+      "UpstreamPathTemplate": "/prodigi/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "FileCacheOptions": { "TtlSeconds": 300 },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 10
+      },
+      "UpstreamHeaderTransform": {
+        "Content-Type": "application/json",
+        "X-API-Key": "[key added from appsettings/user secrets]"
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "https://localhost:7200"
+  }
+}
