@@ -3,9 +3,11 @@
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
 @using PhotoPortfolio.Shared.Models
+@using PhotoPortfolio.Shared.Models.Prodigi.Quotes
 
 @inject IPhotoService photoService
 @inject IProductService productService
+@inject IQuoteService quoteService
 
 <HeroImage ImageUri="https://photoportfolioimgs.blob.core.windows.net/repo/bank-phrom-Tzm3Oyu_6sk-unsplash.jpg"
            ImageAlign="bottom"
@@ -52,25 +54,38 @@
                                 @product.CustomDescription
                             </div>
 
-                            <div class="text-sm lg:text-base font-bold mt-8 text-slate-500" id="product-price">
-                                Price: £14.94 (inc VAT & Standard Delivery)
-                            </div>
+                            <!-- Pricing -->
+                            @if (quoteReceived && quoteError == "")
+                            {
+                                <div class="text-sm lg:text-base font-bold mt-8 text-slate-500" id="product-price">
+                                    Price: @productPrice (inc Tax & Standard Delivery)
+                                </div>
 
-                            <div class="mt-4 mb-8" id="product-purchase-button">
-                                <button class="flex flex-row justify-start items-center bg-emerald-800 p-2 rounded-sm sm:text-center hover:opacity-90">
-                                    <span class="text-gray-50 ml-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </span>
-                                    <span class="text-gray-50 text-sm ml-3 mr-2">Add to Basket</span>
-                                </button>
-                            </div>
+                                <div class="mt-4 mb-8" id="product-purchase-button">
+                                    <button class="flex flex-row justify-start items-center bg-emerald-800 p-2 rounded-sm sm:text-center hover:opacity-90">
+                                        <span class="text-gray-50 ml-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        </span>
+                                        <span class="text-gray-50 text-sm ml-3 mr-2">Add to Basket</span>
+                                    </button>
+                                </div>
+                            }
 
+                            @if (quoteError != "")
+                            { 
+                                <div class="text-sm lg:text-base font-bold mt-8 text-red-500" id="product-price-error">
+                                    @quoteError
+                                </div>
+                            }
+
+                            <!-- Product description -->
                             <div class="mt-8 text-sm lg:text-base text-slate-800" id="product-description">
                                 @product.FurtherDetails
                             </div>
 
+                            <!-- Mock-up and additional image assets -->
                             <div class="mt-8 flex flex-row justify-start lg:flex-col w-160" id="product-images-container">
                                 @if (product.MockupImageUri != "")
                                 {
@@ -124,6 +139,10 @@
 
     private bool optionSelected = false;
 
+    private string productPrice = "";
+    private bool quoteReceived = false;
+    private string quoteError = "";
+
     protected override async Task OnInitializedAsync()
     {
         await GetPhotoById();
@@ -168,8 +187,10 @@
         }
     }
 
-    private void SelectedOption(string sku)
+    private async Task SelectedOption(string sku)
     {
+        productPrice = "";
+
         if (products is not null)
         {
             product = products.FirstOrDefault(p => p.ProdigiSku == sku, null!);
@@ -177,11 +198,62 @@
             if (product is not null)
             {
                 optionSelected = true;
+
+                // get a quote
+                await GetProductQuote(product);
             }
             else
             {
                 initialInstructionsText = "Sorry, details for this product could not be found";
             }
+        }
+    }
+
+    private async Task GetProductQuote(Product product)
+    {
+        List<CreateQuoteItemDto> items = new();
+        List<Dictionary<string, string>> assetList = new();
+        Dictionary<string, string> assets = new();
+
+        assets.Add("printArea", "default");
+        assetList.Add(assets);
+
+        items.Add(new CreateQuoteItemDto
+            {
+                Sku = product.ProdigiSku,
+                Copies = 1,
+                Assets = assetList
+            });
+
+        CreateQuoteDto quote = new CreateQuoteDto()
+            {
+                ShippingMethod = "Standard",
+                DestinationCountryCode = "GB",
+                CurrencyCode = "GBP",
+                Items = items
+            };
+
+        var quoteResponse = await quoteService.GetQuote(quote);
+
+        if (quoteResponse is not null)
+        {
+            var quotes = quoteResponse.Quotes;
+            var quoteReturned = quotes.FirstOrDefault();
+
+            if (quoteReturned is not null)
+            {
+                quoteReceived = true;
+                quoteError = "";
+                productPrice = "£" + quoteReturned.CostSummary.TotalCost.Amount;
+            }
+            else 
+            {
+                quoteError = "Unfortunately, we could not retrieve a price for this item at the moment";
+            }
+        }
+        else 
+        {
+            quoteError = "Unfortunately, we could not retrieve a price for this item at the moment";
         }
         
     }
