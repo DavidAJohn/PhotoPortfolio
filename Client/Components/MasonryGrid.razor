@@ -2,6 +2,7 @@
 @using PhotoPortfolio.Shared.Entities
 
 @inject IGalleryService galleryService
+@inject IProductService productService
 
 <div class="mb-32 mx-auto @darkModeStyles">
     @if (!string.IsNullOrEmpty(Title))
@@ -76,6 +77,13 @@
         var parameters = new ModalParameters();
         parameters.Add(nameof(LightboxModal.PhotoId), photoId);
 
+        // check if any products are associated with the photo - hide confirm button if not
+        var hasProducts = await PhotoHasProducts(photoId);
+
+        if (!hasProducts){
+            parameters.Add(nameof(LightboxModal.ShowConfirmButton), false);
+        }
+
         var options = new ModalOptions()
             {
                 Animation = ModalAnimation.FadeInOut(0.5),
@@ -89,5 +97,14 @@
         {
             Console.WriteLine(result.Data);
         }
+    }
+
+    private async Task<bool> PhotoHasProducts(string photoId)
+    {
+        var products = await productService.GetProductsForPhotoAsync(photoId);
+
+        if (products is not null) return products.Count > 0;
+
+        return false;
     }
 }
