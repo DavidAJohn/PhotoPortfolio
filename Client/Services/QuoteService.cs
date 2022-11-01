@@ -1,5 +1,6 @@
 ﻿using PhotoPortfolio.Client.Contracts;
 using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
+using System.Net;
 using System.Text.Json;
 
 namespace PhotoPortfolio.Client.Services;
@@ -17,30 +18,38 @@ public class QuoteService : IQuoteService
     {
         try
         {
-            var client = _httpClient.CreateClient("Prodigi.PrintAPIv4");
+            var client = _httpClient.CreateClient("Prodigi.PrintAPI");
 
-            var quoteJson = new StringContent(JsonSerializer.Serialize(quote));
-            using HttpResponseMessage response = await client.PostAsync("quotes", quoteJson);
-            response.EnsureSuccessStatusCode();
+            HttpContent quoteJson = new StringContent(JsonSerializer.Serialize(quote));
+            HttpResponseMessage response = await client.PostAsync("quotes", quoteJson);
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            var quoteResponse = JsonSerializer.Deserialize<QuoteResponse>(
-                responseContent,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-            );
-
-            if (quoteResponse != null)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                if (quoteResponse.Outcome.ToLower() != "created")
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                var quoteResponse = JsonSerializer.Deserialize<QuoteResponse>(
+                    responseContent,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                if (quoteResponse != null)
                 {
                     Console.WriteLine("API response outcome was: " + quoteResponse.Outcome);
-                    return null!;
-                }
 
-                return quoteResponse;
+                    if (quoteResponse.Outcome.ToLower() != "created")
+                    {
+                        return null!;
+                    }
+
+                    return quoteResponse.Outcome.ToLowerInvariant() switch
+                    {
+                        "created" => quoteResponse,
+                        "createdwithissues" => quoteResponse,
+                        _ => null!,
+                    };
+                }
             }
-            
+
             return null!;
         }
         catch (HttpRequestException ex)
