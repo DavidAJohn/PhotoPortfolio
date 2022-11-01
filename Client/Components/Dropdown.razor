@@ -57,7 +57,7 @@
 
     private async Task OnSelectedOption(DropdownItem item)
     {
-        await SelectedOption.InvokeAsync(item.OptionRef);
         collapseDropdown = true;
+        await SelectedOption.InvokeAsync(item.OptionRef);
     }
 }
