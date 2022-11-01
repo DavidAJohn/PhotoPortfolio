@@ -19,9 +19,12 @@
         </div>
 
         <div class="modal-buttons mt-4 pr-[1rem] md:pr-0">
-            <button @onclick="Confirm" type="button" id="lightbox-confirm" class="bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4">
-                @ConfirmButtonText
-            </button>
+            @if (ShowConfirmButton)
+            {
+                <button @onclick="Confirm" type="button" id="lightbox-confirm" class="bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4">
+                    @ConfirmButtonText
+                </button>
+            }
             <button @onclick="Cancel" type="button" id="lightbox-cancel" class="bg-red-500/70 text-white text-sm py-1 px-2 rounded-sm">
                 @CancelButtonText
             </button>
@@ -35,6 +38,9 @@
 
     [Parameter]
     public string PhotoId { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool ShowConfirmButton { get; set; } = true;
 
     [Parameter]
     public string ConfirmButtonText { get; set; } = "Buy Prints, etc.";
