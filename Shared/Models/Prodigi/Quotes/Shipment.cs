@@ -6,4 +6,5 @@ public class Shipment
     public FulfillmentLocation FulfillmentLocation { get; set; } = null!;
     public Cost Cost { get; set; } = null!;
     public List<string> Items { get; set; } = null!;
+    public Cost Tax { get; set; } = null!;
 }
