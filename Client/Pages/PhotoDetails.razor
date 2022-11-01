@@ -55,6 +55,16 @@
                             </div>
 
                             <!-- Pricing -->
+                            @if (awaitingQuote)
+                            {
+                                <div class="mt-8" id="product-price-skeleton">
+                                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="325px" Height="20px" />
+                                </div>
+                                <div class="mt-4 mb-8" id="product-purchase-button-skeleton">
+                                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="150px" Height="33px" />
+                                </div>
+                            }
+
                             @if (quoteReceived && quoteError == "")
                             {
                                 <div class="text-sm lg:text-base font-bold mt-8 text-slate-500" id="product-price">
@@ -80,7 +90,7 @@
                                 </div>
                             }
 
-                            <!-- Product description -->
+                            <!-- Detailed product description -->
                             <div class="mt-8 text-sm lg:text-base text-slate-800" id="product-description">
                                 @product.FurtherDetails
                             </div>
@@ -142,6 +152,7 @@
     private string productPrice = "";
     private bool quoteReceived = false;
     private string quoteError = "";
+    private bool awaitingQuote = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -198,12 +209,16 @@
             if (product is not null)
             {
                 optionSelected = true;
+                awaitingQuote = true;
 
                 // get a quote
                 await GetProductQuote(product);
+
+                awaitingQuote = false;
             }
             else
             {
+                awaitingQuote = false;
                 initialInstructionsText = "Sorry, details for this product could not be found";
             }
         }
