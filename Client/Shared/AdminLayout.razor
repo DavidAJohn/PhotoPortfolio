@@ -5,21 +5,27 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="0">
+    <MudAppBar Elevation="1" Color="Color.Dark">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <div class="px-0">
+            <img src="/images/photo_portfolio_logo_white_cropped.png" class="h-8 lg:h-10" />
+        </div>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/DavidAJohn/PhotoPortfolio" Target="_blank" />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Color="Color.Default">
         <MudDrawerHeader>
             <MudText Typo="Typo.h6">Photo Portfolio Admin</MudText>
         </MudDrawerHeader>
         <AdminNavMenu />
     </MudDrawer>
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="pt-8">
-            @Body
-        </MudContainer>
+    <MudMainContent class="bg-slate-50">
+        <main role="main" class="w-full">
+            <div class="py-0 px-4 min-h-screen">
+                @Body
+            </div>
+        </main>
     </MudMainContent>
 </MudLayout>
 
