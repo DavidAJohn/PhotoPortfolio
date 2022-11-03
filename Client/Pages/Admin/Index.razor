@@ -1,0 +1,28 @@
+﻿@page "/admin"
+@layout AdminLayout
+
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+
+<PageTitle>Photo Portfolio : Admin Dashboard</PageTitle>
+
+<div class="m-4 md:m-8">
+    <div class="text-3xl">Admin Dashboard</div>
+
+    <div class="mt-10 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+        <div class="bg-white p-6 rounded-md shadow-lg">
+            <h2 class="text-2xl font-bold mb-2 text-gray-800">Card with no image</h2>
+            <p class="text-gray-700">Other content goes here</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg">
+            <img src="https://photoportfolioimgs.blob.core.windows.net/repo/bank-phrom-Tzm3Oyu_6sk-unsplash.jpg" alt="" class="rounded-t-lg">
+            <div class="p-6">
+                <h2 class="font-bold mb-2 text-2xl ">
+                    Card with an image
+                </h2>
+                <p class="mb-2">Other content goes here</p>
+            </div>
+        </div>
+    </div>
+</div>
