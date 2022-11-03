@@ -1,0 +1,82 @@
+﻿@page "/admin/galleries"
+@layout AdminLayout
+
+@using Microsoft.AspNetCore.Authorization
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+
+@inject IGalleryService galleryService
+
+@attribute [Authorize]
+
+<PageTitle>Photo Portfolio : Admin : Galleries</PageTitle>
+
+@if (errorMessage != "")
+{
+    <div class="mx-2 animate-pulse">
+        <div class="alert-box" role="alert">
+            <span class="block sm:inline">@errorMessage</span>
+        </div>
+    </div>
+}
+else if (galleries == null)
+{
+    <text>Loading galleries...</text>
+}
+else
+{
+    <div class="m-4 md:m-8">
+        <div class="text-3xl">Galleries</div>
+        <div class="mt-8">
+            <LinkButton LinkText="Add New Gallery" Uri="/admin/gallery" />
+        </div>
+        <div class="mt-10 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+        @foreach (Gallery gallery in galleries)
+        {
+            <div class="bg-white rounded-lg shadow-lg">
+                <img src="@gallery.HeaderImage" alt="" class="rounded-t-lg">
+                <div class="p-6">
+                    <h2 class="font-bold mb-4 text-2xl">
+                        @gallery.Name
+                    </h2>
+                    <p class="my-2 truncate">@gallery.Description</p>
+                </div>
+                <div class="px-4 pb-6">
+                    @if (gallery.Public)
+                    {
+                        <MudChip Icon="@Icons.Filled.Person" Color="Color.Success">Public</MudChip>
+                    }
+                    @if (!gallery.Public)
+                    {
+                        <MudChip Icon="@Icons.Filled.Cancel" Color="Color.Error">Private</MudChip>
+                    }
+                </div>
+            </div>
+        }
+        </div>
+    </div>
+}
+
+@code {
+    private List<Gallery> galleries = null!;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGalleryList();
+    }
+
+    private async Task GetGalleryList()
+    {
+        try
+        {
+            galleries = await galleryService.GetGalleriesAsync();
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not retrieve list of galleries";
+        }
+    }
+}
