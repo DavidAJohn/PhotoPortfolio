@@ -11,18 +11,41 @@
     <div class="text-3xl">Admin Dashboard</div>
 
     <div class="mt-10 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-        <div class="bg-white p-6 rounded-md shadow-lg">
-            <h2 class="text-2xl font-bold mb-2 text-gray-800">Card with no image</h2>
-            <p class="text-gray-700">Other content goes here</p>
-        </div>
         <div class="bg-white rounded-lg shadow-lg">
             <img src="https://photoportfolioimgs.blob.core.windows.net/repo/bank-phrom-Tzm3Oyu_6sk-unsplash.jpg" alt="" class="rounded-t-lg">
             <div class="p-6">
                 <h2 class="font-bold mb-2 text-2xl ">
-                    Card with an image
+                    Site Statistics
                 </h2>
-                <p class="mb-2">Other content goes here</p>
+                <p class="mb-2">The site currently contains:</p>
+                <div class="-mb-2">
+                    <MudIconButton Color="Color.Warning" Icon="@Icons.Outlined.PhotoLibrary" Size="Size.Medium" /> 4 Galleries
+                </div>
+                <div class="mb-2">
+                    <MudIconButton Color="Color.Success" Icon="@Icons.Outlined.Photo" Size="Size.Medium" /> 38 Photos
+                </div>
             </div>
+        </div>
+        <div class="bg-white p-6 rounded-md shadow-lg">
+            <h2 class="text-2xl font-bold mb-2 text-gray-800">Views per Gallery</h2>
+            <MudChart ChartType="ChartType.Line" ChartSeries="@Series" @bind-SelectedIndex="ChartIndex" XAxisLabels="@XAxisLabels" Width="100%" Height="350px"></MudChart>
+        </div>
+        <div class="bg-white p-6 rounded-md shadow-lg">
+            <h2 class="text-2xl font-bold mb-2 text-gray-800">Card with no image</h2>
+            <p class="text-gray-700">Other content goes here</p>
         </div>
     </div>
 </div>
+
+ @code {
+    private int ChartIndex = -1; //default value cannot be 0 -> first selectedindex is 0.
+
+    public List<ChartSeries> Series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Landscapes", Data = new double[] { 90, 79, 72, 69, 62, 62, 55, 65, 70 } },
+        new ChartSeries() { Name = "Wildlife", Data = new double[] { 10, 41, 35, 51, 49, 62, 69, 91, 148 } },
+        new ChartSeries() { Name = "Plants", Data = new double[] { 5, 36, 78, 55, 36, 65, 61, 32, 102 } },
+    };
+
+    public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+}
