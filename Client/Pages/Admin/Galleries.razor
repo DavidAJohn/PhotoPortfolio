@@ -43,21 +43,38 @@ else
                     </h2>
                     <p class="my-2 truncate">@gallery.Description</p>
                 </div>
-                <div class="px-4 pb-6">
+                <div class="px-4 pb-2">
                     @if (gallery.Public)
                     {
-                        <MudTooltip Delay="500" Duration="1000" Text="Note: galleries displayed in masonry grids, etc. must be public" Arrow="true" Placement="Placement.Bottom">
+                        <MudTooltip Delay="500" Duration="1000" Text="NOTE: galleries displayed in masonry grids, etc. must be public" Arrow="true" Placement="Placement.Bottom">
                             <MudChip Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Error" Disabled="@gallery.Public">Private</MudChip>
-                            <MudSwitch @bind-Checked="gallery.Public" Color="Color.Success" UnCheckedColor="Color.Error" @onclick="@(() => UpdatePublicStatus(gallery))" />
+                                <MudSwitch @bind-Checked="gallery.Public" 
+                                    Color="Color.Success" 
+                                    UnCheckedColor="Color.Error" 
+                                    @onclick="@(() => UpdatePublicStatus(gallery))" />
                             <MudChip Size="Size.Small" Icon="@Icons.Filled.Person" Color="Color.Success" Class="-ml-6">Public</MudChip>
                         </MudTooltip>
                     }
                     @if (!gallery.Public)
                     {
                         <MudChip Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Error">Private</MudChip>
-                        <MudSwitch @bind-Checked="gallery.Public" Color="Color.Success" UnCheckedColor="Color.Error" @onclick="@(() => UpdatePublicStatus(gallery))" />
+                            <MudSwitch @bind-Checked="gallery.Public" 
+                                Color="Color.Success" 
+                                UnCheckedColor="Color.Error" 
+                                @onclick="@(() => UpdatePublicStatus(gallery))" />
                         <MudChip Size="Size.Small" Icon="@Icons.Filled.Person" Color="Color.Success" Class="-ml-6" Disabled="!gallery.Public">Public</MudChip>
                     }
+                </div>
+                <div class="px-6 pb-6">
+                    <MudTooltip Delay="500" Duration="1000" Text="NOTE: This only applies to 'public' gallery lists" Arrow="true" Placement="Placement.Bottom">
+                        <MudSwitch @bind-Checked="gallery.DisplayInGalleryList" 
+                            ThumbIcon="@(gallery.DisplayInGalleryList ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)" 
+                            ThumbIconColor="@(gallery.DisplayInGalleryList ? Color.Success : Color.Error)"
+                            @onclick="@(() => UpdateDisplayStatus(gallery))"
+                        >
+                            <span class="text-sm font-sans font-semibold">Display in all public gallery lists?</span>
+                        </MudSwitch>
+                    </MudTooltip>
                 </div>
             </div>
         }
@@ -104,6 +121,25 @@ else
         else 
         {
             Snackbar.Add($"The status of the '{gallery.Name}' gallery could not be updated", Severity.Error);
+        }
+    }
+
+    private async Task UpdateDisplayStatus(Gallery gallery)
+    {
+        gallery.DisplayInGalleryList = !gallery.DisplayInGalleryList;
+
+        var response = await adminService.UpdateGalleryAsync(gallery);
+
+        // display a Snackbar to inform the user
+        if (response)
+        {
+            var status = gallery.DisplayInGalleryList ? "" : " NOT";
+
+            Snackbar.Add($"The '{gallery.Name}' gallery will now{status} be shown in public gallery lists", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add($"The display status of the '{gallery.Name}' gallery could not be updated", Severity.Error);
         }
     }
 }
