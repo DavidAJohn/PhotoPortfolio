@@ -45,11 +45,17 @@ else
                 <div class="px-4 pb-6">
                     @if (gallery.Public)
                     {
-                        <MudChip Icon="@Icons.Filled.Person" Color="Color.Success">Public</MudChip>
+                        <MudTooltip Delay="500" Duration="1000" Text="Note: galleries displayed in masonry grids, etc. must be public" Arrow="true" Placement="Placement.Bottom">
+                            <MudChip Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Error" Disabled="@gallery.Public">Private</MudChip>
+                            <MudSwitch @bind-Checked="gallery.Public" Color="Color.Success" UnCheckedColor="Color.Error" @onclick="@(() => UpdatePublicStatus(gallery))" />
+                            <MudChip Size="Size.Small" Icon="@Icons.Filled.Person" Color="Color.Success" Class="-ml-6">Public</MudChip>
+                        </MudTooltip>
                     }
                     @if (!gallery.Public)
                     {
-                        <MudChip Icon="@Icons.Filled.Cancel" Color="Color.Error">Private</MudChip>
+                        <MudChip Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Error">Private</MudChip>
+                        <MudSwitch @bind-Checked="gallery.Public" Color="Color.Success" UnCheckedColor="Color.Error" @onclick="@(() => UpdatePublicStatus(gallery))" />
+                        <MudChip Size="Size.Small" Icon="@Icons.Filled.Person" Color="Color.Success" Class="-ml-6" Disabled="!gallery.Public">Public</MudChip>
                     }
                 </div>
             </div>
@@ -79,5 +85,14 @@ else
             Console.WriteLine(ex.Message);
             errorMessage = "Could not retrieve list of galleries";
         }
+    }
+
+    private async Task UpdatePublicStatus(Gallery gallery)
+    {
+        gallery.Public = !gallery.Public;
+
+        var response = await adminService.UpdateGalleryAsync(gallery);
+
+        Console.WriteLine("Update response: " + response.ToString());
     }
 }
