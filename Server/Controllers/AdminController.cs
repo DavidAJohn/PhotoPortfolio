@@ -4,7 +4,7 @@ using PhotoPortfolio.Shared.Entities;
 
 namespace PhotoPortfolio.Server.Controllers;
 
-//[Authorize]
+[Authorize]
 public class AdminController : BaseApiController
 {
     private readonly IGalleryRepository _repository;

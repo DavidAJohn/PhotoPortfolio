@@ -6,6 +6,7 @@
 @using PhotoPortfolio.Shared.Entities
 
 @inject IGalleryService galleryService
+@inject IAdminService adminService
 
 @attribute [Authorize]
 
@@ -70,7 +71,7 @@ else
     {
         try
         {
-            galleries = await galleryService.GetGalleriesAsync();
+            galleries = await adminService.GetAllGalleriesAsync();
             errorMessage = "";
         }
         catch (Exception ex)

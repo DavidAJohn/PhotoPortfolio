@@ -1,5 +1,6 @@
 using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using PhotoPortfolio.Client;
@@ -17,15 +18,20 @@ builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI", client => client.Base
     .AddPolicyHandler(GetRetryPolicy())
     .AddPolicyHandler(GetCircuitBreakerPolicy());
 
-// Specify an HttpClient to access the Prodigi Print API - 
-// this uses Ocelot in the Server project as a proxy, allowing the API Key to remain secure
+// Specify an HttpClient to access the Prodigi Print API.
+// This uses Ocelot in the Server project as a proxy, allowing the API Key to remain secure
 builder.Services.AddHttpClient("Prodigi.PrintAPI", client => client.BaseAddress = 
     new Uri(builder.HostEnvironment.BaseAddress + "prodigi/"))
     .AddPolicyHandler(GetRetryPolicy())
     .AddPolicyHandler(GetCircuitBreakerPolicy());
 
-// Supply HttpClient instances that include access tokens when making requests to the server project
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("PhotoPortfolio.ServerAPI.Secure"));
+// Supply HttpClient instances that include access tokens when making requests to the Server project's admin controller
+builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI.Secure", client =>
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress + "api/admin/"))
+    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
+    .CreateClient("PhotoPortfolio.ServerAPI.Secure"));
 
 builder.Services.AddMsalAuthentication(options =>
 {
@@ -38,6 +44,7 @@ builder.Services.AddScoped<IGalleryService, GalleryService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IQuoteService, QuoteService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddBlazoredModal();
 
