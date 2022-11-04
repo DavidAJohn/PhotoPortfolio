@@ -7,6 +7,7 @@
 
 @inject IGalleryService galleryService
 @inject IAdminService adminService
+@inject ISnackbar Snackbar
 
 @attribute [Authorize]
 
@@ -93,6 +94,16 @@ else
 
         var response = await adminService.UpdateGalleryAsync(gallery);
 
-        Console.WriteLine("Update response: " + response.ToString());
+        // display a Snackbar to inform the user
+        if (response)
+        {
+            var status = gallery.Public ? "Public" : "Private";
+
+            Snackbar.Add($"The status of the '{gallery.Name}' gallery has been set to: {status}", Severity.Success);
+        }
+        else 
+        {
+            Snackbar.Add($"The status of the '{gallery.Name}' gallery could not be updated", Severity.Error);
+        }
     }
 }
