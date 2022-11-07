@@ -1,0 +1,117 @@
+﻿@page "/admin/galleries/edit/{Id}"
+@layout AdminLayout
+
+@using Microsoft.AspNetCore.Authorization
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+
+@inject IGalleryService galleryService
+@inject IAdminService adminService
+@inject ISnackbar Snackbar
+
+@attribute [Authorize]
+
+<PageTitle>Photo Portfolio : Admin : Edit Gallery</PageTitle>
+
+@if (errorMessage != "")
+{
+    <div class="mx-2 animate-pulse">
+        <div class="alert-box" role="alert">
+            <span class="block sm:inline">@errorMessage</span>
+        </div>
+    </div>
+}
+else if (gallery == null)
+{
+    <text>Loading gallery...</text>
+}
+else
+{
+    <div class="m-4 md:m-8 ">
+        <div class="text-3xl">Edit Gallery</div>
+
+        <div class="">
+            <div class="w-1/4 mt-10 bg-white rounded-lg shadow-lg">
+                <img src="@gallery.HeaderImage" alt="" class="rounded-t-lg">
+                <div class="p-6">
+                    <h2 class="font-bold mb-4 text-2xl">
+                        @gallery.Name
+                    </h2>
+                    <p class="my-2 truncate">@gallery.Description</p>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator/>
+                <MudGrid>
+                    <MudItem xs="12" sm="7">
+                        <MudCard>
+                            <MudCardContent>
+                                <MudTextField Label="Name" @bind-Value="model.Name" For="@(() => model.Name)"/>
+                                <MudTextField Label="Description" Class="mt-3" @bind-Value="model.Description" For="@(() => model.Description)"/>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mr-auto">Update</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+                </EditForm>
+            </div>
+            
+        </div>
+        
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private Gallery gallery = null!;
+    Gallery model = new Gallery();
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGalleryDetails();
+    }
+
+    private async Task GetGalleryDetails()
+    {
+        try
+        {
+            gallery = await galleryService.GetGalleryByIdAsync(Id);
+
+            if (gallery is null)
+            {
+                errorMessage = "Could not retrieve gallery details";
+            }
+            else
+            {
+                model = gallery;
+                errorMessage = "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not retrieve gallery details";
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        var galleryUpdated = await adminService.UpdateGalleryAsync(gallery);
+
+        if (galleryUpdated)
+        {
+            Snackbar.Add($"The gallery has now been updated", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add($"Sorry, there was a problem updating the gallery", Severity.Error);
+        }
+    }
+}
