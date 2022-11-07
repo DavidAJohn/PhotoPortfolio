@@ -8,6 +8,7 @@
 @inject IGalleryService galleryService
 @inject IAdminService adminService
 @inject ISnackbar Snackbar
+@inject NavigationManager navigationManager
 
 @attribute [Authorize]
 
@@ -36,7 +37,12 @@ else
         @foreach (Gallery gallery in galleries)
         {
             <div class="bg-white rounded-lg shadow-lg">
-                <img src="@gallery.HeaderImage" alt="" class="rounded-t-lg">
+                <div class="group relative overflow-hidden hover:cursor-pointer rounded-t-lg" @onclick="@(() => Edit(gallery.Id))">
+                <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src=@gallery.HeaderImage />
+                    <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                        Edit
+                    </div>
+                </div>
                 <div class="p-6">
                     <h2 class="font-bold mb-4 text-2xl">
                         @gallery.Name
@@ -141,5 +147,10 @@ else
         {
             Snackbar.Add($"The display status of the '{gallery.Name}' gallery could not be updated", Severity.Error);
         }
+    }
+
+    private void Edit(string id)
+    {
+        navigationManager.NavigateTo($"/admin/galleries/edit/{id}");
     }
 }
