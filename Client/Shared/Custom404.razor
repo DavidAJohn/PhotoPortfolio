@@ -1,0 +1,28 @@
+﻿@page "/404"
+
+<div class="min-h-screen" id="notfound">
+
+    <div class="absolute text-[12rem] lg:text-[24rem] text-gray-100 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+        404
+    </div>
+
+    <div class="absolute text-gray-800 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+        <div class="flex flex-col items-center">
+            <div class="text-2xl lg:text-4xl uppercase">Page Not Found</div>
+            <div class="mt-8 text-lg lg:text-2xl text-center">
+                Sorry, the page you requested is not available
+            </div>
+            <div class="mt-8">
+                <MudButton Href="/"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Filled.Home"
+                           IconColor="Color.Primary" 
+                           Size="Size.Large"
+                >
+                    Return to Home Page
+                </MudButton>
+            </div>
+        </div>
+    </div>
+
+</div>
