@@ -1,0 +1,125 @@
+﻿@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models
+
+@inject IGalleryService galleryService
+@inject IProductService productService
+@inject IAdminService adminService
+@inject ISnackbar Snackbar
+
+<div class="mb-32 mx-auto">
+    <div class="columns-1 lg:columns-3 space-y-2 lg:space-y-4 p-4 md:p-0 md:w-2/3 mx-auto">
+        @if (photos is not null)
+        {
+            @foreach (Photo photo in photos)
+            {
+                <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto(photo.Id))">
+                    <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src=@photo.Uri />
+                    <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                        View
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public IModalService Modal { get; set; } = null!;
+
+    [Parameter]
+    public string GalleryId { get; set; } = "";
+
+    Gallery gallery = new();
+
+    [Parameter]
+    public EventCallback<Gallery> HeaderImageChange { get; set; }
+
+    private List<Photo> photos = null!;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGalleryPhotos();
+    }
+
+    private async Task GetGalleryPhotos()
+    {
+        try
+        {
+            gallery = await galleryService.GetGalleryByIdAsync(GalleryId);
+
+            if (gallery is not null)
+            {
+                photos = gallery.Photos;
+                errorMessage = "";
+            }
+            else
+            {
+                errorMessage = "No images found for this gallery";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "No images found for this gallery";
+        }
+    }
+
+    private async Task ShowPhoto(string photoId)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(LightboxModal.PhotoId), photoId);
+
+        LightboxConfirmOptions confirmOptions = new LightboxConfirmOptions()
+        {
+            ShowButton = true,
+            ButtonText = "Use as cover image",
+            ButtonAction = LightboxConfirmAction.CloseOnly
+        };
+
+        parameters.Add(nameof(LightboxModal.LightboxConfirmOptions), confirmOptions);
+
+        var options = new ModalOptions()
+            {
+                Animation = ModalAnimation.FadeInOut(0.5),
+                Class = "custom-modal-container"
+            };
+
+        var lightboxModal = Modal.Show<LightboxModal>("", parameters, options);
+        var result = await lightboxModal.Result;
+
+        if (!result.Cancelled)
+        {
+            var photo = (Photo)result.Data;
+
+            await UpdateHeaderImage(photo);
+        }
+    }
+
+    private async Task UpdateHeaderImage(Photo photo)
+    {
+        if (photo.Uri != null)
+        {
+            gallery.HeaderImage = photo.Uri;
+
+            var response = await adminService.UpdateGalleryAsync(gallery);
+
+            if (response)
+            {
+                await HeaderImageChange.InvokeAsync(gallery);
+
+                Snackbar.Add($"The header image has been changed", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"The header image could NOT be updated", Severity.Error);
+            }
+        }
+        else
+        {
+            Snackbar.Add($"The header image could NOT be updated", Severity.Error);
+        }
+    }
+}
