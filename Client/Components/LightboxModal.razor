@@ -50,28 +50,25 @@
     public string CancelButtonText { get; set; } = "Close";
 
     [Parameter]
-    public LightboxConfirmOptions? lightboxConfirmOptions { get; set; }
+    public LightboxConfirmOptions? LightboxConfirmOptions { get; set; }
 
     private Photo photo = null!;
     private string errorMessage = "";
 
     void Confirm()
     {
-        ModalInstance.CloseAsync(ModalResult.Ok<string>(PhotoId)); // always return an Ok result with the PhotoId
+        ModalInstance.CloseAsync(ModalResult.Ok<Photo>(photo)); // always return an Ok result with the photo object
 
-        if (lightboxConfirmOptions is not null)
+        if (LightboxConfirmOptions is not null)
         {
-            ShowConfirmButton = lightboxConfirmOptions.ShowButton;
-            ConfirmButtonText = lightboxConfirmOptions.ButtonText;
-
-            switch (lightboxConfirmOptions.ButtonAction)
+            switch (LightboxConfirmOptions.ButtonAction)
             {
                 case LightboxConfirmAction.Navigate:
-                    navigationManager.NavigateTo(lightboxConfirmOptions.NavigateUri + PhotoId);
+                    navigationManager.NavigateTo(LightboxConfirmOptions.NavigateUri + PhotoId);
                     break;
                 case LightboxConfirmAction.NavigateForceLoad:
                     // forceLoad to remove modal page scroll
-                    navigationManager.NavigateTo(lightboxConfirmOptions.NavigateUri + PhotoId, true);
+                    navigationManager.NavigateTo(LightboxConfirmOptions.NavigateUri + PhotoId, true);
                     break;
                 default:
                     break;
@@ -92,6 +89,12 @@
     protected override async Task OnInitializedAsync()
     {
         await GetPhotoById();
+
+        if (LightboxConfirmOptions is not null)
+        {
+            ShowConfirmButton = LightboxConfirmOptions.ShowButton;
+            ConfirmButtonText = LightboxConfirmOptions.ButtonText;
+        }
     }
 
     private async Task GetPhotoById()
