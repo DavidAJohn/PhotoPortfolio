@@ -1,5 +1,6 @@
 ﻿@using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models
 
 @inject IPhotoService photoService
 @inject NavigationManager navigationManager
@@ -48,13 +49,39 @@
     [Parameter]
     public string CancelButtonText { get; set; } = "Close";
 
+    [Parameter]
+    public LightboxConfirmOptions? lightboxConfirmOptions { get; set; }
+
     private Photo photo = null!;
     private string errorMessage = "";
 
     void Confirm()
     {
-        ModalInstance.CloseAsync(ModalResult.Ok($"Confirm"));
-        navigationManager.NavigateTo($"/photo/{PhotoId}", true); // forceLoad to remove modal page scroll
+        ModalInstance.CloseAsync(ModalResult.Ok<string>(PhotoId)); // always return an Ok result with the PhotoId
+
+        if (lightboxConfirmOptions is not null)
+        {
+            ShowConfirmButton = lightboxConfirmOptions.ShowButton;
+            ConfirmButtonText = lightboxConfirmOptions.ButtonText;
+
+            switch (lightboxConfirmOptions.ButtonAction)
+            {
+                case LightboxConfirmAction.Navigate:
+                    navigationManager.NavigateTo(lightboxConfirmOptions.NavigateUri + PhotoId);
+                    break;
+                case LightboxConfirmAction.NavigateForceLoad:
+                    // forceLoad to remove modal page scroll
+                    navigationManager.NavigateTo(lightboxConfirmOptions.NavigateUri + PhotoId, true);
+                    break;
+                default:
+                    break;
+            }
+        }
+        else 
+        {
+            // temp - just to avoid a breaking change
+            navigationManager.NavigateTo($"/photo/{PhotoId}", true); // forceLoad to remove modal page scroll
+        }
     }
 
     void Cancel()
