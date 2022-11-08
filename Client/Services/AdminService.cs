@@ -37,6 +37,8 @@ public class AdminService : IAdminService
     {
         try
         {
+            gallery.LastUpdated = DateTime.UtcNow;
+
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
 
             HttpContent galleryJson = new StringContent(JsonSerializer.Serialize(gallery));
