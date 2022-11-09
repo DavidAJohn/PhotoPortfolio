@@ -1,0 +1,59 @@
+﻿@page "/admin/galleries/add"
+@layout AdminLayout
+
+@using Microsoft.AspNetCore.Authorization
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models;
+
+@inject IGalleryService galleryService
+@inject IAdminService adminService
+@inject ISnackbar Snackbar
+
+@attribute [Authorize]
+
+<PageTitle>Photo Portfolio : Admin : Add Gallery</PageTitle>
+
+<div class="m-4 md:m-8 ">
+    <div class="text-3xl">Add Gallery</div>
+
+    <div class="mt-8 w-1/2">
+        <div class="w-full">
+            <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <MudGrid>
+                    <MudItem xs="16" sm="9">
+                        <MudCard>
+                            <MudCardContent>
+                                <MudTextField Label="Name" @bind-Value="model.Name" For="@(() => model.Name)" />
+                                <MudTextField Label="Description" Class="mt-3" @bind-Value="model.Description" For="@(() => model.Description)" />
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mr-auto" Disabled="@galleryCreated">Create</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    CreateGalleryDto model = new();
+    private bool galleryCreated = false;
+
+    private async Task OnValidSubmit()
+    {
+        galleryCreated = await adminService.CreateGalleryAsync(model);
+
+        if (galleryCreated)
+        {
+            Snackbar.Add($"The gallery has now been created", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add($"Sorry, there was a problem creating the gallery", Severity.Error);
+        }
+    }
+}
