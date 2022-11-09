@@ -41,16 +41,13 @@
     public string PhotoId { get; set; } = string.Empty;
 
     [Parameter]
-    public bool ShowConfirmButton { get; set; } = true;
-
-    [Parameter]
-    public string ConfirmButtonText { get; set; } = "Buy Prints, etc.";
+    public LightboxConfirmOptions? LightboxConfirmOptions { get; set; }
 
     [Parameter]
     public string CancelButtonText { get; set; } = "Close";
 
-    [Parameter]
-    public LightboxConfirmOptions? LightboxConfirmOptions { get; set; }
+    private bool ShowConfirmButton { get; set; } = true;
+    private string ConfirmButtonText { get; set; } = "Confirm";
 
     private Photo photo = null!;
     private string errorMessage = "";
@@ -73,11 +70,6 @@
                 default:
                     break;
             }
-        }
-        else 
-        {
-            // temp - just to avoid a breaking change
-            navigationManager.NavigateTo($"/photo/{PhotoId}", true); // forceLoad to remove modal page scroll
         }
     }
 

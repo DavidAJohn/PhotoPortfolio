@@ -1,5 +1,6 @@
 ﻿@using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models;
 
 @inject IGalleryService galleryService
 @inject IProductService productService
@@ -80,9 +81,16 @@
         // check if any products are associated with the photo - hide confirm button if not
         var hasProducts = await PhotoHasProducts(photoId);
 
-        if (!hasProducts){
-            parameters.Add(nameof(LightboxModal.ShowConfirmButton), false);
-        }
+        // add confirm button options as a LightboxModal parameter
+        LightboxConfirmOptions confirmOptions = new LightboxConfirmOptions()
+        {
+            ShowButton = hasProducts,
+            ButtonText = "Buy Prints, etc.",
+            ButtonAction = LightboxConfirmAction.NavigateForceLoad,
+            NavigateUri = "/photo/"
+        };
+
+        parameters.Add(nameof(LightboxModal.LightboxConfirmOptions), confirmOptions);
 
         var options = new ModalOptions()
             {
