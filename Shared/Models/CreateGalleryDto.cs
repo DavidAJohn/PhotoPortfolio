@@ -6,7 +6,7 @@ public class CreateGalleryDto : BaseEntity
 {
     public string Name { get; set; } = "New Gallery";
     public string Description { get; set; } = string.Empty;
-    public string HeaderImage { get; set; } = string.Empty;
+    public string HeaderImage { get; set; } = "/images/default_header_image.png";
     public string HeaderImageAlign { get; set; } = "center";
     public string? ParentGallery { get; set; }
     public string SortBy { get; set; } = string.Empty;
