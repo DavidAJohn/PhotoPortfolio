@@ -6,6 +6,7 @@ namespace PhotoPortfolio.Client.Contracts;
 public interface IAdminService
 {
     Task<List<Gallery>> GetAllGalleriesAsync();
+    Task<Gallery> GetGalleryByIdAsync(string galleryId);
     Task<bool> UpdateGalleryAsync(Gallery gallery);
     Task<bool> CreateGalleryAsync(CreateGalleryDto gallery);
 }

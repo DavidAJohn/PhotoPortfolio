@@ -34,6 +34,23 @@ public class AdminService : IAdminService
         }
     }
 
+    public async Task<Gallery> GetGalleryByIdAsync(string galleryId)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+            var gallery = await client.GetFromJsonAsync<Gallery>($"galleries/{galleryId}");
+
+            if (gallery is null) return null!;
+
+            return gallery;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
+
     public async Task<bool> UpdateGalleryAsync(Gallery gallery)
     {
         try

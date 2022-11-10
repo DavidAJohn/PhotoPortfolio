@@ -112,23 +112,30 @@ else
 
     private async Task GetGalleryDetails()
     {
-        try
+        if (!string.IsNullOrEmpty(Id))
         {
-            gallery = await galleryService.GetGalleryByIdAsync(Id);
-
-            if (gallery is null)
+            try
             {
+                gallery = await adminService.GetGalleryByIdAsync(Id);
+
+                if (gallery is null)
+                {
+                    errorMessage = "Could not retrieve gallery details";
+                }
+                else
+                {
+                    model = gallery;
+                    errorMessage = "";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
                 errorMessage = "Could not retrieve gallery details";
             }
-            else
-            {
-                model = gallery;
-                errorMessage = "";
-            }
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine(ex.Message);
             errorMessage = "Could not retrieve gallery details";
         }
     }
