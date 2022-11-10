@@ -62,36 +62,44 @@ else
                 </div>
             </div>
 
-            <div class="w-2/3 mt-8">
-                <div class="text-2xl mb-2">Existing Gallery Photos</div>
-                <div class="mb-8 w-full lg:w-1/4" id="existing-photos-display-options">
-                    <MudSelect Placeholder="View As" @bind-Value="displayAs" CloseIcon="@Icons.Material.Filled.Flag" AdornmentColor="Color.Primary" >
-                        <MudSelectItem Value="@("Standard Grid")" Class="text-base font-sans" />
-                        <MudSelectItem Value="@("Masonry Grid")" Class="text-base font-sans" />
-                    </MudSelect>
-                </div>
-                @if (displayAs == "Standard Grid")
-                {
-                    <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                        @if (gallery.Photos.Count > 0)
-                        {
-                            foreach (Photo photo in gallery.Photos)
+            @if (gallery.Photos.Count > 0)
+            {
+                <div class="w-2/3 mt-8">
+                    <div class="text-2xl mb-2">Existing Gallery Photos</div>
+                    <div class="mb-8 w-full lg:w-1/4" id="existing-photos-display-options">
+                        <MudSelect Placeholder="View As" @bind-Value="displayAs" CloseIcon="@Icons.Material.Filled.Flag" AdornmentColor="Color.Primary">
+                            <MudSelectItem Value="@("Standard Grid")" Class="text-base font-sans" />
+                            <MudSelectItem Value="@("Masonry Grid")" Class="text-base font-sans" />
+                        </MudSelect>
+                    </div>
+                    @if (displayAs == "Standard Grid")
+                    {
+                        <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                            @foreach (Photo photo in gallery.Photos)
                             {
                                 <div class="gallery-photo">
                                     <img class="h-48 w-auto" src="@photo.Uri" />
                                 </div>
                             }
-                        }
+                        </div>
+                    }
+                    @if (displayAs == "Masonry Grid")
+                    {
+                        <AdminMasonryGrid GalleryId=@gallery.Id HeaderImageChange="HeaderImageChange" />
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="w-2/3 mt-12">
+                    <div class="text-lg mb-2">There are currently no photos in this gallery</div>
+                    <div class="mt-8 lg:mr-32">
+                        <PhotoUpload GalleryId="@gallery.Id" />
                     </div>
-                }
-                @if (displayAs == "Masonry Grid")
-                {
-                    <AdminMasonryGrid GalleryId=@gallery.Id HeaderImageChange="HeaderImageChange" />
-                }
-            </div>
-            
+                </div>
+                
+            }
         </div>
-        
     </div>
 }
 

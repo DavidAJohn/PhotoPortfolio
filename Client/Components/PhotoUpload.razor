@@ -20,6 +20,9 @@
 </MudStack>
 
 @code {
+    [Parameter]
+    public string? GalleryId { get; set;  }
+
     private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full ";
     private string DragClass = DefaultDragClass;
     private List<string> fileNames = new List<string>();
