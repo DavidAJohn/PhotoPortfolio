@@ -1,16 +1,7 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Manrope&display=swap');
-
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-    html {
-        font-family: Manrope, sans-serif;
-        scroll-behavior: smooth;
-    }
-}
-
 .alert-box {
-    @apply bg-red-100 border-solid border border-red-700 text-red-700 font-semibold my-8 py-2 rounded-sm relative w-full;
+    @apply bg-red-100 border-solid border border-red-700 text-red-700 font-semibold my-8 p-4 rounded-sm relative w-full;
 }
