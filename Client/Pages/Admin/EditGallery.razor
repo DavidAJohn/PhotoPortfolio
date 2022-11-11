@@ -80,9 +80,27 @@ else
                             {
                                 <div class="gallery-photo group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto(photo.Id))">
                                     <img class="h-48 w-auto object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src=@photo.Uri />
-                                    <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-                                        View
-                                    </div>
+                                    @if (photo.Metadata is not null)
+                                    {
+                                        @if (photo.Metadata.Width >= photo.Metadata.Height)
+                                        {
+                                            <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                                                View
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="absolute invisible group-hover:!visible text-xl text-white -ml-2 top-1/2 left-1/4 -translate-x-1/4 -translate-y-1/2 ">
+                                                View
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                                            View
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
