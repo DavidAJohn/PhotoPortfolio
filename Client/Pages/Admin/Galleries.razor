@@ -52,30 +52,53 @@ else
                 <div class="px-4 pb-2">
                     @if (gallery.Public)
                     {
-                        <MudTooltip Delay="500" Duration="1000" Text="NOTE: galleries displayed in masonry grids, etc. must be public" Arrow="true" Placement="Placement.Bottom">
-                            <MudChip Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Error" Disabled="@gallery.Public">Private</MudChip>
+                        <MudTooltip Delay="500" 
+                            Duration="1000" 
+                            Text="@(gallery.Photos.Any() ? "NOTE: Galleries displayed in masonry grids, etc. must be public" 
+                                                         : "NOTE: Galleries that don't contain any photos cannot be made public")" 
+                            Arrow="true" 
+                            Placement="Placement.Bottom"
+                        >
+                                <MudChip Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Error" Disabled="gallery.Public">Private</MudChip>
                                 <MudSwitch @bind-Checked="gallery.Public" 
                                     Color="Color.Success" 
-                                    UnCheckedColor="Color.Error" 
+                                    UnCheckedColor="Color.Error"
+                                    Disabled="@(!gallery.Photos.Any())"
                                     @onclick="@(() => UpdatePublicStatus(gallery))" />
                             <MudChip Size="Size.Small" Icon="@Icons.Filled.Person" Color="Color.Success" Class="-ml-6">Public</MudChip>
                         </MudTooltip>
                     }
                     @if (!gallery.Public)
                     {
-                        <MudChip Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Error">Private</MudChip>
-                            <MudSwitch @bind-Checked="gallery.Public" 
-                                Color="Color.Success" 
-                                UnCheckedColor="Color.Error" 
-                                @onclick="@(() => UpdatePublicStatus(gallery))" />
-                        <MudChip Size="Size.Small" Icon="@Icons.Filled.Person" Color="Color.Success" Class="-ml-6" Disabled="!gallery.Public">Public</MudChip>
+                        <MudTooltip Delay="500" 
+                            Duration="1000" 
+                            Text="@(gallery.Photos.Any() ? "NOTE: Galleries displayed in masonry grids, etc. must be public" 
+                                                         : "NOTE: Galleries that don't contain any photos cannot be made public")" 
+                            Arrow="true" 
+                            Placement="Placement.Bottom"
+                        >
+                                <MudChip Size="Size.Small" Icon="@Icons.Filled.Cancel" Color="Color.Error" Disabled="@(!gallery.Photos.Any())">Private</MudChip>
+                                <MudSwitch @bind-Checked="gallery.Public" 
+                                    Color="Color.Success" 
+                                    UnCheckedColor="Color.Error"
+                                    Disabled="@(!gallery.Photos.Any())"
+                                    @onclick="@(() => UpdatePublicStatus(gallery))" />
+                            <MudChip Size="Size.Small" Icon="@Icons.Filled.Person" Color="Color.Success" Class="-ml-6" Disabled="!gallery.Public">Public</MudChip>
+                        </MudTooltip>
                     }
                 </div>
                 <div class="px-6 pb-6">
-                    <MudTooltip Delay="500" Duration="1000" Text="NOTE: This only applies to 'public' gallery lists" Arrow="true" Placement="Placement.Bottom">
+                    <MudTooltip Delay="500" 
+                        Duration="1000" 
+                        Text="@(gallery.Photos.Any() ? "NOTE: This only applies to 'public' gallery lists"
+                                                     : "NOTE: Galleries that don't contain photos cannot be displayed in gallery lists")"
+                        Arrow="true" 
+                        Placement="Placement.Bottom"
+                    >
                         <MudSwitch @bind-Checked="gallery.DisplayInGalleryList" 
                             ThumbIcon="@(gallery.DisplayInGalleryList ? Icons.Material.Filled.Done : Icons.Material.Filled.Close)" 
                             ThumbIconColor="@(gallery.DisplayInGalleryList ? Color.Success : Color.Error)"
+                            Disabled="@(!gallery.Photos.Any())"
                             @onclick="@(() => UpdateDisplayStatus(gallery))"
                         >
                             <span class="text-sm font-sans font-semibold">Display in all public gallery lists?</span>
