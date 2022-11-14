@@ -26,27 +26,46 @@
     private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full ";
     private string DragClass = DefaultDragClass;
     private List<string> fileNames = new List<string>();
+    private List<IBrowserFile> validatedFiles = new();
 
     private void OnInputFileChanged(InputFileChangeEventArgs e)
     {
         ClearDragClass();
 
-        var files = e.GetMultipleFiles();
-
-        foreach (var file in files)
+        if (e.FileCount <= 5) // arbitrary limit during development
         {
-            fileNames.Add(file.Name);
+            var files = e.GetMultipleFiles();
 
-            if (file.ContentType != "image/jpeg" && file.ContentType != "image/png")
+            foreach (var file in files)
             {
-                Snackbar.Add("Only .jpg and .png files can be uploaded", Severity.Warning);
+                if (file.ContentType != "image/jpeg" && file.ContentType != "image/png")
+                {
+                    Snackbar.Add($"Only .jpg and .png files can be uploaded - '{file.Name}' was excluded", Severity.Warning);
+                }
+                else
+                {
+                    if (file.Size > 2097152) // 2097152 = 2Mb (probably use 20-25Mb in production)
+                    {
+                        Snackbar.Add($"'{file.Name}' is to large. The limit is 2Mb", Severity.Warning);
+                    }
+                    else
+                    {
+                        fileNames.Add(file.Name);
+                        validatedFiles.Add(file);
+                    }
+                }
             }
+        }
+        else
+        {
+            Snackbar.Add("Only 5 photos at a time can be uploaded", Severity.Error);
         }
     }
 
     private async Task Clear()
     {
         fileNames.Clear();
+        validatedFiles.Clear();
         ClearDragClass();
         await Task.Delay(100);
     }
@@ -54,12 +73,21 @@
     private void RemoveFile(MudChip chip)
     {
         fileNames.Remove(chip.Text);
+
+        var index = validatedFiles.FindIndex(x => x.Name == chip.Text);
+
+        if (index != -1)
+        {
+            validatedFiles.RemoveAt(index);
+        }
     }
 
     private void Upload()
     {
-        //Upload the files here
-        Snackbar.Add("TODO: Upload your files!", Severity.Normal);
+        foreach (var file in validatedFiles)
+        {
+            Snackbar.Add($"Uploaded: {file.Name}", Severity.Success);
+        }
     }
 
     private void SetDragClass()
