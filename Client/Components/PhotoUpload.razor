@@ -136,6 +136,7 @@
                 if (result.Uploaded)
                 {
                     // TO DO: add each successful upload to the database
+                    var metadata = result.Metadata;
 
                     Snackbar.Add($"Uploaded: {result.FileName}", Severity.Success);
                 }

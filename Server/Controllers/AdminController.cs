@@ -1,5 +1,10 @@
-﻿using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using MetadataExtractor;
+using MetadataExtractor.Formats.Exif;
+using MetadataExtractor.Formats.Iptc;
+using MetadataExtractor.Formats.Jpeg;
+using MetadataExtractor.Formats.Png;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PhotoPortfolio.Shared.Entities;
@@ -90,6 +95,9 @@ public class AdminController : BaseApiController
         var permittedFileExtensions = _config["AzureUpload:FileUploadTypesAllowed"];
         var fileSizeLimit = _config.GetValue<long>("AzureUpload:MaxFileUploadSize");
 
+        var imageTitle = "";
+        var imageSubject = "";
+
         List<UploadResult> uploadResults = new();
 
         foreach (var file in files)
@@ -175,11 +183,75 @@ public class AdminController : BaseApiController
                         await blob.UploadAsync(fileStream, blobHttpHeader);
                     }
 
-                    // create the UploadRequest object for this file
+                    // extract image metadata - need to use a new stream
+                    using (var fileStream = file.OpenReadStream())
+                    {
+                        IEnumerable<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(fileStream);
+
+                        var imageWidth = 0;
+                        var imageHeight = 0;
+
+                        if (fileExtension == ".jpeg" || fileExtension == ".jpg")
+                        {
+                            var jpegDirectory = directories.OfType<JpegDirectory>().FirstOrDefault();
+
+                            if (jpegDirectory != null)
+                            {
+                                imageWidth = jpegDirectory.GetImageWidth();
+                                imageHeight = jpegDirectory.GetImageHeight();
+                            }
+                        }
+
+                        if (fileExtension == ".png")
+                        {
+                            var pngDirectory = directories.OfType<PngDirectory>().FirstOrDefault();
+
+                            if (pngDirectory != null)
+                            {
+                                imageWidth = pngDirectory.GetInt32(ExifDirectoryBase.TagImageWidth);
+                                imageHeight = pngDirectory.GetInt32(ExifDirectoryBase.TagImageHeight);
+                            }
+                        }
+
+                        var ifdoDirectory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+                        var make = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagMake);
+                        var model = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagModel);
+
+                        imageTitle = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinTitle);
+                        imageSubject = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinSubject);
+
+                        var subIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+                        var dateTaken = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeOriginal);
+                        var aperture = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagAperture);
+                        var shutterSpeed = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagShutterSpeed);
+                        var iso = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagIsoEquivalent);
+                        var focalLength = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagFocalLength);
+
+                        var iptcDirectory = directories.OfType<IptcDirectory>().FirstOrDefault();
+                        var tags = iptcDirectory?.GetKeywords();
+
+                        // add the extracted metadata to the UploadResult object for this file
+                        uploadResult.Metadata = new PhotoMetadata()
+                        {
+                            Width = imageWidth,
+                            Height = imageHeight,
+                            Camera = make + " " + model,
+                            ShutterSpeed = shutterSpeed,
+                            Aperture = aperture,
+                            Iso = iso,
+                            FocalLength = focalLength,
+                            DateTaken = dateTaken,
+                            Tags = tags?.ToList()
+                        };
+                    }
+
+                    // update the UploadRequest object with data from Azure
                     uploadResult.Uploaded = true;
                     uploadResult.StoredFileName = blob.Name;
                     uploadResult.AzureUri = blob.Uri.ToString();
                     uploadResult.ErrorCode = 0;
+                    uploadResult.Title = imageTitle;
+                    uploadResult.Subject = imageSubject;
 
                     // ... and add it to the List which will be returned
                     uploadResults.Add(uploadResult);
