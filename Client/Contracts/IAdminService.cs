@@ -9,4 +9,5 @@ public interface IAdminService
     Task<Gallery> GetGalleryByIdAsync(string galleryId);
     Task<bool> UpdateGalleryAsync(Gallery gallery);
     Task<bool> CreateGalleryAsync(CreateGalleryDto gallery);
+    Task<bool> AddPhotoAsync(Photo photo);
 }
