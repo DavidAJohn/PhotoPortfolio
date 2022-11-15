@@ -1,7 +1,11 @@
-﻿@using PhotoPortfolio.Shared.Models;
+﻿@using PhotoPortfolio.Client.Contracts;
+@using PhotoPortfolio.Shared.Entities;
+@using PhotoPortfolio.Shared.Models;
 @using System.Net.Http.Headers;
+
 @inject ISnackbar Snackbar
 @inject IHttpClientFactory httpClient
+@inject IAdminService adminService
 
 <MudStack Style="width: 100%">
     <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Accept=".jpg,.png" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
@@ -135,10 +139,30 @@
             {
                 if (result.Uploaded)
                 {
-                    // TO DO: add each successful upload to the database
-                    var metadata = result.Metadata;
+                    // add each successful upload to the photo collection in the database
 
-                    Snackbar.Add($"Uploaded: {result.FileName}", Severity.Success);
+                    Photo photo = new Photo()
+                    {
+                        Title = result.Title ?? "",
+                        Caption = result.Subject,
+                        FileName = result.FileName ?? "",
+                        Uri = result.AzureUri,
+                        GalleryId = GalleryId,
+                        Metadata = result.Metadata
+                    };
+
+                    var newPhoto = await adminService.AddPhotoAsync(photo);
+
+                    if (newPhoto)
+                    {
+                        Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
+                        Snackbar.Add($"'{result.FileName}' has been added to the gallery", Severity.Success);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"'{result.FileName}' was uploaded to Azure, but NOT added to the database");
+                        Snackbar.Add($"There was a problem adding '{result.FileName}' to the database", Severity.Error);
+                    }
                 }
                 else
                 {
