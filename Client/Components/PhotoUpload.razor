@@ -1,4 +1,7 @@
-﻿@inject ISnackbar Snackbar
+﻿@using PhotoPortfolio.Shared.Models;
+@using System.Net.Http.Headers;
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory httpClient
 
 <MudStack Style="width: 100%">
     <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Accept=".jpg,.png" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
@@ -25,8 +28,9 @@
 
     private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full ";
     private string DragClass = DefaultDragClass;
-    private List<string> fileNames = new List<string>();
+    private List<string> fileNames = new();
     private List<IBrowserFile> validatedFiles = new();
+    private List<UploadResult> uploadResults = new();
 
     private void OnInputFileChanged(InputFileChangeEventArgs e)
     {
@@ -46,7 +50,7 @@
                 {
                     if (file.Size > 2097152) // 2097152 = 2Mb (probably use 20-25Mb in production)
                     {
-                        Snackbar.Add($"'{file.Name}' is to large. The limit is 2Mb", Severity.Warning);
+                        Snackbar.Add($"'{file.Name}' is too large. The limit is 2Mb", Severity.Warning);
                     }
                     else
                     {
@@ -82,11 +86,68 @@
         }
     }
 
-    private void Upload()
+    private async Task Upload()
     {
+        var upload = false;
+        using var content = new MultipartFormDataContent();
+        var maxFileSize = 2097152; // 2Mb
+
         foreach (var file in validatedFiles)
         {
-            Snackbar.Add($"Uploaded: {file.Name}", Severity.Success);
+            try
+            {
+                var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+                content.Add(
+                    content: fileContent,
+                    name: "\"files\"",
+                    fileName: file.Name);
+
+                upload = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                uploadResults.Add(
+                    new()
+                        {
+                            FileName = file.Name,
+                            ErrorCode = 6,
+                            Uploaded = false
+                        });
+            }
+        }
+
+        if (upload)
+        {
+            var client = httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+            var response = await client.PostAsync("uploads", content);
+
+            var newUploadResults = await response.Content
+                .ReadFromJsonAsync<IList<UploadResult>>();
+
+            uploadResults = uploadResults.Concat(newUploadResults).ToList();
+
+            foreach (var result in uploadResults)
+            {
+                if (result.Uploaded)
+                {
+                    // TO DO: add each successful upload to the database
+
+                    Snackbar.Add($"Uploaded: {result.FileName}", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add($"There was a problem uploading '{result.FileName}'", Severity.Error);
+                }
+            }
+        }
+        else
+        {
+            Snackbar.Add("There was a problem uploading these files", Severity.Error);
         }
     }
 
