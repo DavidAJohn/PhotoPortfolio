@@ -32,44 +32,4 @@ public class PhotosController : BaseApiController
     {
         return await _repository.GetSingleAsync(x => x.Id == id);
     }
-
-    [HttpPost]
-    public async Task<IActionResult> AddPhoto(Photo photo)
-    {
-        await _repository.AddAsync(photo);
-
-        return CreatedAtAction(nameof(GetPhotos), new { id = photo.Id }, photo);
-    }
-
-    [HttpPut("{id:length(24)}")]
-    public async Task<IActionResult> UpdatePhoto(string id, Photo photo)
-    {
-        var photoToUpdate = await _repository.GetSingleAsync(x => x.Id == id);
-
-        if (photoToUpdate is null)
-        {
-            return NotFound();
-        }
-
-        photo.Id = photoToUpdate.Id;
-
-        await _repository.UpdateAsync(photo);
-
-        return NoContent();
-    }
-
-    [HttpDelete("{id:length(24)}")]
-    public async Task<IActionResult> DeletePhoto(string id)
-    {
-        var photoToDelete = await _repository.GetSingleAsync(x => x.Id == id);
-
-        if (photoToDelete is null)
-        {
-            return NotFound();
-        }
-
-        await _repository.DeleteAsync(id);
-
-        return NoContent();
-    }
 }

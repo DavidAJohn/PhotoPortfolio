@@ -16,27 +16,32 @@ namespace PhotoPortfolio.Server.Controllers;
 [Authorize]
 public class AdminController : BaseApiController
 {
-    private readonly IGalleryRepository _repository;
+    private readonly IGalleryRepository _galleryRepository;
+    private readonly IPhotoRepository _photoRepository;
     private readonly IConfiguration _config;
     private readonly ILogger<AdminController> _logger;
 
-    public AdminController(IGalleryRepository repository, IConfiguration config, ILogger<AdminController> logger)
+    public AdminController(IGalleryRepository galleryRepository, IPhotoRepository photoRepository, IConfiguration config, ILogger<AdminController> logger)
     {
-        _repository = repository;
+        _galleryRepository = galleryRepository;
+        _photoRepository = photoRepository;
         _config = config;
         _logger = logger;
     }
 
+    // GALLERIES 
+    //
+
     [HttpGet("galleries")]
     public async Task<List<Gallery>> GetAllGalleries()
     {
-        return await _repository.GetAllAsync();
+        return await _galleryRepository.GetAllAsync();
     }
 
     [HttpGet("galleries/{id:length(24)}")]
     public async Task<IActionResult> GetGalleryById(string id)
     {
-        var gallery = await _repository.GetGalleryWithPhotos(id, true);
+        var gallery = await _galleryRepository.GetGalleryWithPhotos(id, true);
 
         if (gallery == null)
         {
@@ -49,7 +54,7 @@ public class AdminController : BaseApiController
     [HttpPost("galleries")]
     public async Task<IActionResult> AddGallery(Gallery gallery)
     {
-        await _repository.AddAsync(gallery);
+        await _galleryRepository.AddAsync(gallery);
 
         return CreatedAtAction(nameof(GetAllGalleries), new { id = gallery.Id }, gallery);
     }
@@ -57,7 +62,7 @@ public class AdminController : BaseApiController
     [HttpPut("galleries/{id:length(24)}")]
     public async Task<IActionResult> UpdateGallery(string id, Gallery gallery)
     {
-        var galleryToUpdate = await _repository.GetSingleAsync(x => x.Id == id);
+        var galleryToUpdate = await _galleryRepository.GetSingleAsync(x => x.Id == id);
 
         if (galleryToUpdate is null)
         {
@@ -66,7 +71,7 @@ public class AdminController : BaseApiController
 
         gallery.Id = galleryToUpdate.Id;
 
-        await _repository.UpdateAsync(gallery);
+        await _galleryRepository.UpdateAsync(gallery);
 
         return NoContent();
     }
@@ -74,17 +79,20 @@ public class AdminController : BaseApiController
     [HttpDelete("galleries/{id:length(24)}")]
     public async Task<IActionResult> DeleteGallery(string id)
     {
-        var galleryToDelete = await _repository.GetSingleAsync(x => x.Id == id);
+        var galleryToDelete = await _galleryRepository.GetSingleAsync(x => x.Id == id);
 
         if (galleryToDelete is null)
         {
             return NotFound();
         }
 
-        await _repository.DeleteAsync(id);
+        await _galleryRepository.DeleteAsync(id);
 
         return NoContent();
     }
+
+    // UPLOADS
+    //
 
     [HttpPost("uploads")]
     public async Task<ActionResult<IList<UploadResult>>> UploadFiles([FromForm] IEnumerable<IFormFile> files)
@@ -269,5 +277,63 @@ public class AdminController : BaseApiController
         }
 
         return new CreatedResult(azureContainerUri, uploadResults);
+    }
+
+    // PHOTOS
+    //
+
+    [HttpGet("photos")]
+    public async Task<List<Photo>> GetPhotos([FromQuery] PhotoSpecificationParams photoParams)
+    {
+        var emptyParams = photoParams.GetType().GetProperties().All(prop => prop.GetValue(photoParams) == null);
+
+        if (emptyParams) // if all of the photoParams properties are null
+        {
+            return await _photoRepository.GetAllAsync();
+        }
+
+        var photos = await _photoRepository.GetFilteredPhotosAsync(photoParams);
+
+        return photos;
+    }
+
+    [HttpPost("photos")]
+    public async Task<IActionResult> AddPhoto(Photo photo)
+    {
+        await _photoRepository.AddAsync(photo);
+
+        return CreatedAtAction(nameof(GetPhotos), new { id = photo.Id }, photo);
+    }
+
+    [HttpPut("photos/{id:length(24)}")]
+    public async Task<IActionResult> UpdatePhoto(string id, Photo photo)
+    {
+        var photoToUpdate = await _photoRepository.GetSingleAsync(x => x.Id == id);
+
+        if (photoToUpdate is null)
+        {
+            return NotFound();
+        }
+
+        photo.Id = photoToUpdate.Id;
+
+        await _photoRepository.UpdateAsync(photo);
+
+        return NoContent();
+    }
+
+    [HttpDelete("photos/{id:length(24)}")]
+    public async Task<IActionResult> DeletePhoto(string id)
+    {
+        var photoToDelete = await _photoRepository.GetSingleAsync(x => x.Id == id);
+
+        if (photoToDelete is null)
+        {
+            return NotFound();
+        }
+
+        await _photoRepository.DeleteAsync(id);
+
+        return NoContent();
     }
 }
