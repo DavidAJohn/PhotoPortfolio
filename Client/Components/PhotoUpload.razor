@@ -127,47 +127,48 @@
 
         if (upload)
         {
-            var client = httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var response = await client.PostAsync("uploads", content);
+            var uploadResults = await adminService.UploadPhotos(content);
 
-            var newUploadResults = await response.Content
-                .ReadFromJsonAsync<IList<UploadResult>>();
-
-            uploadResults = uploadResults.Concat(newUploadResults).ToList();
-
-            foreach (var result in uploadResults)
+            if (uploadResults is not null)
             {
-                if (result.Uploaded)
+                foreach (var result in uploadResults)
                 {
-                    // add each successful upload to the photo collection in the database
-
-                    Photo photo = new Photo()
+                    if (result.Uploaded)
                     {
-                        Title = result.Title ?? "",
-                        Caption = result.Subject,
-                        FileName = result.FileName ?? "",
-                        Uri = result.AzureUri,
-                        GalleryId = GalleryId,
-                        Metadata = result.Metadata
-                    };
+                        // add each successful upload to the photo collection in the database
 
-                    var newPhoto = await adminService.AddPhotoAsync(photo);
+                        Photo photo = new Photo()
+                            {
+                                Title = result.Title ?? "",
+                                Caption = result.Subject,
+                                FileName = result.FileName ?? "",
+                                Uri = result.AzureUri,
+                                GalleryId = GalleryId,
+                                Metadata = result.Metadata
+                            };
 
-                    if (newPhoto)
-                    {
-                        Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
-                        Snackbar.Add($"'{result.FileName}' has been added to the gallery", Severity.Success);
+                        var newPhoto = await adminService.AddPhotoAsync(photo);
+
+                        if (newPhoto)
+                        {
+                            Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
+                            Snackbar.Add($"'{result.FileName}' has been added to the gallery", Severity.Success);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"'{result.FileName}' was uploaded to Azure, but NOT added to the database");
+                            Snackbar.Add($"There was a problem adding '{result.FileName}' to the database", Severity.Error);
+                        }
                     }
                     else
                     {
-                        Console.WriteLine($"'{result.FileName}' was uploaded to Azure, but NOT added to the database");
-                        Snackbar.Add($"There was a problem adding '{result.FileName}' to the database", Severity.Error);
+                        Snackbar.Add($"There was a problem uploading '{result.FileName}'", Severity.Error);
                     }
                 }
-                else
-                {
-                    Snackbar.Add($"There was a problem uploading '{result.FileName}'", Severity.Error);
-                }
+            }
+            else
+            {
+                Snackbar.Add($"There was a problem uploading these files", Severity.Error);
             }
         }
         else

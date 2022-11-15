@@ -124,4 +124,26 @@ public class AdminService : IAdminService
             throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
         }
     }
+
+    public async Task<List<UploadResult>> UploadPhotos(MultipartFormDataContent content)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+            var response = await client.PostAsync("uploads", content);
+
+            var newUploadResults = await response.Content.ReadFromJsonAsync<List<UploadResult>>();
+
+            if (newUploadResults is not null)
+            {
+                return newUploadResults;
+            }
+
+            return null!;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
 }
