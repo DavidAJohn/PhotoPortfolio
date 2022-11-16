@@ -191,6 +191,8 @@ public class AdminController : BaseApiController
                         await blob.UploadAsync(fileStream, blobHttpHeader);
                     }
 
+                    _logger.LogInformation("'{originalName}' was uploaded to Azure as '{uploadName}'", file.FileName, trustedFileNameForStorage);
+
                     // extract image metadata - need to use a new stream
                     using (var fileStream = file.OpenReadStream())
                     {
@@ -259,6 +261,8 @@ public class AdminController : BaseApiController
                         };
                     }
 
+                    _logger.LogInformation("Extracted photo metadata for '{fileName}' without errors", file.FileName);
+
                     // update the UploadRequest object with data from Azure
                     uploadResult.Uploaded = true;
                     uploadResult.StoredFileName = blob.Name;
@@ -269,10 +273,12 @@ public class AdminController : BaseApiController
 
                     // ... and add it to the List which will be returned
                     uploadResults.Add(uploadResult);
+
+                    _logger.LogInformation("Photo metadata and Azure data for '{fileName}' was added to List<UploadResult>", file.FileName);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("The file '{fileName}' could not be uploaded: {message}", file.Name, ex.Message);
+                    _logger.LogError("The file '{fileName}' could not be uploaded to Azure, or metadata was not retrieved without error: {message}", file.Name, ex.Message);
 
                     uploadResult.Uploaded = false;
                     uploadResult.ErrorCode = 1;
