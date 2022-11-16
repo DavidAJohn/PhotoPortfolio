@@ -222,8 +222,8 @@ public class AdminController : BaseApiController
                         }
 
                         var ifdoDirectory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
-                        var make = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagMake);
-                        var model = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagModel);
+                        var cameraMake = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagMake);
+                        var cameraModel = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagModel);
 
                         imageTitle = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinTitle);
                         imageSubject = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinSubject);
@@ -235,6 +235,9 @@ public class AdminController : BaseApiController
                         var iso = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagIsoEquivalent);
                         var focalLength = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagFocalLength);
 
+                        var lensMake = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagLensMake);
+                        var lensModel = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagLensModel);
+
                         var iptcDirectory = directories.OfType<IptcDirectory>().FirstOrDefault();
                         var tags = iptcDirectory?.GetKeywords();
 
@@ -243,7 +246,10 @@ public class AdminController : BaseApiController
                         {
                             Width = imageWidth,
                             Height = imageHeight,
-                            Camera = make + " " + model,
+                            CameraMake = cameraMake,
+                            CameraModel = cameraModel,
+                            LensMake = lensMake,
+                            LensModel = lensModel,
                             ShutterSpeed = shutterSpeed,
                             Aperture = aperture,
                             Iso = iso,
