@@ -102,9 +102,21 @@ public class AdminController : BaseApiController
         var azureContainerName = _config["AzureUpload:AzureContainerName"];
         var permittedFileExtensions = _config["AzureUpload:FileUploadTypesAllowed"];
         var fileSizeLimit = _config.GetValue<long>("AzureUpload:MaxFileUploadSize");
+        var fileNameLengthLimit = _config.GetValue<int>("AzureUpload:MaxFileNameLength");
 
-        var imageTitle = "";
-        var imageSubject = "";
+        // check that the Azure Storage connection string is available
+        if (string.IsNullOrEmpty(azureConnectionString))
+        {
+            _logger.LogError("Azure Storage connection string is empty or has not been set in config/env variables");
+            return BadRequest("Azure Storage connection string is empty or unavailable");
+        }
+
+        // check that the Azure Storage container name is available
+        if (string.IsNullOrEmpty(azureContainerName))
+        {
+            _logger.LogError("Azure Storage container name is empty or has not been set in config/env variables");
+            return BadRequest("Azure Storage container name is empty or unavailable");
+        }
 
         List<UploadResult> uploadResults = new();
 
@@ -115,37 +127,22 @@ public class AdminController : BaseApiController
             uploadResult.FileName = untrustedFileName;
             string trustedFileNameForStorage = "";
 
+            var imageTitle = "";
+            var imageSubject = "";
+
             var fileExtension = Path.GetExtension(file.FileName.ToLowerInvariant());
 
-            // check the file type is allowed
-            if (!permittedFileExtensions.Contains(fileExtension) && fileExtension != "")
-            {
-                _logger.LogError("The file type '" + fileExtension + "' is not allowed");
-                return BadRequest("The file type '" + fileExtension + "' is not allowed");
-            }
+            List<string> basicFileChecks = BasicFileChecks(file, permittedFileExtensions, fileSizeLimit, fileNameLengthLimit, fileExtension);
 
-            // check the file size (in bytes)
-            if (file.Length > fileSizeLimit)
+            if (basicFileChecks is not null) 
             {
-                _logger.LogError("The file size of " + file.Length + " bytes was too large");
-                return BadRequest("The file size of " + file.Length + " bytes was too large");
-            }
+                uploadResult.Uploaded = false;
+                uploadResult.ErrorCode = 2; // basic file checks failed
+                uploadResult.ErrorMessages = basicFileChecks;
 
-            // check the file name length isn't excessive
-            if (file.FileName.Length > 75)
-            {
-                _logger.LogError("The file name is too long: " + file.FileName.Length + " characters");
-                return BadRequest("The file name is too long: " + file.FileName.Length + " characters");
+                uploadResults.Add(uploadResult);
             }
-
-            // check container name isn't empty
-            if (azureContainerName.Length == 0)
-            {
-                _logger.LogError("Azure container name is empty");
-                return BadRequest("Azure container name is empty");
-            }
-
-            if (file.Length > 0)
+            else
             {
                 try
                 {
@@ -159,14 +156,16 @@ public class AdminController : BaseApiController
                         await azureContainer.SetAccessPolicyAsync(PublicAccessType.Blob);
                     }
 
-                    // generate a unique upload file name
+                    // generate a safe and unique upload file name:
                     // [original_filename_without_extension]_[8_random_chars].[original_filename_extension]
                     // eg. filename_xgh38tye.jpg
-                    trustedFileNameForStorage = HttpUtility.HtmlEncode(Path.GetFileNameWithoutExtension(file.FileName)) +
-                        "_" + Path.GetRandomFileName().Substring(0, 8) + Path.GetExtension(file.FileName);
+                    trustedFileNameForStorage = string.Concat(
+                        HttpUtility.HtmlEncode(Path.GetFileNameWithoutExtension(file.FileName)), 
+                        "_", 
+                        Path.GetRandomFileName().AsSpan(0, 8), 
+                        Path.GetExtension(file.FileName));
 
                     var blob = azureContainer.GetBlobClient(trustedFileNameForStorage);
-                    //await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
 
                     // set the content type (which may or may not have been provided by the client)
                     var blobHttpHeader = new BlobHttpHeaders();
@@ -196,11 +195,25 @@ public class AdminController : BaseApiController
                     // extract image metadata - need to use a new stream
                     using (var fileStream = file.OpenReadStream())
                     {
+                        int imageWidth = 0;
+                        int imageHeight = 0;
+                        string cameraMake = "";
+                        string cameraModel = "";
+                        string dateTaken = "";
+                        string aperture = "";
+                        string shutterSpeed = "";
+                        string iso = "";
+                        string focalLength = "";
+                        string lensMake = "";
+                        string lensModel = "";
+                        IList<string>? tags = new List<string>();
+
+                        // For details of how to use MetadataExtractor: 
+                        // https://github.com/drewnoakes/metadata-extractor-dotnet
+
                         IEnumerable<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(fileStream);
 
-                        var imageWidth = 0;
-                        var imageHeight = 0;
-
+                        // extract width and height metadata from a file type-specific directory
                         if (fileExtension == ".jpeg" || fileExtension == ".jpg")
                         {
                             var jpegDirectory = directories.OfType<JpegDirectory>().FirstOrDefault();
@@ -218,31 +231,49 @@ public class AdminController : BaseApiController
 
                             if (pngDirectory != null)
                             {
-                                imageWidth = pngDirectory.GetInt32(ExifDirectoryBase.TagImageWidth);
-                                imageHeight = pngDirectory.GetInt32(ExifDirectoryBase.TagImageHeight);
+                                var imageWidthString = pngDirectory.GetDescription(PngDirectory.TagImageWidth);
+                                var imageHeightString = pngDirectory.GetDescription(PngDirectory.TagImageHeight);
+
+                                imageWidth = string.IsNullOrEmpty(imageWidthString) ? 0 : int.Parse(imageWidthString);
+                                imageHeight = string.IsNullOrEmpty(imageHeightString) ? 0 : int.Parse(imageHeightString);
                             }
                         }
 
+                        // extract metadata from the 'Exif IFD0' directory
                         var ifdoDirectory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
-                        var cameraMake = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagMake);
-                        var cameraModel = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagModel);
 
-                        imageTitle = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinTitle);
-                        imageSubject = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinSubject);
+                        if (ifdoDirectory != null)
+                        {
+                            cameraMake = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagMake) ?? "";
+                            cameraModel = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagModel) ?? "";
 
+                            imageTitle = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinTitle) ?? "";
+                            imageSubject = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinSubject) ?? "";
+                        }
+                        
+                        // extract metadata from the 'Exif SubIFD' directory
                         var subIfdDirectory = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
-                        var dateTaken = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeOriginal);
-                        var aperture = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagAperture);
-                        var shutterSpeed = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagShutterSpeed);
-                        var iso = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagIsoEquivalent);
-                        var focalLength = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagFocalLength);
 
-                        var lensMake = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagLensMake);
-                        var lensModel = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagLensModel);
+                        if (subIfdDirectory != null)
+                        {
+                            dateTaken = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeOriginal) ?? "";
+                            aperture = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagAperture) ?? "";
+                            shutterSpeed = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagShutterSpeed) ?? "";
+                            iso = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagIsoEquivalent) ?? "";
+                            focalLength = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagFocalLength) ?? "";
 
+                            lensMake = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagLensMake) ?? "";
+                            lensModel = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagLensModel) ?? "";
+                        }
+                        
+                        // extract metadata from the 'IPTC' directory
                         var iptcDirectory = directories.OfType<IptcDirectory>().FirstOrDefault();
-                        var tags = iptcDirectory?.GetKeywords();
 
+                        if (iptcDirectory != null)
+                        {
+                           tags = iptcDirectory?.GetKeywords();
+                        }
+                        
                         // add the extracted metadata to the UploadResult object for this file
                         uploadResult.Metadata = new PhotoMetadata()
                         {
@@ -263,26 +294,35 @@ public class AdminController : BaseApiController
 
                     _logger.LogInformation("Extracted photo metadata for '{fileName}' without errors", file.FileName);
 
-                    // update the UploadRequest object with data from Azure
+                    // also update the UploadRequest object with data from Azure
                     uploadResult.Uploaded = true;
                     uploadResult.StoredFileName = blob.Name;
                     uploadResult.AzureUri = blob.Uri.ToString();
                     uploadResult.ErrorCode = 0;
-                    uploadResult.Title = imageTitle;
+                    uploadResult.Title = imageTitle == "" ? file.FileName : imageTitle; // use file name if title is unavailable
                     uploadResult.Subject = imageSubject;
 
-                    // ... and add it to the List which will be returned
+                    // ... and finally, add it to the List which will be returned
                     uploadResults.Add(uploadResult);
 
-                    _logger.LogInformation("Photo metadata and Azure data for '{fileName}' was added to List<UploadResult>", file.FileName);
+                    _logger.LogInformation("Azure Storage info and photo metadata for '{fileName}' was retrieved and added to the List of UploadResults", file.FileName);
                 }
-                catch (Exception ex)
+                catch (ImageProcessingException ex)
                 {
-                    _logger.LogError("The file '{fileName}' could not be uploaded to Azure, or metadata was not retrieved without error: {message}", file.Name, ex.Message);
+                    _logger.LogError("Photo metadata for '{fileName}' could not be extracted : {message}", file.FileName, ex.Message);
 
                     uploadResult.Uploaded = false;
                     uploadResult.ErrorCode = 1;
+                    uploadResult.ErrorMessages = new List<string>() { ex.Message };
+                    uploadResults.Add(uploadResult);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("The file '{fileName}' could not be uploaded to Azure, or photo metadata could not be extracted without error(s): {message}", file.FileName, ex.Message);
 
+                    uploadResult.Uploaded = false;
+                    uploadResult.ErrorCode = 1;
+                    uploadResult.ErrorMessages = new List<string>() { ex.Message };
                     uploadResults.Add(uploadResult);
                 }
             }
@@ -347,5 +387,42 @@ public class AdminController : BaseApiController
         await _photoRepository.DeleteAsync(id);
 
         return NoContent();
+    }
+
+    private List<string> BasicFileChecks(IFormFile file, string permittedFileExtensions, long fileSizeLimit, int fileNameLengthLimit, string fileExtension = "unknown")
+    {
+        var filecheckErrors = new List<string>();
+
+        // check the file type is allowed
+        if (!permittedFileExtensions.Contains(fileExtension))
+        {
+            _logger.LogError("Upload of '{fileName}' with file type '{fileExtension}' was not allowed", file.FileName, fileExtension);
+            filecheckErrors.Add($"Upload of '{file.FileName}' with file type '{fileExtension}' is not allowed");
+        }
+
+        // check file isn't 0 bytes
+        if (file.Length < 1)
+        {
+            _logger.LogError("The file '{fileName}' had a file size of 0 bytes", file.FileName);
+            filecheckErrors.Add($"'{file.FileName}' has a file size of 0 bytes");
+        }
+
+        // check the file size (in bytes) isn't above the limit
+        if (file.Length > fileSizeLimit)
+        {
+            _logger.LogError("The size of '{fileName}' ({fileSize} bytes) was larger than the current file size limit ({sizeLimit} bytes)", file.FileName, file.Length, fileSizeLimit);
+            filecheckErrors.Add($"The size of '{file.FileName}' ({file.Length} bytes) is larger than the current file size limit");
+        }
+
+        // check the file name length isn't above the limit
+        if (file.FileName.Length > fileNameLengthLimit)
+        {
+            _logger.LogError("The name of '{fileName}' was too long at {fileNameLength} characters. The current limit is {fileNameLengthLimit} characters", file.FileName, file.FileName.Length, fileNameLengthLimit);
+            filecheckErrors.Add($"The name of '{file.FileName}' was too long: {file.FileName.Length}  characters");
+        }
+
+        if (filecheckErrors.Count == 0) return null!;
+
+        return filecheckErrors;
     }
 }

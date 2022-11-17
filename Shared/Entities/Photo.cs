@@ -1,7 +1,9 @@
-﻿using PhotoPortfolio.Shared.Models;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using PhotoPortfolio.Shared.Models;
 
 namespace PhotoPortfolio.Shared.Entities;
 
+[BsonIgnoreExtraElements]
 public class Photo : BaseEntity
 {
     public string Title { get; set; } = string.Empty;

@@ -9,5 +9,6 @@ public class UploadResult
     public string? Title { get; set; }
     public string? Subject { get; set; }
     public int ErrorCode { get; set; }
+    public List<string>? ErrorMessages { get; set; }
     public PhotoMetadata? Metadata { get; set; }
 }
