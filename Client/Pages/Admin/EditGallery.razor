@@ -109,6 +109,10 @@ else
                     {
                         <AdminMasonryGrid GalleryId=@gallery.Id HeaderImageChange="HeaderImageChange" />
                     }
+                    <div class="mt-16 lg:mr-32">
+                        <div class="text-2xl mb-2">Upload Photos</div>
+                        <PhotoUpload GalleryId="@gallery.Id" />
+                    </div>
                 </div>
             }
             else
@@ -119,7 +123,6 @@ else
                         <PhotoUpload GalleryId="@gallery.Id" />
                     </div>
                 </div>
-                
             }
         </div>
     </div>
