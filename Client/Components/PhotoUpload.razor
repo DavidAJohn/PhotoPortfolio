@@ -15,7 +15,7 @@
                 <MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
                 @foreach (var file in validatedFiles)
                 {
-                    <MudChip Color="Color.Default" Text="@file.Name" OnClose="RemoveFile" Class="z-30" />
+                    <MudChip Color="Color.Default" Text="@file.Name" OnClose="RemoveFile" Class="z-30" /> 
                 }
             </MudPaper>
         </ButtonTemplate>
@@ -85,6 +85,16 @@
         }
     }
 
+    private void RemoveFile(string filename)
+    {
+        var index = validatedFiles.FindIndex(x => x.Name == filename);
+
+        if (index != -1)
+        {
+            validatedFiles.RemoveAt(index);
+        }
+    }
+
     private async Task Upload()
     {
         var upload = false;
@@ -146,6 +156,7 @@
 
                         if (newPhoto)
                         {
+                            RemoveFile(photo.FileName); // successful uploads will disappear from the upload list
                             Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
                             Snackbar.Add($"'{result.FileName}' has been added to the gallery", Severity.Success);
                         }
