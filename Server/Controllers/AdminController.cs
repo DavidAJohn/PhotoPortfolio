@@ -393,6 +393,13 @@ public class AdminController : BaseApiController
     {
         var filecheckErrors = new List<string>();
 
+        // check the file has an extension
+        if (string.IsNullOrWhiteSpace(fileExtension))
+        {
+            _logger.LogError("'{fileName}' does not appear to have a file extension", file.FileName);
+            filecheckErrors.Add($"'{file.FileName}' does not appear to have a file extension");
+        }
+
         // check the file type is allowed
         if (!permittedFileExtensions.Contains(fileExtension))
         {
