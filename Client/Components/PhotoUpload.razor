@@ -13,16 +13,16 @@
         <ButtonTemplate>
             <MudPaper Height="300px" Outlined="true" Class="@DragClass">
                 <MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
-                @foreach (var file in fileNames)
+                @foreach (var file in validatedFiles)
                 {
-                    <MudChip Color="Color.Default" Text="@file" OnClose="RemoveFile" Class="z-30" />
+                    <MudChip Color="Color.Default" Text="@file.Name" OnClose="RemoveFile" Class="z-30" />
                 }
             </MudPaper>
         </ButtonTemplate>
     </MudFileUpload>
     <MudToolBar DisableGutters="true" Class="gap-4">
-        <MudButton OnClick="Upload" StartIcon="@Icons.Filled.CloudUpload" Disabled="@(!fileNames.Any())" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
-        <MudButton OnClick="Clear" Disabled="@(!fileNames.Any())" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
+        <MudButton OnClick="Upload" StartIcon="@Icons.Filled.CloudUpload" Disabled="@(!validatedFiles.Any())" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
+        <MudButton OnClick="Clear" Disabled="@(!validatedFiles.Any())" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
     </MudToolBar>
 </MudStack>
 
@@ -32,7 +32,6 @@
 
     private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full ";
     private string DragClass = DefaultDragClass;
-    private List<string> fileNames = new();
     private List<IBrowserFile> validatedFiles = new();
     private List<UploadResult> uploadResults = new();
 
@@ -58,7 +57,6 @@
                     }
                     else
                     {
-                        fileNames.Add(file.Name);
                         validatedFiles.Add(file);
                     }
                 }
@@ -72,7 +70,6 @@
 
     private async Task Clear()
     {
-        fileNames.Clear();
         validatedFiles.Clear();
         ClearDragClass();
         await Task.Delay(100);
@@ -80,8 +77,6 @@
 
     private void RemoveFile(MudChip chip)
     {
-        fileNames.Remove(chip.Text);
-
         var index = validatedFiles.FindIndex(x => x.Name == chip.Text);
 
         if (index != -1)
