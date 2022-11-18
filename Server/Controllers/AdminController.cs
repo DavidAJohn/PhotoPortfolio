@@ -137,6 +137,7 @@ public class AdminController : BaseApiController
             if (basicFileChecks is not null) 
             {
                 uploadResult.Uploaded = false;
+                uploadResult.FileName = file.FileName;
                 uploadResult.ErrorCode = 2; // basic file checks failed
                 uploadResult.ErrorMessages = basicFileChecks;
 
@@ -312,6 +313,7 @@ public class AdminController : BaseApiController
                     _logger.LogError("Photo metadata for '{fileName}' could not be extracted : {message}", file.FileName, ex.Message);
 
                     uploadResult.Uploaded = false;
+                    uploadResult.FileName = file.FileName;
                     uploadResult.ErrorCode = 1;
                     uploadResult.ErrorMessages = new List<string>() { ex.Message };
                     uploadResults.Add(uploadResult);
@@ -321,6 +323,7 @@ public class AdminController : BaseApiController
                     _logger.LogError("The file '{fileName}' could not be uploaded to Azure, or photo metadata could not be extracted without error(s): {message}", file.FileName, ex.Message);
 
                     uploadResult.Uploaded = false;
+                    uploadResult.FileName = file.FileName;
                     uploadResult.ErrorCode = 1;
                     uploadResult.ErrorMessages = new List<string>() { ex.Message };
                     uploadResults.Add(uploadResult);

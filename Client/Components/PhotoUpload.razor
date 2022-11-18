@@ -1,4 +1,5 @@
 ﻿@using PhotoPortfolio.Client.Contracts;
+@using PhotoPortfolio.Client.Helpers;
 @using PhotoPortfolio.Shared.Entities;
 @using PhotoPortfolio.Shared.Models;
 @using System.Net.Http.Headers;
@@ -13,16 +14,23 @@
         <ButtonTemplate>
             <MudPaper Height="300px" Outlined="true" Class="@DragClass">
                 <MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
-                @foreach (var file in validatedFiles)
+                @foreach (var file in fileNames)
                 {
-                    <MudChip Color="Color.Default" Text="@file.Name" OnClose="RemoveFile" Class="z-30" /> 
+                    if (uploadFailures.Any(s => s.Contains(file)))
+                    {
+                        <MudChip Color="Color.Error" Text="@file" OnClose="RemoveFile" Class="z-30" />
+                    }
+                    else
+                    {
+                        <MudChip Color="Color.Default" Text="@file" OnClose="RemoveFile" Class="z-30" />
+                    }
                 }
             </MudPaper>
         </ButtonTemplate>
     </MudFileUpload>
     <MudToolBar DisableGutters="true" Class="gap-4">
-        <MudButton OnClick="Upload" StartIcon="@Icons.Filled.CloudUpload" Disabled="@(!validatedFiles.Any())" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
-        <MudButton OnClick="Clear" Disabled="@(!validatedFiles.Any())" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
+        <MudButton OnClick="Upload" StartIcon="@Icons.Filled.CloudUpload" Disabled="@(!fileNames.Any())" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
+        <MudButton OnClick="Clear" Disabled="@(!fileNames.Any())" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
     </MudToolBar>
 </MudStack>
 
@@ -34,6 +42,8 @@
     private string DragClass = DefaultDragClass;
     private List<IBrowserFile> validatedFiles = new();
     private List<UploadResult> uploadResults = new();
+    private List<string> fileNames = new();
+    private List<string> uploadFailures = new();
 
     private void OnInputFileChanged(InputFileChangeEventArgs e)
     {
@@ -58,6 +68,7 @@
                     else
                     {
                         validatedFiles.Add(file);
+                        fileNames.Add(file.Name.Truncate(48));
                     }
                 }
             }
@@ -70,29 +81,47 @@
 
     private async Task Clear()
     {
+        fileNames.Clear();
         validatedFiles.Clear();
+        uploadFailures.Clear();
         ClearDragClass();
         await Task.Delay(100);
     }
 
     private void RemoveFile(MudChip chip)
     {
-        var index = validatedFiles.FindIndex(x => x.Name == chip.Text);
+        fileNames.Remove(chip.Text);
+
+        var index = validatedFiles.FindIndex(x => x.Name.Truncate(48) == chip.Text);
 
         if (index != -1)
         {
             validatedFiles.RemoveAt(index);
         }
+
+        uploadFailures.Remove(chip.Text);
     }
 
     private void RemoveFile(string filename)
     {
+        fileNames.Remove(filename);
+
         var index = validatedFiles.FindIndex(x => x.Name == filename);
 
         if (index != -1)
         {
             validatedFiles.RemoveAt(index);
         }
+
+        uploadFailures.Remove(filename);
+    }
+
+    private void HighlightFile(string filename)
+    {
+        // effectively generates a re-render of the file list in the ui, 
+        // by removing and re-adding the file name, thus changing the fileNames list
+        fileNames.Remove(filename.Truncate(48));
+        fileNames.Add(filename.Truncate(48));
     }
 
     private async Task Upload()
@@ -100,6 +129,7 @@
         var upload = false;
         using var content = new MultipartFormDataContent();
         var maxFileSize = 2097152; // 2Mb
+        uploadFailures.Clear();
 
         foreach (var file in validatedFiles)
         {
@@ -157,17 +187,22 @@
                         if (newPhoto)
                         {
                             RemoveFile(photo.FileName); // successful uploads will disappear from the upload list
+                            uploadFailures.Remove(photo.FileName); // in case of previous failure
                             Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
                             Snackbar.Add($"'{result.FileName}' has been added to the gallery", Severity.Success);
                         }
                         else
                         {
+                            uploadFailures.Add(photo.FileName.Truncate(48)); //add to list of failed uploads to allow ui to highlight it
+                            HighlightFile(photo.FileName); // effectively forces a re-render of the file list in the ui
                             Console.WriteLine($"'{result.FileName}' was uploaded to Azure, but NOT added to the database");
                             Snackbar.Add($"There was a problem adding '{result.FileName}' to the database", Severity.Error);
-                        }
+                        } 
                     }
                     else
                     {
+                        uploadFailures.Add(result.FileName?.Truncate(48)); //add to list of failed uploads to allow ui to highlight it
+                        HighlightFile(result.FileName); // effectively forces a re-render of the file list in the ui
                         Snackbar.Add($"There was a problem uploading '{result.FileName}'", Severity.Error);
                     }
                 }
