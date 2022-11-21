@@ -55,7 +55,7 @@ else
                         <MudTooltip Delay="500" 
                             Duration="1000" 
                             Text="@(gallery.Photos.Any() ? "NOTE: Galleries displayed in masonry grids, etc. must be public" 
-                                                         : "NOTE: Galleries that don't contain any photos cannot be made public")" 
+                                                         : "NOTE: A gallery must contain photos and have a header image before it can be made public")" 
                             Arrow="true" 
                             Placement="Placement.Bottom"
                         >
@@ -73,7 +73,7 @@ else
                         <MudTooltip Delay="500" 
                             Duration="1000" 
                             Text="@(gallery.Photos.Any() ? "NOTE: Galleries displayed in masonry grids, etc. must be public" 
-                                                         : "NOTE: Galleries that don't contain any photos cannot be made public")" 
+                                                         : "NOTE: A gallery must contain photos and have a header image before it can be made public")"
                             Arrow="true" 
                             Placement="Placement.Bottom"
                         >
@@ -90,8 +90,8 @@ else
                 <div class="px-6 pb-6">
                     <MudTooltip Delay="500" 
                         Duration="1000" 
-                        Text="@(gallery.Photos.Any() ? "NOTE: This only applies to 'public' gallery lists"
-                                                     : "NOTE: Galleries that don't contain photos cannot be displayed in gallery lists")"
+                        Text="@(gallery.Photos.Any() ? "NOTE: This only applies to 'public' gallery lists, not this page"
+                                                     : "NOTE: A gallery must contain photos and have a header image before it can be made public")"
                         Arrow="true" 
                         Placement="Placement.Bottom"
                     >
