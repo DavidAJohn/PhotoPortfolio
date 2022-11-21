@@ -3,35 +3,44 @@
 @using PhotoPortfolio.Shared.Entities;
 @using PhotoPortfolio.Shared.Models;
 @using System.Net.Http.Headers;
+@using Microsoft.Extensions.Configuration;
 
 @inject ISnackbar Snackbar
 @inject IAdminService adminService
+@inject IConfiguration config
 
-<MudStack Style="width: 100%">
-    <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Accept=".jpg,.png" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
-                    @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
-        <ButtonTemplate>
-            <MudPaper Height="300px" Outlined="true" Class="@DragClass">
-                <MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
-                @foreach (var file in fileNames)
-                {
-                    if (uploadFailures.Any(s => s.Contains(file)))
+@if (uploadsEnabled)
+{
+    <MudStack Style="width: 100%">
+        <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Accept="@config["Uploads:FileExtensionsAllowed"]" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+                   @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+            <ButtonTemplate>
+                <MudPaper Height="300px" Outlined="true" Class="@DragClass">
+                    <MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
+                    @foreach (var file in fileNames)
                     {
-                        <MudChip Color="Color.Error" Text="@file" OnClose="RemoveFile" Class="z-30" />
+                        if (uploadFailures.Any(s => s.Contains(file)))
+                        {
+                            <MudChip Color="Color.Error" Text="@file" OnClose="RemoveFile" Class="z-30" />
+                        }
+                        else
+                        {
+                            <MudChip Color="Color.Default" Text="@file" OnClose="RemoveFile" Class="z-30" />
+                        }
                     }
-                    else
-                    {
-                        <MudChip Color="Color.Default" Text="@file" OnClose="RemoveFile" Class="z-30" />
-                    }
-                }
-            </MudPaper>
-        </ButtonTemplate>
-    </MudFileUpload>
-    <MudToolBar DisableGutters="true" Class="gap-4">
-        <MudButton OnClick="Upload" StartIcon="@Icons.Filled.CloudUpload" Disabled="@(!fileNames.Any())" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
-        <MudButton OnClick="Clear" Disabled="@(!fileNames.Any())" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
-    </MudToolBar>
-</MudStack>
+                </MudPaper>
+            </ButtonTemplate>
+        </MudFileUpload>
+        <MudToolBar DisableGutters="true" Class="gap-4">
+            <MudButton OnClick="Upload" StartIcon="@Icons.Filled.CloudUpload" Disabled="@(!fileNames.Any())" Color="Color.Primary" Variant="Variant.Filled">Upload</MudButton>
+            <MudButton OnClick="Clear" Disabled="@(!fileNames.Any())" Color="Color.Error" Variant="Variant.Filled">Clear</MudButton>
+        </MudToolBar>
+    </MudStack>
+}
+else
+{
+    <div class="text-lg font-semibold text-red-500">File uploads are currently disabled</div>
+}
 
 @code {
     [Parameter]
@@ -47,37 +56,84 @@
     private List<string> fileNames = new();
     private List<string> uploadFailures = new();
 
+    private bool uploadsEnabled = true;
+
+    private int maxFileUploadSize;
+    private string fileExtensionsAllowed = string.Empty;
+    private string fileContentTypesAllowed = string.Empty;
+    private string[]? extensionsArray;
+    private string[]? contentTypesArray;
+    private int fileNameTruncateAt;
+    private int fileUploadCount;
+
+    protected override void OnInitialized()
+    {
+        maxFileUploadSize = int.TryParse(config["Uploads:MaxFileUploadSize"], out _)
+            ? int.Parse(config["Uploads:MaxFileUploadSize"])
+            : 2097152; // 2Mb default
+
+        fileNameTruncateAt = int.TryParse(config["Uploads:FileNameTruncateAt"], out _)
+            ? int.Parse(config["Uploads:FileNameTruncateAt"])
+            : 48;
+
+        fileUploadCount = int.TryParse(config["Uploads:FileUploadCount"], out _)
+            ? int.Parse(config["Uploads:FileUploadCount"])
+            : 1;
+
+        fileExtensionsAllowed = config["Uploads:FileExtensionsAllowed"];
+        fileContentTypesAllowed = config["Uploads:FileContentTypesAllowed"];
+
+        // uploadable file & content types must be provided in wwwroot/appsettings: 
+        // eg. ".jpg,.png" & "image/jpeg,image/png"
+        if (string.IsNullOrEmpty(fileExtensionsAllowed) || string.IsNullOrEmpty(fileContentTypesAllowed))
+        {
+            uploadsEnabled = false;
+        }
+        else
+        {
+            extensionsArray = fileExtensionsAllowed.Split(",");
+            contentTypesArray = fileContentTypesAllowed.Split(",");
+        }
+    }
+
     private void OnInputFileChanged(InputFileChangeEventArgs e)
     {
         ClearDragClass();
 
-        if (e.FileCount <= 5) // arbitrary limit during development
+        if (e.FileCount <= fileUploadCount)
         {
             var files = e.GetMultipleFiles();
 
             foreach (var file in files)
             {
-                if (file.ContentType != "image/jpeg" && file.ContentType != "image/png")
+                if (contentTypesArray is null || !contentTypesArray.Contains(file.ContentType))
                 {
-                    Snackbar.Add($"Only .jpg and .png files can be uploaded - '{file.Name}' was excluded", Severity.Warning);
+                    if (extensionsArray is not null)
+                    {
+                        Snackbar.Add($"Only these file types can be uploaded: '{string.Join(", ", extensionsArray)}' - '{file.Name}' was excluded", Severity.Warning);
+                    }
+                    else
+                    {
+                        Snackbar.Add($"'{file.Name}' cannot be uploaded because of its file type", Severity.Warning);
+                    }
                 }
                 else
                 {
-                    if (file.Size > 2097152) // 2097152 = 2Mb (probably use 20-25Mb in production)
+                    if (file.Size > maxFileUploadSize)
                     {
-                        Snackbar.Add($"'{file.Name}' is too large. The limit is 2Mb", Severity.Warning);
+                        Snackbar.Add($"'{file.Name}' is too large. The limit is {(maxFileUploadSize / 1048576)}Mb", Severity.Warning);
                     }
                     else
                     {
                         validatedFiles.Add(file);
-                        fileNames.Add(file.Name.Truncate(48));
+                        fileNames.Add(file.Name.Truncate(fileNameTruncateAt));
                     }
                 }
             }
         }
         else
         {
-            Snackbar.Add("Only 5 photos at a time can be uploaded", Severity.Error);
+            Snackbar.Add($"Only {fileUploadCount} {(fileUploadCount == 1 ? "photo" : "photos")} at a time can be uploaded", Severity.Error);
         }
     }
 
@@ -94,7 +150,7 @@
     {
         fileNames.Remove(chip.Text);
 
-        var index = validatedFiles.FindIndex(x => x.Name.Truncate(48) == chip.Text);
+        var index = validatedFiles.FindIndex(x => x.Name.Truncate(fileNameTruncateAt) == chip.Text);
 
         if (index != -1)
         {
@@ -122,22 +178,21 @@
     {
         // effectively generates a re-render of the file list in the ui, 
         // by removing and re-adding the file name, thus changing the fileNames list
-        fileNames.Remove(filename.Truncate(48));
-        fileNames.Add(filename.Truncate(48));
+        fileNames.Remove(filename.Truncate(fileNameTruncateAt));
+        fileNames.Add(filename.Truncate(fileNameTruncateAt));
     }
 
     private async Task Upload()
     {
         var upload = false;
         using var content = new MultipartFormDataContent();
-        var maxFileSize = 2097152; // 2Mb
         uploadFailures.Clear();
 
         foreach (var file in validatedFiles)
         {
             try
             {
-                var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+                var fileContent = new StreamContent(file.OpenReadStream(maxFileUploadSize));
 
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
 
@@ -196,7 +251,7 @@
                         }
                         else
                         {
-                            uploadFailures.Add(photo.FileName.Truncate(48)); //add to list of failed uploads to allow ui to highlight it
+                            uploadFailures.Add(photo.FileName.Truncate(fileNameTruncateAt)); //add to list of failed uploads to allow ui to highlight it
                             HighlightFile(photo.FileName); // effectively forces a re-render of the file list in the ui
                             Console.WriteLine($"'{result.FileName}' was uploaded to Azure, but NOT added to the database");
                             Snackbar.Add($"There was a problem adding '{result.FileName}' to the database", Severity.Error);
@@ -204,7 +259,7 @@
                     }
                     else
                     {
-                        uploadFailures.Add(result.FileName?.Truncate(48)); //add to list of failed uploads to allow ui to highlight it
+                        uploadFailures.Add(result.FileName?.Truncate(fileNameTruncateAt)); //add to list of failed uploads to allow ui to highlight it
                         HighlightFile(result.FileName); // effectively forces a re-render of the file list in the ui
                         Snackbar.Add($"There was a problem uploading '{result.FileName}'", Severity.Error);
                     }
