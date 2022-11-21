@@ -111,7 +111,7 @@ else
                     }
                     <div class="mt-16 lg:mr-32">
                         <div class="text-2xl mb-2">Upload Photos</div>
-                        <PhotoUpload GalleryId="@gallery.Id" />
+                        <PhotoUpload GalleryId="@gallery.Id" PhotoUpdate="GetGalleryPhotos" />
                     </div>
                 </div>
             }
@@ -120,7 +120,7 @@ else
                 <div class="w-2/3 mt-12">
                     <div class="text-lg mb-2">There are currently no photos in this gallery</div>
                     <div class="mt-8 lg:mr-32">
-                        <PhotoUpload GalleryId="@gallery.Id" />
+                        <PhotoUpload GalleryId="@gallery.Id" PhotoUpdate="GetGalleryPhotos" />
                     </div>
                 </div>
             }
@@ -247,6 +247,37 @@ else
         else
         {
             Snackbar.Add($"The header image could NOT be updated", Severity.Error);
+        }
+    }
+
+    public async Task GetGalleryPhotos(string galleryId)
+    {
+        if (!string.IsNullOrEmpty(galleryId))
+        {
+            try
+            {
+                gallery = await adminService.GetGalleryByIdAsync(galleryId);
+
+                if (gallery is null)
+                {
+                    errorMessage = "Could not retrieve gallery details";
+                }
+                else
+                {
+                    model = gallery;
+                    errorMessage = "";
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                errorMessage = "Could not retrieve gallery details";
+            }
+        }
+        else
+        {
+            errorMessage = "Could not retrieve gallery details";
         }
     }
 }

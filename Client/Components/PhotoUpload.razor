@@ -37,6 +37,9 @@
     [Parameter]
     public string? GalleryId { get; set;  }
 
+    [Parameter]
+    public EventCallback<string> PhotoUpdate { get; set; }
+
     private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full ";
     private string DragClass = DefaultDragClass;
     private List<IBrowserFile> validatedFiles = new();
@@ -185,6 +188,7 @@
 
                         if (newPhoto)
                         {
+                            await PhotoUpdate.InvokeAsync(GalleryId);
                             RemoveFile(photo.FileName); // successful uploads will disappear from the upload list
                             uploadFailures.Remove(photo.FileName); // in case of previous failure
                             Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
