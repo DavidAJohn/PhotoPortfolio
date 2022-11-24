@@ -18,14 +18,6 @@ public class ProductsController : BaseApiController
         return await _repository.GetAllAsync();
     }
 
-    [HttpGet("{photoId:length(24)}")]
-    public async Task<List<Product>> GetProductsForPhoto(string photoId)
-    {
-        var products = await _repository.GetProductsForPhotoAsync(photoId);
-
-        return products;
-    }
-
     [HttpPost]
     public async Task<IActionResult> AddProduct(Product product)
     {

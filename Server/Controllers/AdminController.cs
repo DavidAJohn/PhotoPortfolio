@@ -13,7 +13,7 @@ using System.Web;
 
 namespace PhotoPortfolio.Server.Controllers;
 
-[Authorize]
+//[Authorize]
 public class AdminController : BaseApiController
 {
     private readonly IGalleryRepository _galleryRepository;

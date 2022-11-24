@@ -11,13 +11,4 @@ public class ProductRepository : BaseRepository<Product>, IProductRepository
     {
         _context = context;
     }
-
-    public async Task<List<Product>> GetProductsForPhotoAsync(string photoId)
-    {
-        var _products = _context.Database.GetCollection<Product>(_collectionName);
-
-        return await _products
-                .Find(p => p.PhotoId == photoId)
-                .ToListAsync();
-    }
 }

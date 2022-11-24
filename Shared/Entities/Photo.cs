@@ -14,4 +14,5 @@ public class Photo : BaseEntity
     public int GallerySortOrder { get; set; } = 0;
     public DateTime DateAdded { get; set; } = DateTime.UtcNow;
     public PhotoMetadata? Metadata { get; set; }
+    public List<PhotoProduct>? Products { get; set; }
 }

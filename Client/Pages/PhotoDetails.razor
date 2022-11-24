@@ -142,8 +142,8 @@
 
     private List<DropdownItem> dropdownOptions = new();
 
-    private List<Product> products = new();
-    private Product product = new();
+    private List<PhotoProduct> products = new();
+    private PhotoProduct product = new();
 
     private string initialInstructionsText = "Choose an option above to see further details, including prices.";
 
@@ -157,7 +157,6 @@
     protected override async Task OnInitializedAsync()
     {
         await GetPhotoById();
-        await GetProductsForPhoto();
     }
 
     private async Task GetPhotoById()
@@ -165,36 +164,34 @@
         try
         {
             photo = await photoService.GetPhotoByIdAsync(Id);
-            errorMessage = "";
+
+            if (photo is not null)
+            {
+                if (photo.Products is not null && photo.Products.Count > 0)
+                {
+                    products = photo.Products;
+
+                    foreach (PhotoProduct product in products)
+                    {
+                        dropdownOptions.Add(new DropdownItem
+                            {
+                                OptionName = product.CustomDescription,
+                                OptionRef = product.ProdigiSku
+                            });
+                    }
+                }
+
+                errorMessage = "";
+            }
+            else
+            {
+                errorMessage = "Could not find details for this photo";
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
             errorMessage = "Could not find this photo";
-        }
-    }
-
-    private async Task GetProductsForPhoto()
-    {
-        try
-        {
-            products = await productService.GetProductsForPhotoAsync(Id);
-
-            foreach (Product product in products)
-            {
-                dropdownOptions.Add(new DropdownItem
-                    {
-                        OptionName = product.CustomDescription,
-                        OptionRef = product.ProdigiSku
-                    });
-            }
-
-            errorMessage = "";
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            errorMessage = "Could not find products for this photo";
         }
     }
 

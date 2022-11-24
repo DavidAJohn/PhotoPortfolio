@@ -17,7 +17,7 @@
         {
             @foreach (Photo photo in photos)
             {
-                <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto(photo.Id))">
+                <div class="group relative overflow-hidden hover:cursor-pointer" @onclick="@(() => ShowPhoto(photo))">
                     <img class="object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" src=@photo.Uri />
                     <div class="absolute invisible group-hover:!visible text-xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
                         View
@@ -73,13 +73,13 @@
         }
     }
 
-    private async Task ShowPhoto(string photoId)
+    private async Task ShowPhoto(Photo photo)
     {
         var parameters = new ModalParameters();
-        parameters.Add(nameof(LightboxModal.PhotoId), photoId);
+        parameters.Add(nameof(LightboxModal.PhotoId), photo.Id);
 
-        // check if any products are associated with the photo - hide confirm button if not
-        var hasProducts = await PhotoHasProducts(photoId);
+        // check if the photo has any products - hide confirm/purchase button if not
+        var hasProducts = photo.Products == null || !photo.Products.Any() ? false : true;
 
         // add confirm button options as a LightboxModal parameter
         LightboxConfirmOptions confirmOptions = new LightboxConfirmOptions()
@@ -105,14 +105,5 @@
         {
             Console.WriteLine(result.Data);
         }
-    }
-
-    private async Task<bool> PhotoHasProducts(string photoId)
-    {
-        var products = await productService.GetProductsForPhotoAsync(photoId);
-
-        if (products is not null) return products.Count > 0;
-
-        return false;
     }
 }
