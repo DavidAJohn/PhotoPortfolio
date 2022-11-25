@@ -11,4 +11,5 @@ public interface IAdminService
     Task<bool> CreateGalleryAsync(CreateGalleryDto gallery);
     Task<bool> AddPhotoAsync(Photo photo);
     Task<List<UploadResult>> UploadPhotos(MultipartFormDataContent content);
+    Task<List<Product>> GetProductsAsync();
 }
