@@ -246,6 +246,15 @@ public class AdminController : BaseApiController
                             }
                         }
 
+                        if (imageWidth != 0 && imageHeight != 0) 
+                        {
+                            _logger.LogInformation("Extracted width & height ({imageWidth}x{imageHeight}) photo metadata for '{fileName}'", imageWidth, imageHeight, file.FileName);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Failed to Extract width & height photo metadata for '{fileName}'", file.FileName);
+                        }
+                        
                         // extract metadata from the 'Exif IFD0' directory
                         var ifdoDirectory = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
 
@@ -299,7 +308,7 @@ public class AdminController : BaseApiController
                         };
                     }
 
-                    _logger.LogInformation("Extracted photo metadata for '{fileName}' without errors", file.FileName);
+                    _logger.LogInformation("Extracted photo metadata for '{fileName}' without errors: {@uploadResult.Metadata}", file.FileName, uploadResult.Metadata);
 
                     // also update the UploadRequest object with data from Azure
                     uploadResult.Uploaded = true;
