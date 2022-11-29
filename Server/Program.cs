@@ -17,6 +17,8 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    builder.Host.UseSerilog();
+
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
@@ -61,6 +63,8 @@ try
 
     app.UseBlazorFrameworkFiles();
     app.UseStaticFiles();
+
+    app.UseSerilogRequestLogging();
 
     app.UseRouting();
 
