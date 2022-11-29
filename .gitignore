@@ -456,3 +456,4 @@ $RECYCLE.BIN/
 # Custom additions
 **/wwwroot/css/tailwind.css
 .env
+.logs/*

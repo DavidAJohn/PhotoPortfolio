@@ -7,9 +7,10 @@ using Serilog;
 using Serilog.Events;
 
 Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-            .WriteTo.Console()
-            .CreateLogger();
+        //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+        .WriteTo.Console()
+        .WriteTo.File("logs/errors.txt", restrictedToMinimumLevel: LogEventLevel.Warning)
+        .CreateLogger();
 
 try
 {

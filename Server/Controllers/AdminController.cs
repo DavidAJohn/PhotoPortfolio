@@ -252,7 +252,7 @@ public class AdminController : BaseApiController
                         }
                         else
                         {
-                            _logger.LogInformation("Failed to Extract width & height photo metadata for '{fileName}'", file.FileName);
+                            _logger.LogWarning("Failed to extract width & height photo metadata for '{fileName}'", file.FileName);
                         }
                         
                         // extract metadata from the 'Exif IFD0' directory
