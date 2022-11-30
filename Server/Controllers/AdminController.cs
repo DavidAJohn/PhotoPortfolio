@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PhotoPortfolio.Shared.Entities;
 using PhotoPortfolio.Shared.Models;
+using SerilogTimings;
 using System.Web;
 
 namespace PhotoPortfolio.Server.Controllers;
@@ -192,14 +193,17 @@ public class AdminController : BaseApiController
                         };
                     }
 
+                    using (var op = Operation.Begin("Upload of '{filename}' to Azure Storage", file.FileName)) // SerilogTimings
                     using (var fileStream = file.OpenReadStream())
                     {
                         await blob.UploadAsync(fileStream, blobHttpHeader);
+                        op.Complete();
                     }
 
                     _logger.LogInformation("'{originalName}' was uploaded to Azure as '{uploadName}'", file.FileName, trustedFileNameForStorage);
 
-                    // extract image metadata - need to use a new stream
+                    // extract image metadata - using a new stream
+                    using (var op = Operation.Begin("Extraction of metadata from '{filename}'", file.FileName)) // SerilogTimings
                     using (var fileStream = file.OpenReadStream())
                     {
                         uploadResult.Metadata = new PhotoMetadata();
@@ -278,6 +282,8 @@ public class AdminController : BaseApiController
                         {
                             uploadResult.Metadata.Tags = iptcDirectory?.GetKeywords()?.ToList();
                         }
+
+                        op.Complete();
                     }
 
                     _logger.LogInformation("Extracted photo metadata for '{fileName}' without errors", file.FileName);
