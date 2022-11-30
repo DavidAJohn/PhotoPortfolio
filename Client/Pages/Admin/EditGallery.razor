@@ -201,12 +201,26 @@ else
         var parameters = new ModalParameters();
         parameters.Add(nameof(LightboxModal.PhotoId), photoId);
 
-        LightboxConfirmOptions confirmOptions = new LightboxConfirmOptions()
+        LightboxConfirmOptions editImageOptions = new LightboxConfirmOptions()
             {
                 ShowButton = true,
-                ButtonText = "Use as cover image",
+                ButtonText = "Edit image details",
+                ButtonAction = LightboxConfirmAction.Navigate,
+                NavigateUri = "/admin/photos/edit/" + photoId
+            };
+
+        var headerImageText = "Use as cover image";
+
+        LightboxConfirmOptions headerImageOptions = new LightboxConfirmOptions()
+            {
+                ShowButton = true,
+                ButtonText = headerImageText,
                 ButtonAction = LightboxConfirmAction.CloseOnly
             };
+
+        List<LightboxConfirmOptions> confirmOptions = new();
+        confirmOptions.Add(editImageOptions);
+        confirmOptions.Add(headerImageOptions);
 
         parameters.Add(nameof(LightboxModal.LightboxConfirmOptions), confirmOptions);
 
@@ -221,9 +235,14 @@ else
 
         if (!result.Cancelled)
         {
-            var photo = (Photo)result.Data;
+            var data = (ModalConfirmResult)result.Data;
+            var photo = data.Photo;
+            var button = data.Button;
 
-            await UpdateHeaderImage(photo);
+            if (button.ButtonText == headerImageText)
+            {
+                await UpdateHeaderImage(photo);
+            }
         }
     }
 

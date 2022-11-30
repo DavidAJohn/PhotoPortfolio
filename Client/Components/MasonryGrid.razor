@@ -82,13 +82,16 @@
         var hasProducts = photo.Products == null || !photo.Products.Any() ? false : true;
 
         // add confirm button options as a LightboxModal parameter
-        LightboxConfirmOptions confirmOptions = new LightboxConfirmOptions()
+        LightboxConfirmOptions buyPrintOptions = new LightboxConfirmOptions()
         {
             ShowButton = hasProducts,
             ButtonText = "Buy Prints, etc.",
             ButtonAction = LightboxConfirmAction.NavigateForceLoad,
-            NavigateUri = "/photo/"
+            NavigateUri = "/photo/" + photo.Id
         };
+
+        List<LightboxConfirmOptions> confirmOptions = new();
+        confirmOptions.Add(buyPrintOptions);
 
         parameters.Add(nameof(LightboxModal.LightboxConfirmOptions), confirmOptions);
 

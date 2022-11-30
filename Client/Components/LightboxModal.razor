@@ -20,11 +20,20 @@
         </div>
 
         <div class="modal-buttons mt-4 pr-[1rem] md:pr-0">
-            @if (ShowConfirmButton)
+            @if (LightboxConfirmOptions is not null)
             {
-                <button @onclick="Confirm" type="button" id="lightbox-confirm" class="bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4">
-                    @ConfirmButtonText
-                </button>
+                foreach (var button in LightboxConfirmOptions)
+                {
+                    if (button.ShowButton)
+                    {
+                        <button @onclick="@(() => OnConfirmButtonClick(button))" 
+                            type="button" 
+                            class="lightbox-confirm bg-green-700 hover:bg-green-600 text-white text-sm py-1 px-2 rounded-sm mr-4"
+                        >
+                            @button.ButtonText
+                        </button>
+                    }
+                }
             }
             <button @onclick="Cancel" type="button" id="lightbox-cancel" class="bg-red-500/70 text-white text-sm py-1 px-2 rounded-sm">
                 @CancelButtonText
@@ -35,38 +44,42 @@
 
 @code {
     [CascadingParameter]
-    BlazoredModalInstance ModalInstance { get; set; }
+    BlazoredModalInstance? ModalInstance { get; set; }
 
     [Parameter]
     public string PhotoId { get; set; } = string.Empty;
 
     [Parameter]
-    public LightboxConfirmOptions? LightboxConfirmOptions { get; set; }
+    public List<LightboxConfirmOptions>? LightboxConfirmOptions { get; set; }
 
     [Parameter]
     public string CancelButtonText { get; set; } = "Close";
 
-    private bool ShowConfirmButton { get; set; } = true;
-    private string ConfirmButtonText { get; set; } = "Confirm";
-
     private Photo photo = null!;
     private string errorMessage = "";
 
-    void Confirm()
+    void OnConfirmButtonClick(LightboxConfirmOptions button)
     {
-        ModalInstance.CloseAsync(ModalResult.Ok<Photo>(photo)); // always return an Ok result with the photo object
+        var modalConfirmResult = new ModalConfirmResult()
+            {
+                Photo = photo,
+                Button = button
+            };
 
-        if (LightboxConfirmOptions is not null)
+        ModalInstance?.CloseAsync(ModalResult.Ok<ModalConfirmResult>(modalConfirmResult));
+
+        if (button is not null)
         {
-            switch (LightboxConfirmOptions.ButtonAction)
+            switch (button.ButtonAction)
             {
                 case LightboxConfirmAction.Navigate:
-                    navigationManager.NavigateTo(LightboxConfirmOptions.NavigateUri + PhotoId);
+                    navigationManager.NavigateTo(button.NavigateUri);
                     break;
                 case LightboxConfirmAction.NavigateForceLoad:
                     // forceLoad to remove modal page scroll
-                    navigationManager.NavigateTo(LightboxConfirmOptions.NavigateUri + PhotoId, true);
+                    navigationManager.NavigateTo(button.NavigateUri, true);
                     break;
+                // CloseOnly case is ignored here
                 default:
                     break;
             }
@@ -75,18 +88,12 @@
 
     void Cancel()
     {
-        ModalInstance.CancelAsync();
+        ModalInstance?.CancelAsync();
     }
 
     protected override async Task OnInitializedAsync()
     {
         await GetPhotoById();
-
-        if (LightboxConfirmOptions is not null)
-        {
-            ShowConfirmButton = LightboxConfirmOptions.ShowButton;
-            ConfirmButtonText = LightboxConfirmOptions.ButtonText;
-        }
     }
 
     private async Task GetPhotoById()
