@@ -202,18 +202,7 @@ public class AdminController : BaseApiController
                     // extract image metadata - need to use a new stream
                     using (var fileStream = file.OpenReadStream())
                     {
-                        int imageWidth = 0;
-                        int imageHeight = 0;
-                        string cameraMake = "";
-                        string cameraModel = "";
-                        string dateTaken = "";
-                        string aperture = "";
-                        string shutterSpeed = "";
-                        string iso = "";
-                        string focalLength = "";
-                        string lensMake = "";
-                        string lensModel = "";
-                        IList<string>? tags = new List<string>();
+                        uploadResult.Metadata = new PhotoMetadata();
 
                         // For details of how to use MetadataExtractor: 
                         // https://github.com/drewnoakes/metadata-extractor-dotnet
@@ -227,8 +216,8 @@ public class AdminController : BaseApiController
 
                             if (jpegDirectory != null)
                             {
-                                imageWidth = jpegDirectory.GetImageWidth();
-                                imageHeight = jpegDirectory.GetImageHeight();
+                                uploadResult.Metadata.Width = jpegDirectory.GetImageWidth();
+                                uploadResult.Metadata.Height = jpegDirectory.GetImageHeight();
                             }
                         }
 
@@ -241,14 +230,14 @@ public class AdminController : BaseApiController
                                 var imageWidthString = pngDirectory.GetDescription(PngDirectory.TagImageWidth);
                                 var imageHeightString = pngDirectory.GetDescription(PngDirectory.TagImageHeight);
 
-                                imageWidth = string.IsNullOrEmpty(imageWidthString) ? 0 : int.Parse(imageWidthString);
-                                imageHeight = string.IsNullOrEmpty(imageHeightString) ? 0 : int.Parse(imageHeightString);
+                                uploadResult.Metadata.Width = string.IsNullOrEmpty(imageWidthString) ? 0 : int.Parse(imageWidthString);
+                                uploadResult.Metadata.Height = string.IsNullOrEmpty(imageHeightString) ? 0 : int.Parse(imageHeightString);
                             }
                         }
 
-                        if (imageWidth != 0 && imageHeight != 0) 
+                        if (uploadResult.Metadata.Width != 0 && uploadResult.Metadata.Height != 0) 
                         {
-                            _logger.LogInformation("Extracted width & height ({imageWidth}x{imageHeight}) photo metadata for '{fileName}'", imageWidth, imageHeight, file.FileName);
+                            _logger.LogInformation("Extracted width & height ({imageWidth}x{imageHeight}) photo metadata for '{fileName}'", uploadResult.Metadata.Width, uploadResult.Metadata.Height, file.FileName);
                         }
                         else
                         {
@@ -260,8 +249,8 @@ public class AdminController : BaseApiController
 
                         if (ifdoDirectory != null)
                         {
-                            cameraMake = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagMake) ?? "";
-                            cameraModel = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagModel) ?? "";
+                            uploadResult.Metadata.CameraMake = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagMake) ?? "";
+                            uploadResult.Metadata.CameraModel = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagModel) ?? "";
 
                             imageTitle = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinTitle) ?? "";
                             imageSubject = ifdoDirectory?.GetDescription(ExifDirectoryBase.TagWinSubject) ?? "";
@@ -272,14 +261,14 @@ public class AdminController : BaseApiController
 
                         if (subIfdDirectory != null)
                         {
-                            dateTaken = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeOriginal) ?? "";
-                            aperture = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagAperture) ?? "";
-                            shutterSpeed = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagShutterSpeed) ?? "";
-                            iso = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagIsoEquivalent) ?? "";
-                            focalLength = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagFocalLength) ?? "";
+                            uploadResult.Metadata.DateTaken = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagDateTimeOriginal) ?? "";
+                            uploadResult.Metadata.Aperture = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagAperture) ?? "";
+                            uploadResult.Metadata.ShutterSpeed = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagShutterSpeed) ?? "";
+                            uploadResult.Metadata.Iso = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagIsoEquivalent) ?? "";
+                            uploadResult.Metadata.FocalLength = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagFocalLength) ?? "";
 
-                            lensMake = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagLensMake) ?? "";
-                            lensModel = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagLensModel) ?? "";
+                            uploadResult.Metadata.LensMake = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagLensMake) ?? "";
+                            uploadResult.Metadata.LensModel = subIfdDirectory?.GetDescription(ExifDirectoryBase.TagLensModel) ?? "";
                         }
                         
                         // extract metadata from the 'IPTC' directory
@@ -287,34 +276,18 @@ public class AdminController : BaseApiController
 
                         if (iptcDirectory != null)
                         {
-                           tags = iptcDirectory?.GetKeywords();
+                            uploadResult.Metadata.Tags = iptcDirectory?.GetKeywords()?.ToList();
                         }
-                        
-                        // add the extracted metadata to the UploadResult object for this file
-                        uploadResult.Metadata = new PhotoMetadata()
-                        {
-                            Width = imageWidth,
-                            Height = imageHeight,
-                            CameraMake = cameraMake,
-                            CameraModel = cameraModel,
-                            LensMake = lensMake,
-                            LensModel = lensModel,
-                            ShutterSpeed = shutterSpeed,
-                            Aperture = aperture,
-                            Iso = iso,
-                            FocalLength = focalLength,
-                            DateTaken = dateTaken,
-                            Tags = tags?.ToList()
-                        };
                     }
 
-                    _logger.LogInformation("Extracted photo metadata for '{fileName}' without errors: {@uploadResult.Metadata}", file.FileName, uploadResult.Metadata);
+                    _logger.LogInformation("Extracted photo metadata for '{fileName}' without errors", file.FileName);
 
-                    // also update the UploadRequest object with data from Azure
+                    // also update the uploadResult object with data from Azure
                     uploadResult.Uploaded = true;
                     uploadResult.StoredFileName = blob.Name;
                     uploadResult.AzureUri = blob.Uri.ToString();
                     uploadResult.ErrorCode = 0;
+
                     uploadResult.Title = imageTitle == "" ? file.FileName : imageTitle; // use file name if title is unavailable
                     uploadResult.Subject = imageSubject;
 
@@ -325,7 +298,8 @@ public class AdminController : BaseApiController
                 }
                 catch (ImageProcessingException ex)
                 {
-                    _logger.LogError("Photo metadata for '{fileName}' could not be extracted : {message}", file.FileName, ex.Message);
+                    var metadata = uploadResult.Metadata;
+                    _logger.LogError("Photo metadata for '{fileName}' could not be extracted - {message}. Metadata : {@Metadata}", file.FileName, ex.Message, metadata);
 
                     uploadResult.Uploaded = false;
                     uploadResult.FileName = file.FileName;
@@ -335,7 +309,8 @@ public class AdminController : BaseApiController
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("The file '{fileName}' could not be uploaded to Azure, or photo metadata could not be extracted without error(s): {message}", file.FileName, ex.Message);
+                    var metadata = uploadResult.Metadata;
+                    _logger.LogError("The file '{fileName}' could not be uploaded to Azure, or photo metadata could not be extracted without error(s): {message}. Metadata : {@Metadata}", file.FileName, ex.Message, metadata);
 
                     uploadResult.Uploaded = false;
                     uploadResult.FileName = file.FileName;
