@@ -1,0 +1,44 @@
+﻿@page "/admin/photos/edit/{Id}"
+@layout AdminLayout
+
+@using Microsoft.AspNetCore.Authorization
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models;
+
+@inject IGalleryService galleryService
+@inject IAdminService adminService
+@inject ISnackbar Snackbar
+
+@attribute [Authorize]
+
+<PageTitle>Photo Portfolio : Admin : Edit Photo</PageTitle>
+
+@if (errorMessage != "")
+{
+    <div class="mx-2 animate-pulse">
+        <div class="alert-box" role="alert">
+            <span class="block sm:inline">@errorMessage</span>
+        </div>
+    </div>
+}
+else if (Id == null)
+{
+    <text>Loading photo...</text>
+}
+else
+{
+    <div class="m-4 md:m-8 ">
+        <div class="text-3xl mb-8">Edit Photo</div>
+        <div class="text-lg font-semibold">Photo Id: @Id</div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    Photo photo = new Photo();
+    private string errorMessage = "";
+
+}
