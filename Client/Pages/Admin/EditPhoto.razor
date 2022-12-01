@@ -7,7 +7,7 @@
 @using PhotoPortfolio.Shared.Models;
 
 @inject IGalleryService galleryService
-@inject IAdminService adminService
+@inject IPhotoService photoService
 @inject ISnackbar Snackbar
 
 @attribute [Authorize]
@@ -22,7 +22,7 @@
         </div>
     </div>
 }
-else if (Id == null)
+else if (photo == null)
 {
     <text>Loading photo...</text>
 }
@@ -30,7 +30,15 @@ else
 {
     <div class="m-4 md:m-8 ">
         <div class="text-3xl mb-8">Edit Photo</div>
-        <div class="text-lg font-semibold">Photo Id: @Id</div>
+    </div>
+    <div class="my-24 grid sm:grid-cols-1 lg:grid-cols-2 gap-16">
+            <div class="mx-4 flex justify-end">
+                <img src="@photo.Uri" class="w-full px-4 lg:w-auto lg:h-112 lg:px-0" id="photo-image" />
+            </div>
+            <div class="px-2 lg:px-0">
+                <div class="text-xl lg:text-3xl font-bold mb-4" id="photo-title">@photo.Title</div>
+                <div class="text-sm lg:text-base mb-4 text-justify" id="photo-caption">@photo.Caption</div>
+            </div>
     </div>
 }
 
@@ -41,4 +49,37 @@ else
     Photo photo = new Photo();
     private string errorMessage = "";
 
+    protected override async Task OnInitializedAsync()
+    {
+        await GetPhotoById();
+    }
+
+    private async Task GetPhotoById()
+    {
+        if (!string.IsNullOrEmpty(Id))
+        {
+            try
+            {
+                photo = await photoService.GetPhotoByIdAsync(Id);
+
+                if (photo is not null)
+                {
+                    errorMessage = "";
+                }
+                else
+                {
+                    errorMessage = "Could not find details for this photo";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                errorMessage = "Could not find this photo";
+            }
+        }
+        else
+        {
+            errorMessage = "Could not find this photo";
+        }
+    }
 }
