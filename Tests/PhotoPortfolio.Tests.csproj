@@ -23,6 +23,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
+		<PackageReference Include="Moq" Version="4.18.3" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -35,11 +36,8 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Client\PhotoPortfolio.Client.csproj" />
+	  <ProjectReference Include="..\Server\PhotoPortfolio.Server.csproj" />
 	  <ProjectReference Include="..\Shared\PhotoPortfolio.Shared.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Client\Shared\" />
 	</ItemGroup>
 
 

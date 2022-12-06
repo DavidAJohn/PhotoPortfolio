@@ -1,0 +1,29 @@
+﻿@inherits TestContext
+
+@using PhotoPortfolio.Shared.Models
+
+@code {
+    [Fact]
+    public void GalleryBreadcrumb_Displays_Gallery_Page_Back_Link()
+    {
+        var cut = Render(@<GalleryBreadcrumb GalleryName="Test Gallery" />);
+
+        var element = cut.Find("#breadcrumb-gallery-link");
+
+        element.MarkupMatches(
+            @<a class:ignore="" href="\gallery" id="breadcrumb-gallery-link">Gallery</a>
+        );
+    }
+
+    [Fact]
+    public void GalleryBreadcrumb_Displays_Expected_Gallery_Name()
+    {
+        var cut = Render(@<GalleryBreadcrumb GalleryName="Test Gallery" />);
+
+        var element = cut.Find("#breadcrumb-gallery-name");
+
+        element.MarkupMatches(
+            @<li class:ignore="" id="breadcrumb-gallery-name">Test Gallery</li>
+        );
+    }
+}

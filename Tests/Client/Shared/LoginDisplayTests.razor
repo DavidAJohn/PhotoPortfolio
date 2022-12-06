@@ -1,0 +1,52 @@
+﻿@code {
+    [Fact]
+    public void LoginDisplay_Displays_Logged_In_User_When_Authorised()
+    {
+        using var ctx = new TestContext();
+        var authContext = ctx.AddTestAuthorization();
+        authContext.SetAuthorized("Test User", AuthorizationState.Authorized);
+
+        var cut = ctx.RenderComponent<LoginDisplay>();
+        var element = cut.Find("#login-name");
+
+        element.MarkupMatches
+        (@<span class:ignore="" id="login-name">
+            Logged in as: Test User
+        </span>
+        );
+    }
+
+    [Fact]
+    public void LoginDisplay_Displays_Log_Out_Button_When_Authorised()
+    {
+        using var ctx = new TestContext();
+        var authContext = ctx.AddTestAuthorization();
+        authContext.SetAuthorized("Test User", AuthorizationState.Authorized);
+
+        var cut = ctx.RenderComponent<LoginDisplay>();
+        var element = cut.Find("#logout-button");
+
+        element.MarkupMatches
+        (@<button class:ignore="" id="logout-button">
+            Log Out
+        </button>
+        );
+    }
+
+    [Fact]
+    public void LoginDisplay_Displays_Log_In_Link_When_Unauthorised()
+    {
+        using var ctx = new TestContext();
+        var authContext = ctx.AddTestAuthorization();
+        authContext.SetAuthorized("Test User", AuthorizationState.Unauthorized);
+
+        var cut = ctx.RenderComponent<LoginDisplay>();
+        var element = cut.Find("#login-link");
+
+        element.MarkupMatches
+        (@<a href="authentication/login" class:ignore="" id="login-link">
+            Log In
+        </a>
+        );
+    }
+}

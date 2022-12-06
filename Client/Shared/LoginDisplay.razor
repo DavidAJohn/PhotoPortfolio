@@ -7,7 +7,7 @@
 <AuthorizeView>
     <Authorized>
         <div class="md:mr-4">
-            <span class="hidden sm:inline text-gray-400 text-sm font-medium md:mr-6">
+            <span class="hidden sm:inline text-gray-400 text-sm font-medium md:mr-6" id="login-name">
                 Logged in as: @context.User.Identity?.Name
             </span>
             <span class="hidden sm:inline md:mr-6">
@@ -15,12 +15,12 @@
                     Go to Admin Dashboard
                 </NavLink>
             </span>
-            <button class="text-gray-400 hover:bg-gray-800 hover:text-gray-200 px-2 py-1 rounded-md text-sm font-medium" @onclick="BeginLogout">Log out</button>
+            <button class="text-gray-400 hover:bg-gray-800 hover:text-gray-200 px-2 py-1 rounded-md text-sm font-medium" @onclick="BeginLogout" id="logout-button">Log Out</button>
         </div>
     </Authorized>
     <NotAuthorized>
         <div class="md:mr-4">
-            <NavLink href="authentication/login" class="text-gray-400 hover:bg-gray-800 hover:text-gray-200 px-2 py-1 rounded-md text-sm font-medium">Log In</NavLink>
+            <NavLink href="authentication/login" class="text-gray-400 hover:bg-gray-800 hover:text-gray-200 px-2 py-1 rounded-md text-sm font-medium" id="login-link">Log In</NavLink>
         </div>
     </NotAuthorized>
 </AuthorizeView>
