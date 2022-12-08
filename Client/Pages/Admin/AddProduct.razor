@@ -1,0 +1,43 @@
+﻿@page "/admin/products/add"
+@layout AdminLayout
+
+@using Microsoft.AspNetCore.Authorization
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+
+@inject IAdminService adminService
+@inject NavigationManager navigationManager
+
+@attribute [Authorize]
+
+<PageTitle>Photo Portfolio : Admin : Add Product</PageTitle>
+
+@if (errorMessage != "")
+{
+    <div class="mx-2 animate-pulse">
+        <div class="alert-box" role="alert">
+            <span class="block sm:inline">@errorMessage</span>
+        </div>
+    </div>
+}
+@*else if (products == null)
+{
+    <text>Loading products...</text>
+}*@
+else
+{
+    <div class="m-4 md:m-8">
+        <div class="text-3xl mb-8">Add New Product</div>
+
+        <div class="w-full lg:w-1/2">
+            <div class="text-base">Adding a product makes it available to be associated with a photo or gallery.</div>
+        </div>
+
+    </div>
+}
+
+@code {
+    private List<Product> products = null!;
+    private string errorMessage = "";
+
+}
