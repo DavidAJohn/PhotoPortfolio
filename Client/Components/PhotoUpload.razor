@@ -44,10 +44,19 @@ else
 
 @code {
     [Parameter]
+    public ImageUploadType UploadType { get; set; } = ImageUploadType.Gallery;
+
+    [Parameter]
     public string? GalleryId { get; set;  }
 
     [Parameter]
+    public Product? Product { get; set; }
+
+    [Parameter]
     public EventCallback<string> PhotoUpdate { get; set; }
+
+    [Parameter]
+    public EventCallback<Product> ProductUpdate { get; set; }
 
     private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full ";
     private string DragClass = DefaultDragClass;
@@ -227,35 +236,19 @@ else
                 {
                     if (result.Uploaded)
                     {
-                        // add each successful upload to the photo collection in the database
-
-                        Photo photo = new Photo()
-                            {
-                                Title = result.Title ?? "",
-                                Caption = result.Subject,
-                                FileName = result.FileName ?? "",
-                                Uri = result.AzureUri,
-                                GalleryId = GalleryId,
-                                Metadata = result.Metadata
-                            };
-
-                        var newPhoto = await adminService.AddPhotoAsync(photo);
-
-                        if (newPhoto)
+                        switch (UploadType)
                         {
-                            await PhotoUpdate.InvokeAsync(GalleryId);
-                            RemoveFile(photo.FileName); // successful uploads will disappear from the upload list
-                            uploadFailures.Remove(photo.FileName); // in case of previous failure
-                            Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
-                            Snackbar.Add($"'{result.FileName}' has been added to the gallery", Severity.Success);
-                        }
-                        else
-                        {
-                            uploadFailures.Add(photo.FileName.Truncate(fileNameTruncateAt)); //add to list of failed uploads to allow ui to highlight it
-                            HighlightFile(photo.FileName); // effectively forces a re-render of the file list in the ui
-                            Console.WriteLine($"'{result.FileName}' was uploaded to Azure, but NOT added to the database");
-                            Snackbar.Add($"There was a problem adding '{result.FileName}' to the database", Severity.Error);
-                        } 
+                            case ImageUploadType.Gallery:
+                                await SaveGalleryUpload(result);
+                                break;
+
+                            case ImageUploadType.Product:
+                                await SaveProductUpload(result);
+                                break;
+
+                            default:
+                                break;
+                        };
                     }
                     else
                     {
@@ -274,6 +267,52 @@ else
         {
             Snackbar.Add("There was a problem uploading these files", Severity.Error);
         }
+    }
+
+    private async Task SaveGalleryUpload(UploadResult result)
+    {
+        // add each successful upload to the photo collection in the database
+
+        Photo photo = new Photo()
+            {
+                Title = result.Title ?? "",
+                Caption = result.Subject,
+                FileName = result.FileName ?? "",
+                Uri = result.AzureUri,
+                GalleryId = GalleryId,
+                Metadata = result.Metadata
+            };
+
+        var newPhoto = await adminService.AddPhotoAsync(photo);
+
+        if (newPhoto)
+        {
+            await PhotoUpdate.InvokeAsync(GalleryId);
+            RemoveFile(photo.FileName); // successful uploads will disappear from the upload list
+            uploadFailures.Remove(photo.FileName); // in case of previous failure
+            Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
+            Snackbar.Add($"'{result.FileName}' has been added to the gallery", Severity.Success);
+        }
+        else
+        {
+            uploadFailures.Add(photo.FileName.Truncate(fileNameTruncateAt)); //add to list of failed uploads to allow ui to highlight it
+            HighlightFile(photo.FileName); // effectively forces a re-render of the file list in the ui
+            Console.WriteLine($"'{result.FileName}' was uploaded to Azure, but NOT added to the database");
+            Snackbar.Add($"There was a problem adding '{result.FileName}' to the database", Severity.Error);
+        }
+    }
+
+    private async Task SaveProductUpload(UploadResult result)
+    {
+        // add each successful upload to the ProdigiImageAssetUris property of the supplied product
+
+        Product?.ProdigiImageAssetUris.Add(result.AzureUri);
+
+        await ProductUpdate.InvokeAsync(Product);
+        RemoveFile(result.FileName); // successful uploads will disappear from the upload list
+        uploadFailures.Remove(result.FileName); // in case of previous failure
+        Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
+        Snackbar.Add($"'{result.FileName}' has been added to the gallery", Severity.Success);
     }
 
     private void SetDragClass()
