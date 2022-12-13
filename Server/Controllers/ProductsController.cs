@@ -17,12 +17,4 @@ public class ProductsController : BaseApiController
     {
         return await _repository.GetAllAsync();
     }
-
-    [HttpPost]
-    public async Task<IActionResult> AddProduct(Product product)
-    {
-        await _repository.AddAsync(product);
-
-        return CreatedAtAction(nameof(GetProducts), new { id = product.Id }, product);
-    }
 }

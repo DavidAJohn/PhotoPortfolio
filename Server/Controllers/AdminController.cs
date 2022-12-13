@@ -397,6 +397,30 @@ public class AdminController : BaseApiController
         return await _productRepository.GetAllAsync();
     }
 
+    [HttpPost("products")]
+    public async Task<IActionResult> AddProduct(Product product)
+    {
+        await _productRepository.AddAsync(product);
+
+        return CreatedAtAction(nameof(GetAllProducts), new { id = product.Id }, product);
+    }
+
+    [HttpPut("products")]
+    public async Task<IActionResult> UpdateProduct(Product product)
+    {
+        var productToUpdate = await _productRepository.GetSingleAsync(p => p.Id == product.Id);
+
+        if (productToUpdate is null)
+        {
+            return NotFound();
+        }
+
+        await _productRepository.UpdateAsync(product);
+
+        return NoContent();
+    }
+
+
     private List<string> BasicFileChecks(IFormFile file, string permittedFileExtensions, long fileSizeLimit, int fileNameLengthLimit, string fileExtension = "unknown")
     {
         var filecheckErrors = new List<string>();
