@@ -307,12 +307,12 @@ else
         // add each successful upload to the ProdigiImageAssetUris property of the supplied product
 
         Product?.ProdigiImageAssetUris.Add(result.AzureUri);
+        await ProductUpdate.InvokeAsync(Product); // now return the updated product via an event callback
 
-        await ProductUpdate.InvokeAsync(Product);
         RemoveFile(result.FileName); // successful uploads will disappear from the upload list
         uploadFailures.Remove(result.FileName); // in case of previous failure
-        Console.WriteLine($"'{result.FileName}' was uploaded to Azure and added to the database successfully");
-        Snackbar.Add($"'{result.FileName}' has been added to the gallery", Severity.Success);
+        Console.WriteLine($"'{result.FileName}' was uploaded to Azure");
+        Snackbar.Add($"'{result.FileName}' has been added to the product", Severity.Success);
     }
 
     private void SetDragClass()

@@ -111,7 +111,7 @@ else
                     }
                     <div class="mt-16 lg:mr-32">
                         <div class="text-2xl mb-2">Upload Photos</div>
-                        <PhotoUpload GalleryId="@gallery.Id" PhotoUpdate="GetGalleryPhotos" />
+                        <PhotoUpload GalleryId="@gallery.Id" UploadType=ImageUploadType.Gallery PhotoUpdate="GetGalleryPhotos" />
                     </div>
                 </div>
             }
@@ -120,7 +120,7 @@ else
                 <div class="w-2/3 mt-12">
                     <div class="text-lg mb-2">There are currently no photos in this gallery</div>
                     <div class="mt-8 lg:mr-32">
-                        <PhotoUpload GalleryId="@gallery.Id" PhotoUpdate="GetGalleryPhotos" />
+                        <PhotoUpload GalleryId="@gallery.Id" UploadType=ImageUploadType.Gallery PhotoUpdate="GetGalleryPhotos" />
                     </div>
                 </div>
             }
