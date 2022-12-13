@@ -7,5 +7,5 @@ public class Product : BaseEntity
 {
     public string ProdigiSku { get; set; } = string.Empty;
     public string ProdigiDescription { get; set; } = string.Empty;
-    public List<string> ProdigiImageAssetUris { get; set; } = null!;
+    public List<string>? ProdigiImageAssetUris { get; set; } = new();
 }

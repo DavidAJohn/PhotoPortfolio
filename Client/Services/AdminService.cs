@@ -163,4 +163,56 @@ public class AdminService : IAdminService
             throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
         }
     }
+
+    public async Task<Product> AddProductAsync(Product product)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+
+            HttpContent productJson = new StringContent(JsonSerializer.Serialize(product));
+            productJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            HttpResponseMessage response = await client.PostAsync("products", productJson);
+
+            if (response.StatusCode == HttpStatusCode.Created)
+            {
+                var returnedProduct = await response.Content.ReadFromJsonAsync<Product>();
+
+                if (returnedProduct is null) return null!;
+
+                return returnedProduct;
+            }
+
+            return null!;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
+
+    public async Task<bool> UpdateProductAsync(Product product)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+
+            HttpContent productJson = new StringContent(JsonSerializer.Serialize(product));
+            productJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            HttpResponseMessage response = await client.PutAsync("products", productJson);
+
+            if (response.StatusCode == HttpStatusCode.NoContent)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
 }
