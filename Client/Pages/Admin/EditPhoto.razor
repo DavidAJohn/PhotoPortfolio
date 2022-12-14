@@ -6,8 +6,8 @@
 @using PhotoPortfolio.Shared.Entities
 @using PhotoPortfolio.Shared.Models;
 
-@inject IGalleryService galleryService
 @inject IPhotoService photoService
+@inject IAdminService adminService
 @inject ISnackbar Snackbar
 
 @attribute [Authorize]
@@ -74,6 +74,38 @@ else
                 There are currently no products associated with this image
             </div>
         }
+            <div class="my-8 flex">
+                <MudButton OnClick="OpenProductDialog" Variant="Variant.Filled" Color="Color.Primary">
+                    Add A Product
+                </MudButton>
+                <MudDialog @bind-IsVisible="visible" Options="dialogOptions">
+                    <TitleContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" /> Choose a Product
+                        </MudText>
+                    </TitleContent>
+                    <DialogContent>
+                        @if (products is not null)
+                        {
+                            <MudSelect Dense="true" T="string" Label="Product" Variant="Variant.Text">
+                                @foreach (Product product in products)
+                                {
+                                    <MudSelectItem Value="@(product.ProdigiSku + " - " + product.ProdigiDescription)" />
+                                }
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            <div class="text-sm lg:text-base font-semibold mb-4 text-justify" id="products-dialog-empty">
+                                There are currently no products available to be added to this image
+                            </div>
+                        }
+                    </DialogContent>
+                    <DialogActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-10">Close</MudButton>
+                    </DialogActions>
+                </MudDialog>
+            </div>
     </div>
 }
 
@@ -83,6 +115,11 @@ else
 
     Photo photo = new Photo();
     private string errorMessage = "";
+
+    private bool visible;
+    private int rating;
+    private DialogOptions dialogOptions = new() { FullWidth = true };
+    private List<Product> products = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -116,5 +153,41 @@ else
         {
             errorMessage = "Could not find this photo";
         }
+    }
+
+    private async Task GetAvailableProducts()
+    {
+        try
+        {
+            var allProducts = await adminService.GetProductsAsync();
+
+            if (photo.Products is not null && photo.Products.Count > 0)
+            {
+                // exclude any products already added to the photo
+                products = allProducts.Where(p => photo.Products.All(pp => pp.ProdigiSku != p.ProdigiSku)).ToList();
+            }
+            else
+            {
+                products = allProducts;
+            }
+
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not retrieve list of products";
+        }
+    }
+
+    private async Task OpenProductDialog()
+    {
+        visible = true;
+        await GetAvailableProducts();
+    }
+
+    void Close()
+    {
+        visible = false;
     }
 }
