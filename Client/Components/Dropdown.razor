@@ -4,29 +4,34 @@
 {
     <div class="relative inline-block text-left" id="dropdown-container">
         <div>
-            <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 py-2 bg-white text-base font-medium text-gray-600 focus:outline-none" id="dropdown-button"
+            <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 py-2 bg-white text-base font-semibold text-gray-600 focus:outline-none" 
+                id="dropdown-button"
                 @onclick="ToggleDropdown">
-                @DropdownTitle
+                    @DropdownTitle
                 <!-- Heroicon name: solid/chevron-down -->
-                <svg class="-mr-1 ml-2 h-6 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <svg class="-mr-1 ml-2 h-6 w-4 @(collapseDropdown ? "block" : "hidden")" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+                <!-- Heroicon name: solid/chevron-up -->
+                <svg class="-mr-1 ml-2 h-6 w-4 @(collapseDropdown ? "hidden" : "block")" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
                 </svg>
             </button>
         </div>
 
         @if (DropdownItems != null)
         {
-            <div class="origin-top-left absolute left-0 w-128 rounded-sm shadow-lg bg-white focus:outline-none @DropdownTransformClass" role="menu" tabindex="-1" id="dropdown-menu">
-                <div class="divide-y divide-slate-300" role="none">
+            <div class="origin-top-left absolute left-0 w-128 rounded-sm shadow-lg border border-gray-300 bg-white focus:outline-none @DropdownTransformClass" role="menu" tabindex="-1" id="dropdown-menu">
+                <div class="divide-y divide-gray-300" role="none">
                     @foreach (DropdownItem item in DropdownItems)
                     {
-                        <div class="dropdown-item text-gray-700 block py-2 px-2 text-base hover:cursor-pointer hover:bg-gray-100" 
+                        <div class="dropdown-item text-gray-700 block py-2 px-2 text-base hover:cursor-pointer hover:bg-gray-200" 
                             id="menu-item-@(@item.Id)"
                             @onclick="() => OnSelectedOption(item)"
                             role="menuitem" 
                             tabindex="-1">
                             @item.OptionName
-                         </div>
+                        </div>
                     }
                 </div>
             </div>
