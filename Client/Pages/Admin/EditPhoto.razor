@@ -81,25 +81,22 @@ else
                 <MudDialog @bind-IsVisible="visible" Options="dialogOptions">
                     <TitleContent>
                         <MudText Typo="Typo.h6">
-                            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" /> Choose a Product
+                            <MudIcon Icon="@Icons.Material.Filled.AddToPhotos" Class="mr-3" /> Add A Product
                         </MudText>
                     </TitleContent>
                     <DialogContent>
-                        @if (products is not null)
-                        {
-                            <MudSelect Dense="true" T="string" Label="Product" Variant="Variant.Text">
-                                @foreach (Product product in products)
-                                {
-                                    <MudSelectItem Value="@(product.ProdigiSku + " - " + product.ProdigiDescription)" />
-                                }
-                            </MudSelect>
-                        }
-                        else
-                        {
-                            <div class="text-sm lg:text-base font-semibold mb-4 text-justify" id="products-dialog-empty">
-                                There are currently no products available to be added to this image
-                            </div>
-                        }
+                        <div class="p-2">
+                            @if (products is not null)
+                            {
+                                <Dropdown DropdownTitle="Select a Product:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
+                            }
+                            else
+                            {
+                                <div class="text-sm lg:text-base font-semibold mb-4 text-justify" id="products-dialog-empty">
+                                    There are currently no products available to be added to this image
+                                </div>
+                            }
+                        </div>
                     </DialogContent>
                     <DialogActions>
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-10">Close</MudButton>
@@ -116,10 +113,12 @@ else
     Photo photo = new Photo();
     private string errorMessage = "";
 
-    private bool visible;
+    private bool visible = false;
     private int rating;
     private DialogOptions dialogOptions = new() { FullWidth = true };
     private List<Product> products = null!;
+    private bool dropdownOpen = false;
+    private List<DropdownItem> dropdownOptions = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -165,6 +164,16 @@ else
             {
                 // exclude any products already added to the photo
                 products = allProducts.Where(p => photo.Products.All(pp => pp.ProdigiSku != p.ProdigiSku)).ToList();
+
+                // convert the products into a list of DropdownItems
+                foreach (Product product in products)
+                {
+                    dropdownOptions.Add(new DropdownItem
+                        {
+                            OptionName = product.ProdigiSku + " - " + product.ProdigiDescription,
+                            OptionRef = product.ProdigiSku
+                        });
+                }
             }
             else
             {
@@ -189,5 +198,11 @@ else
     void Close()
     {
         visible = false;
+    }
+
+    private async Task SelectedOption(string sku)
+    {
+        // deal with the selected dropdown option
+
     }
 }
