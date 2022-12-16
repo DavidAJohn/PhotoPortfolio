@@ -97,6 +97,7 @@ else
                                 </div>
                             }
                         </div>
+
                     </DialogContent>
                     <DialogActions>
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-10">Close</MudButton>
@@ -164,6 +165,8 @@ else
             {
                 // exclude any products already added to the photo
                 products = allProducts.Where(p => photo.Products.All(pp => pp.ProdigiSku != p.ProdigiSku)).ToList();
+
+                dropdownOptions.Clear();
 
                 // convert the products into a list of DropdownItems
                 foreach (Product product in products)
