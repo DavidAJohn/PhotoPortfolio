@@ -108,7 +108,7 @@ else
                                 <Dropdown DropdownTitle="Select a Product:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
                                 @if (selectedProduct is not null)
                                 {
-                                    <div class="mt-4 text-sm lg:text-base text-slate-800 font-semibold">
+                                    <div class="mb-4 text-sm lg:text-base text-slate-800 font-semibold">
                                         @selectedProduct.ProdigiSku
                                     </div>
                                 }
@@ -126,7 +126,7 @@ else
                         </div>
                     </DialogContent>
                     <DialogActions>
-                        <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" form="@ProductFormId" Class="px-10">Save</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" Disabled="!formIsValid" ButtonType="ButtonType.Submit" form="@ProductFormId" Class="px-10">Save</MudButton>
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-10">Close</MudButton>
                     </DialogActions>
                 </MudDialog>
@@ -148,9 +148,10 @@ else
     private bool dropdownOpen = false;
     private List<DropdownItem> dropdownOptions = new();
 
-    PhotoProduct model = new();
+    CreatePhotoProductDto model = new();
     Product selectedProduct = new();
     private string ProductFormId = "productFormId";
+    private bool formIsValid => selectedProduct.Id != null ? true : false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -239,9 +240,9 @@ else
         visible = false;
     }
 
-    private async Task SelectedOption(string sku)
+    private void SelectedOption(string sku)
     {
-        selectedProduct = products.FirstOrDefault(p => p.ProdigiSku == sku);
+        selectedProduct = products.FirstOrDefault(p => p.ProdigiSku == sku) ?? null!;
     }
 
     private async Task OnValidSubmit()
@@ -251,8 +252,8 @@ else
             ProdigiSku = selectedProduct.ProdigiSku,
             ProdigiDescription = selectedProduct.ProdigiDescription,
             ProdigiImageAssetUris = selectedProduct.ProdigiImageAssetUris,
-            CustomDescription = model.CustomDescription,
-            FurtherDetails = model.FurtherDetails,
+            CustomDescription = model.CustomDescription!,
+            FurtherDetails = model.FurtherDetails!,
             MockupImageUri = "",
             MarkupPercentage = model.MarkupPercentage
         };
