@@ -53,20 +53,35 @@ else
         <div class="text-2xl mb-8">Products</div>
         @if (photo.Products is not null)
         {
-            foreach (var product in photo.Products)
+            <div class="mt-10 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+            @foreach (var product in photo.Products)
             {
-                <div class="mb-8">
-                    <div class="text-sm lg:text-base mb-2 text-justify">
-                        Sku: @product.ProdigiSku
-                    </div>
-                    <div class="text-sm lg:text-base mb-2 text-justify">
-                        Description: @product.CustomDescription
-                    </div>
-                    <div class="text-sm lg:text-base mb-2 text-justify">
-                        Markup (%): @product.MarkupPercentage
+                <div class="bg-white rounded-lg shadow-lg">
+                    <div class="p-8">
+                        <div class="text-sm lg:text-base mb-2 text-justify">
+                            Sku: @product.ProdigiSku
+                        </div>
+                        <div class="text-sm lg:text-base mb-2 text-justify">
+                            Description: @product.CustomDescription
+                        </div>
+                        <div class="text-sm lg:text-base mb-2 text-justify">
+                            Markup (%): @product.MarkupPercentage
+                        </div>
+                        <div class="text-sm lg:text-base mt-4">
+                            <MudButton 
+                                Variant="Variant.Filled" 
+                                StartIcon="@Icons.Material.Filled.DeleteForever" 
+                                Size="Size.Small" 
+                                Color="Color.Error"
+                                @onclick="@(() => DeleteProduct(product))"
+                            >
+                                Delete
+                            </MudButton>
+                        </div>
                     </div>
                 </div>
             }
+            </div>
         }
         else
         {
@@ -254,6 +269,23 @@ else
         else
         {
             Snackbar.Add("Sorry, there was a problem adding this product to the photo", Severity.Error);
+        }
+    }
+
+    private async Task DeleteProduct(PhotoProduct product)
+    {
+        photo.Products?.Remove(product);
+
+        var photoUpdated = await adminService.UpdatePhotoAsync(photo);
+
+        if (photoUpdated)
+        {
+            visible = false;
+            Snackbar.Add($"'{product.ProdigiSku}' has now been removed from this photo", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Sorry, there was a problem removing this product from the photo", Severity.Error);
         }
     }
 }
