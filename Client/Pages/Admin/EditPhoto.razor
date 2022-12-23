@@ -88,18 +88,30 @@ else
                         <div class="p-2">
                             @if (products is not null)
                             {
+                            <EditForm id="@ProductFormId" Model="@model" OnValidSubmit="OnValidSubmit">
+                                <DataAnnotationsValidator />
                                 <Dropdown DropdownTitle="Select a Product:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
+                                @if (selectedProduct is not null)
+                                {
+                                    <div class="mt-4 text-sm lg:text-base text-slate-800 font-semibold">
+                                        @selectedProduct.ProdigiSku
+                                    </div>
+                                }
+                                <MudTextField Label="Description" @bind-Value="model.CustomDescription" For="@(() => model.CustomDescription)" />
+                                <MudTextField Label="Further Details" Class="mt-3" @bind-Value="model.FurtherDetails" For="@(() => model.FurtherDetails)" />
+                                <MudTextField Label="Markup %" Class="mt-3" @bind-Value="model.MarkupPercentage" For="@(() => model.MarkupPercentage)" />
+                            </EditForm>
                             }
                             else
                             {
-                                <div class="text-sm lg:text-base font-semibold mb-4 text-justify" id="products-dialog-empty">
-                                    There are currently no products available to be added to this image
-                                </div>
+                            <div class="text-sm lg:text-base font-semibold mb-4 text-justify" id="products-dialog-empty">
+                                There are currently no products available to be added to this image
+                            </div>
                             }
                         </div>
-
                     </DialogContent>
                     <DialogActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" ButtonType="ButtonType.Submit" form="@ProductFormId" Class="px-10">Save</MudButton>
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-10">Close</MudButton>
                     </DialogActions>
                 </MudDialog>
@@ -120,6 +132,10 @@ else
     private List<Product> products = null!;
     private bool dropdownOpen = false;
     private List<DropdownItem> dropdownOptions = new();
+
+    PhotoProduct model = new();
+    Product selectedProduct = new();
+    private string ProductFormId = "productFormId";
 
     protected override async Task OnInitializedAsync()
     {
@@ -195,6 +211,11 @@ else
     private async Task OpenProductDialog()
     {
         visible = true;
+
+        // clear the form
+        selectedProduct = new();
+        model = new(); 
+
         await GetAvailableProducts();
     }
 
@@ -205,7 +226,34 @@ else
 
     private async Task SelectedOption(string sku)
     {
-        // deal with the selected dropdown option
+        selectedProduct = products.FirstOrDefault(p => p.ProdigiSku == sku);
+    }
 
+    private async Task OnValidSubmit()
+    {
+        var productToAdd = new PhotoProduct()
+        {
+            ProdigiSku = selectedProduct.ProdigiSku,
+            ProdigiDescription = selectedProduct.ProdigiDescription,
+            ProdigiImageAssetUris = selectedProduct.ProdigiImageAssetUris,
+            CustomDescription = model.CustomDescription,
+            FurtherDetails = model.FurtherDetails,
+            MockupImageUri = "",
+            MarkupPercentage = model.MarkupPercentage
+        };
+
+        photo.Products?.Add(productToAdd);
+
+        var photoUpdated = await adminService.UpdatePhotoAsync(photo);
+
+        if (photoUpdated)
+        {
+            visible = false;
+            Snackbar.Add($"'{productToAdd.ProdigiSku}' has now been added to this photo", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Sorry, there was a problem adding this product to the photo", Severity.Error);
+        }
     }
 }

@@ -125,6 +125,30 @@ public class AdminService : IAdminService
         }
     }
 
+    public async Task<bool> UpdatePhotoAsync(Photo photo)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+
+            HttpContent photoJson = new StringContent(JsonSerializer.Serialize(photo));
+            photoJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            HttpResponseMessage response = await client.PutAsync($"photos/{photo.Id}", photoJson);
+
+            if (response.StatusCode == HttpStatusCode.NoContent)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
+
     public async Task<List<UploadResult>> UploadPhotos(MultipartFormDataContent content)
     {
         try
