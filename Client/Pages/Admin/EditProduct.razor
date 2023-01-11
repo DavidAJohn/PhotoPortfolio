@@ -1,0 +1,114 @@
+﻿@page "/admin/products/edit/{Id}"
+@layout AdminLayout
+
+@using Microsoft.AspNetCore.Authorization;
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models;
+
+@inject IAdminService adminService
+@inject ISnackbar Snackbar
+
+@attribute [Authorize]
+
+<PageTitle>Photo Portfolio : Admin : Edit Product</PageTitle>
+
+@if (errorMessage != "")
+{
+    <div class="mx-2 animate-pulse">
+        <div class="alert-box" role="alert">
+            <span class="block sm:inline">@errorMessage</span>
+        </div>
+    </div>
+}
+else if (product == null)
+{
+    <text>Loading product...</text>
+}
+else
+{
+    <div class="m-4 md:m-8">
+        <div class="text-3xl mb-8">Update Product</div>
+
+        <div class="w-full lg:w-1/2">
+            <div class="text-base mb-4">Update the product details below:</div>
+
+            <div class="text-base mb-4">
+                <EditForm Model="@model" OnValidSubmit="UpdateProduct">
+                    <DataAnnotationsValidator />
+                    <MudGrid>
+                        <MudItem xs="16" sm="9">
+                            <MudCard>
+                                <MudCardContent>
+                                    <MudTextField Label="Sku" @bind-Value="model.ProdigiSku" For="@(() => model.ProdigiSku)" />
+                                    <MudTextField Label="Description" Class="mt-3" @bind-Value="model.ProdigiDescription" For="@(() => model.ProdigiDescription)" />
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mr-auto" Disabled="@(model == null)">Update</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    Product product = new();
+    private string errorMessage = "";
+    private Product model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetProductById();
+    }
+
+    private async Task GetProductById()
+    {
+        if (!string.IsNullOrEmpty(Id))
+        {
+            try
+            {
+                product = await adminService.GetProductByIdAsync(Id);
+
+                if (product is not null)
+                {
+                    model = product;
+                    errorMessage = "";
+                }
+                else
+                {
+                    errorMessage = "Could not find details for this product";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                errorMessage = "Could not find this product";
+            }
+        }
+        else
+        {
+            errorMessage = "Could not find this product";
+        }
+    }
+
+    private async Task UpdateProduct()
+    {
+        var productUpdated = await adminService.UpdateProductAsync(model);
+
+        if (productUpdated)
+        {
+            Snackbar.Add("This product has now been updated", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Sorry, there was a problem updating this product", Severity.Error);
+        }
+    }
+}
