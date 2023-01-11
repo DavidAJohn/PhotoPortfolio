@@ -188,6 +188,23 @@ public class AdminService : IAdminService
         }
     }
 
+    public async Task<Product> GetProductByIdAsync(string productId)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+            var product = await client.GetFromJsonAsync<Product>($"products/{productId}");
+
+            if (product is null) return null!;
+
+            return product;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
+
     public async Task<Product> AddProductAsync(Product product)
     {
         try
@@ -239,4 +256,5 @@ public class AdminService : IAdminService
             throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
         }
     }
+
 }

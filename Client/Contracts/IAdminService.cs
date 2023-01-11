@@ -13,6 +13,7 @@ public interface IAdminService
     Task<bool> UpdatePhotoAsync(Photo photo);
     Task<List<UploadResult>> UploadPhotos(MultipartFormDataContent content);
     Task<List<Product>> GetProductsAsync();
+    Task<Product> GetProductByIdAsync(string productId);
     Task<Product> AddProductAsync(Product product);
     Task<bool> UpdateProductAsync(Product product);
 }

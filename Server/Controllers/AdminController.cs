@@ -397,6 +397,19 @@ public class AdminController : BaseApiController
         return await _productRepository.GetAllAsync();
     }
 
+    [HttpGet("products/{id:length(24)}")]
+    public async Task<IActionResult> GetProductById(string id)
+    {
+        var product = await _productRepository.GetSingleAsync(p => p.Id == id);
+
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(product);
+    }
+
     [HttpPost("products")]
     public async Task<IActionResult> AddProduct(Product product)
     {
