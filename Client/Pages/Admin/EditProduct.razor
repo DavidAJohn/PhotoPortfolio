@@ -8,6 +8,7 @@
 
 @inject IAdminService adminService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 @attribute [Authorize]
 
@@ -50,8 +51,8 @@ else
                                             @foreach (var image in model.ProdigiImageAssetUris)
                                             {
                                                 <div class="group relative overflow-hidden hover:cursor-pointer hover:brightness-70" @onclick="@(() => DeleteImage(image))">
-                                                    <img src="@image" class="w-24 w-auto object-cover group-hover:brightness-95 transition ease-in-out duration-700 group-hover:scale-105" />
-                                                    <div class="absolute invisible group-hover:!visible text-lg text-white top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+                                                    <img src="@image" class="w-24 w-auto object-cover group-hover:brightness-75 transition ease-in-out duration-700 group-hover:scale-105" />
+                                                    <div class="absolute invisible group-hover:!visible text-lg text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
                                                         Delete
                                                     </div>
                                                 </div>
@@ -139,7 +140,7 @@ else
 
         if (productUpdated)
         {
-            Snackbar.Add("The image(s) were successfully uploaded and added to the product", Severity.Success);
+            //Snackbar.Add("The image(s) were successfully uploaded and added to the product", Severity.Success);
         }
         else
         {
@@ -149,18 +150,38 @@ else
 
     private async void DeleteImage(string imageAssetUri)
     {
-        var imageToRemove = product.ProdigiImageAssetUris?.SingleOrDefault(i => i == imageAssetUri );
-        var imageRemoved = product.ProdigiImageAssetUris.Remove(imageToRemove);
+        // first, get confirmation via a dialog
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", "Do you really want to delete this image? This process cannot be undone.");
+        parameters.Add("ButtonText", "Delete");
+        parameters.Add("Color", Color.Error);
 
-        if (imageRemoved)
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = DialogService.Show<ConfirmDialog>("Delete", parameters, options);
+        var result = await dialog.Result;
+
+        // user confirmed, proceed with the deletion
+        if (!result.Cancelled) // user must have clicked confirm button
         {
-            model = product;
-            var productUpdated = await adminService.UpdateProductAsync(product);
-            Snackbar.Add($"The image '{imageAssetUri}' was deleted from the product", Severity.Success);
-        }
-        else
-        {
-            Snackbar.Add("The image could NOT be deleted", Severity.Error);
+            var imageToRemove = product.ProdigiImageAssetUris?.SingleOrDefault(i => i == imageAssetUri);
+
+            if (imageToRemove is not null)
+            {
+                var imageRemoved = product.ProdigiImageAssetUris.Remove(imageToRemove);
+                var productUpdated = await adminService.UpdateProductAsync(product);
+
+                if (productUpdated)
+                {
+                    model = product;
+                    await InvokeAsync(StateHasChanged);
+                    Snackbar.Add($"That image was deleted from the product", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("The image could NOT be deleted", Severity.Error);
+                }
+            }
         }
     }
 }
