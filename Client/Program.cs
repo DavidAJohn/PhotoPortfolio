@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IQuoteService, QuoteService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddBlazoredModal();
+builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddMudServices(config =>
 {
