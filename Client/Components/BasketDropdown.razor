@@ -1,0 +1,119 @@
+﻿@using System.Linq
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<div class="relative inline-block text-left ">
+    <div class="flex flex-row justify-between items-center cursor-pointer" @onclick="ToggleDropdown">
+        <span class="text-white text-sm ">Basket:</span>
+        <span class="text-white ml-2">
+            <!-- heroicons: shopping-cart -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+        </span>
+        @if (basketItems != null)
+        {
+            <span id="cart-items" class="text-white text-sm ml-2 mr-3 md:mr-2">@basketItems.Count</span>
+        }
+        else
+        {
+            <span id="cart-items" class="text-white text-sm ml-2 mr-3 md:mr-2">0</span>
+        }
+    </div>
+
+    @if (basketItems != null)
+    {
+        @if (basketItems.Count > 0)
+        {
+            <div class="origin-top-right absolute right-0 mt-0 w-112 rounded-md shadow-lg text-slate-500 bg-white focus:outline-none z-10 transition ease-in-out duration-300 @DropdownTransformClass" role="menu" tabindex="-1">
+                <div class="p-4 text-right" role="none">
+                    @foreach (BasketItem item in basketItems)
+                    {
+                        <div class="font-semibold text-sm flex items-center justify-end">
+                            <div class="inline-block w-12 h-auto mr-2"><img src="@item.Product.MockupImageUri" /></div>
+                            <div class="inline-block flex-shrink-0">@item.Quantity &nbsp;x&nbsp; @item.Product.CustomDescription &nbsp;=</div>
+                            <div class="ml-2 font-bold">£@item.Total</div>
+                            <button type="button" class="inline-block ml-2 -mr-1 text-fotofuchsia" @onclick="() => DeleteItem(item)">
+                                <!-- heroicons: x-circle (solid) -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    }
+                </div>
+                <div class="mt-2 px-4 text-right text-sm font-semibold">
+                    Total:&nbsp; £@basketState.Basket.BasketTotal
+                </div>
+                <div class="mt-2 px-4 text-right">
+                    <button type="button" class="p-2 my-3 bg-fotoblue text-white rounded-sm text-sm hover:opacity-90 fotoblue-ripple" @onclick="GoToCheckout">
+                        Checkout
+                    </button>&nbsp;
+                    <button type="button" class="p-2 my-3 bg-fotofuchsia text-white rounded-sm text-sm hover:opacity-90 fotofuchsia-ripple" @onclick="EmptyBasket">
+                        Empty basket
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="origin-top-right absolute right-0 mt-0 w-72 h-24 rounded-md shadow-lg bg-white focus:outline-none z-10 transition ease-in-out duration-300 @DropdownTransformClass" role="menu" tabindex="-1">
+                <div class="p-4 text-center" role="none">
+                    <span class="font-semibold text-sm text-slate-500">Your basket is currently empty</span>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [CascadingParameter]
+    public BasketState basketState { get; set; }
+
+    private List<BasketItem> basketItems { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await basketState.GetBasketAsync();
+        basketItems = basketState.Basket.BasketItems;
+    }
+
+    private bool collapseDropdown = true;
+
+    private string DropdownTransformClass => collapseDropdown ? "transform opacity-0 scale-90" : null;
+
+    private void ToggleDropdown()
+    {
+        collapseDropdown = !collapseDropdown;
+    }
+
+    private async Task EmptyBasket()
+    {
+        basketState.Basket.BasketItems.Clear();
+        await basketState.SaveChangesAsync(); // update local storage
+        basketState.BasketItemCount = 0;
+        Snackbar.Add("Your basket has been emptied", Severity.Success);
+    }
+
+    private async Task DeleteItem(BasketItem item)
+    {
+        basketState.Basket.BasketItems.Remove(basketState.Basket.BasketItems.FirstOrDefault(
+                i => i.Product.CustomDescription == item.Product.CustomDescription &&
+                i.Quantity == item.Quantity
+            ));
+
+        await basketState.SaveChangesAsync(); // save to local storage
+        basketState.BasketItemCount--;
+        Snackbar.Add("The item has been removed from your basket", Severity.Success);
+
+        await basketState.GetBasketAsync();
+        basketItems = basketState.Basket.BasketItems;
+    }
+
+    private void GoToCheckout()
+    {
+        ToggleDropdown();
+        NavigationManager.NavigateTo("/checkout");
+    }
+}

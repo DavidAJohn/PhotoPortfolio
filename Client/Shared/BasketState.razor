@@ -1,4 +1,8 @@
-﻿@using PhotoPortfolio.Shared.Models;
+﻿@using FotoStorio.Shared.Entities;
+@using PhotoPortfolio.Shared.Models;
+@using Blazored.LocalStorage
+
+@inject ILocalStorageService localStorage
 
 <CascadingValue Value="this">
     @ChildContent
@@ -8,17 +12,56 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    private List<BasketItem> basketItems = new();
+    public Basket Basket { get; set; }
 
-    public List<BasketItem> BasketItems
+    protected override async Task OnParametersSetAsync()
+    {
+        await GetBasketAsync();
+    }
+
+    public async Task GetBasketAsync()
+    {
+        // Retrieve the Basket from the browser's local storage
+        Basket = await localStorage.GetItemAsync<Basket>("PhotoPortfolio_Basket");
+        await InvokeAsync(StateHasChanged);
+
+        // If the Basket is not there or empty...
+        if (Basket == null || Basket.BasketItems.Count == 0)
+        {
+            // Create a new Basket
+            Basket = new Basket();
+        }
+        else
+        {
+            // otherwise, check to see if the Basket has expired
+            if (DateTime.Now > Basket.LastAccessed.AddSeconds(Basket.TimeToLiveInSeconds))          
+            {
+                // Expired. Create a new Basket.
+                Basket = new Basket();
+            }
+        }
+
+        Basket.LastAccessed = DateTime.Now;
+    }
+
+    public async Task SaveChangesAsync() 
+    {
+        // Set the time stamp to current time and save to local storage
+        Basket.LastAccessed = DateTime.Now;
+        await localStorage.SetItemAsync("PhotoPortfolio_Basket", Basket);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private int basketItemCount = 0;
+    public int BasketItemCount
     {
         get
         {
-            return basketItems;
+            return basketItemCount;
         }
         set
         {
-            basketItems = value;
+            basketItemCount = value;
             StateHasChanged();
         }
     }
