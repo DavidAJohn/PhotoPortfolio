@@ -8,6 +8,7 @@
 @inject IPhotoService photoService
 @inject IProductService productService
 @inject IQuoteService quoteService
+@inject ISnackbar snackbar
 
 <HeroImage ImageUri="https://photoportfolioimgs.blob.core.windows.net/repo/bank-phrom-Tzm3Oyu_6sk-unsplash.jpg"
            ImageAlign="bottom"
@@ -78,7 +79,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                             </svg>
                                         </span>
-                                        <span class="text-gray-50 text-sm ml-3 mr-2">Add to Basket</span>
+                                        <span class="text-gray-50 text-sm ml-3 mr-2 hover:cursor-pointer" @onclick="AddItemToBasket">Add to Basket</span>
                                     </button>
                                 </div>
                             }
@@ -136,6 +137,9 @@
 @code {
     [Parameter]
     public string Id { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    public BasketState basketState { get; set; }
 
     private Photo photo = null!;
     private string errorMessage = "";
@@ -268,5 +272,25 @@
             quoteError = "Unfortunately, we could not retrieve a price for this item at the moment";
         }
         
+    }
+
+    private async Task AddItemToBasket()
+    {
+        var productToAdd = new PhotoProduct
+            {
+                Id = product.Id,
+                ProdigiSku = product.ProdigiSku,
+                ProdigiDescription = product.ProdigiDescription,
+                CustomDescription = product.CustomDescription,
+                FurtherDetails = product.FurtherDetails,
+                MockupImageUri = product.MockupImageUri
+            };
+
+        var item = new BasketItem { Product = productToAdd, Quantity = 1 };
+
+        basketState.Basket.BasketItems.Add(item);
+        await basketState.SaveChangesAsync(); // save to local storage
+        basketState.BasketItemCount++;
+        snackbar.Add("A new item has been added to your basket", Severity.Success);
     }
 }
