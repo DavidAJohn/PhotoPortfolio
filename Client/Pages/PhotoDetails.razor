@@ -271,7 +271,7 @@
         {
             quoteError = "Unfortunately, we could not retrieve a price for this item at the moment";
         }
-        
+
     }
 
     private async Task AddItemToBasket()
@@ -286,7 +286,9 @@
                 MockupImageUri = product.MockupImageUri
             };
 
-        var item = new BasketItem { Product = productToAdd, Quantity = 1 };
+        var tempPrice = productPrice.Remove(0,1);
+        decimal totalPrice = decimal.Parse(tempPrice);
+        var item = new BasketItem { Product = productToAdd, Quantity = 1, Total = totalPrice };
 
         basketState.Basket.BasketItems.Add(item);
         await basketState.SaveChangesAsync(); // save to local storage
