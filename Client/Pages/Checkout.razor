@@ -3,7 +3,7 @@
 @using PhotoPortfolio.Client.Shared;
 
 <div class="h-auto">
-    <div class="px-2 lg:container lg:max-w-7xl md:mt-8">
+    <div class="px-2 lg:container lg:max-w-6xl md:mt-8">
         @if (basketItems != null)
         {
             @if (basketItems.Count > 0)
@@ -12,13 +12,13 @@
                     
                     <div class="grid grid-cols-1 gap-4">
                         <div class="col-span-1">
-                            <div class="text-lg text-center md:text-xl lg:text-2xl font-bold">
+                            <div class="text-lg text-center mb-8 md:text-xl lg:text-2xl font-bold">
                                 Order Summary
                             </div>
-                            <div class="p-4 text-right" >
+                            <div class="p-4 mx-32 text-center" >
                                 @foreach (BasketItem item in basketItems)
                                 {
-                                    <div class="font-semibold text-sm md:text-base flex items-center justify-end">
+                                    <div class="font-semibold text-sm md:text-base flex items-center justify-center">
                                         <div class="inline-block w-16 h-auto mr-2"><img src="@item.Product.MockupImageUri" /></div>
                                         <div class="inline-block flex-shrink-0">@item.Quantity &nbsp;x&nbsp; @item.Product.CustomDescription &nbsp;=</div>
                                         <div class="ml-2 font-bold">£@item.Total</div>
@@ -31,7 +31,7 @@
                                     </div>
                                 }
                             </div>
-                            <div class="my-2 px-4 text-right text-sm md:text-base font-semibold">
+                            <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
                                 Total:&nbsp; <span class="inline font-bold">£@basketState.Basket.BasketTotal</span>
                             </div>
                         </div>
