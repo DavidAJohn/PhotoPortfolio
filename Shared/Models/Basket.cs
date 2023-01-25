@@ -19,5 +19,5 @@ public class Basket
         }
     }
     public DateTime LastAccessed { get; set; }
-    public int TimeToLiveInSeconds { get; set; } = 30; // default
+    public int TimeToLiveInSeconds { get; set; } = 1200; // 20 mins
 }
