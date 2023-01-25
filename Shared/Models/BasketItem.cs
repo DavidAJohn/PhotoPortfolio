@@ -3,7 +3,7 @@
 public class BasketItem
 {
     public int Quantity { get; set; }
-    public PhotoProduct Product { get; set; }
+    public ProductBasketItemDto Product { get; set; }
 
     public decimal Total { get; set; }
 }

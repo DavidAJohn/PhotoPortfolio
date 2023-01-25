@@ -276,14 +276,15 @@
 
     private async Task AddItemToBasket()
     {
-        var productToAdd = new PhotoProduct
+        var productToAdd = new ProductBasketItemDto
             {
                 Id = product.Id,
                 ProdigiSku = product.ProdigiSku,
                 ProdigiDescription = product.ProdigiDescription,
                 CustomDescription = product.CustomDescription,
                 FurtherDetails = product.FurtherDetails,
-                MockupImageUri = product.MockupImageUri
+                MockupImageUri = product.MockupImageUri,
+                ImageUri = photo.Uri
             };
 
         var tempPrice = productPrice.Remove(0,1);

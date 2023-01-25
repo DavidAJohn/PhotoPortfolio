@@ -19,7 +19,14 @@
                                 @foreach (BasketItem item in basketItems)
                                 {
                                     <div class="font-semibold text-sm md:text-base flex items-center justify-center">
-                                        <div class="inline-block w-16 h-auto mr-2"><img src="@item.Product.MockupImageUri" /></div>
+                                        @if (!string.IsNullOrEmpty(item.Product.ImageUri))
+                                        {
+                                            <div class="inline-block w-16 h-auto mr-2"><img src="@item.Product.ImageUri" /></div>
+                                        }
+                                        @if (string.IsNullOrEmpty(item.Product.ImageUri) && !string.IsNullOrEmpty(item.Product.MockupImageUri))
+                                        {
+                                            <div class="inline-block w-16 h-auto mr-2"><img src="@item.Product.MockupImageUri" /></div>
+                                        }
                                         <div class="inline-block flex-shrink-0">@item.Quantity &nbsp;x&nbsp; @item.Product.CustomDescription &nbsp;=</div>
                                         <div class="ml-2 font-bold">£@item.Total</div>
                                         <button type="button" class="inline-block ml-2 -mr-1 text-red-800" @onclick="() => DeleteItem(item)">

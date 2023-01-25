@@ -1,4 +1,4 @@
-﻿namespace FotoStorio.Shared.Entities;
+﻿namespace PhotoPortfolio.Shared.Models;
 
 public class Basket
 {
