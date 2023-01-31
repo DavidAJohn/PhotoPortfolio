@@ -47,6 +47,7 @@ builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IQuoteService, QuoteService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Services.AddBlazoredModal();
 builder.Services.AddBlazoredLocalStorage();

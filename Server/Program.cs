@@ -3,6 +3,7 @@ using Microsoft.Identity.Web;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using PhotoPortfolio.Server.Services;
 using Serilog;
 using Serilog.Events;
 
@@ -42,6 +43,7 @@ try
     builder.Services.AddScoped<IGalleryRepository, GalleryRepository>();
     builder.Services.AddScoped<IPhotoRepository, PhotoRepository>();
     builder.Services.AddScoped<IProductRepository, ProductRepository>();
+    builder.Services.AddScoped<IPaymentService, PaymentService>();
 
     builder.Services.AddControllers()
         .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);

@@ -1,6 +1,10 @@
 ﻿@page "/checkout"
 
+@using PhotoPortfolio.Client.Contracts;
 @using PhotoPortfolio.Client.Shared;
+
+@inject IOrderService orderService;
+@inject NavigationManager navigationManager;
 
 <div class="h-auto">
     <div class="px-2 lg:container lg:max-w-6xl md:mt-8 mb-32 lg:mb-64">
@@ -43,6 +47,11 @@
                             </div>
                             <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
                                 Total:&nbsp; <span class="inline font-bold">£@basketState.Basket.BasketTotal</span>
+                            </div>
+                            <div class="mt-4 text-center">
+                                <button type="button" class="p-2 my-3 bg-green-600 text-white rounded-sm text-sm hover:opacity-90" @onclick="() => PlaceOrder()">
+                                    Place Order
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -95,5 +104,20 @@
 
         await basketState.SaveChangesAsync(); // save to local storage
         basketState.BasketItemCount--;
+    }
+
+    private async Task PlaceOrder()
+    {
+        var checkoutUrl = await orderService.CreateCheckoutSession(basketItems);
+
+        if (!string.IsNullOrEmpty(checkoutUrl))
+        {
+            navigationManager.NavigateTo(checkoutUrl);
+        }
+        else
+        {
+            ShowErrors = true;
+            ErrorMessage = "Sorry, there was a problem placing your order. Please try again.";
+        }
     }
 }
