@@ -35,6 +35,10 @@ public class PaymentService : IPaymentService
 
         var options = new SessionCreateOptions
         {
+            ShippingAddressCollection = new SessionShippingAddressCollectionOptions
+            {
+                AllowedCountries = new List<string>() { "GB", "US" }
+            },
             PaymentMethodTypes = new List<string>
             {
                 "card"
