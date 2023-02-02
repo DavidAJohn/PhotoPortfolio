@@ -48,9 +48,21 @@
                             <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
                                 Total:&nbsp; <span class="inline font-bold">£@basketState.Basket.BasketTotal</span>
                             </div>
-                            <div class="mt-4 text-center">
-                                <button type="button" class="p-2 my-3 bg-green-600 text-white rounded-sm text-sm hover:opacity-90" @onclick="() => PlaceOrder()">
-                                    Place Order
+                            <div class="mt-8 flex justify-center">
+                                <button type="button" class="flex justify-center align-items-center py-2 px-4 my-3 bg-green-600 text-white rounded-sm text-sm hover:opacity-90" @onclick="() => PlaceOrder()">
+                                    <svg version="1.1" id="order-spinner" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                        class="h-5 w-5 @SubmitSpinnerHidden" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">
+                                        <path fill="currentColor" d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z">
+                                            <animateTransform attributeType="xml"
+                                                  attributeName="transform"
+                                                  type="rotate"
+                                                  from="0 25 25"
+                                                  to="360 25 25"
+                                                  dur="0.7s"
+                                                  repeatCount="indefinite" />
+                                        </path>
+                                    </svg>
+                                    <div id="order-text" class="ml-2 font-semibold">Place Order</div>
                                 </button>
                             </div>
                         </div>
@@ -86,6 +98,7 @@
 
     private List<BasketItem> basketItems { get; set; }
 
+    private string SubmitSpinnerHidden = "hidden";
     private bool ShowErrors = false;
     private string ErrorMessage = "";
 
@@ -108,6 +121,8 @@
 
     private async Task PlaceOrder()
     {
+        SubmitSpinnerHidden = "";
+
         var checkoutUrl = await orderService.CreateCheckoutSession(basketItems);
 
         if (!string.IsNullOrEmpty(checkoutUrl))
@@ -118,6 +133,7 @@
         {
             ShowErrors = true;
             ErrorMessage = "Sorry, there was a problem placing your order. Please try again.";
+            SubmitSpinnerHidden = "hidden";
         }
     }
 }
