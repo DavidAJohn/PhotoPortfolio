@@ -1,4 +1,6 @@
-﻿namespace PhotoPortfolio.Shared.Models.Prodigi.Quotes;
+﻿using PhotoPortfolio.Shared.Models.Prodigi.Common;
+
+namespace PhotoPortfolio.Shared.Models.Prodigi.Quotes;
 
 public class Shipment
 {

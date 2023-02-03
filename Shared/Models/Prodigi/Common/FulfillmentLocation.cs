@@ -1,4 +1,4 @@
-﻿namespace PhotoPortfolio.Shared.Models.Prodigi.Quotes;
+﻿namespace PhotoPortfolio.Shared.Models.Prodigi.Common;
 
 public class FulfillmentLocation
 {
