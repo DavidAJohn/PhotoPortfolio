@@ -39,39 +39,56 @@ public class PaymentsController : BaseApiController
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
             var stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], WhSecret);
 
-            Session session = (Session)stripeEvent.Data.Object;
-
-            switch (stripeEvent.Type)
+            if (stripeEvent.Type == Events.CheckoutSessionCompleted)
             {
-                case Events.CheckoutSessionCompleted:
-                    _logger.LogInformation("Checkout Session Completed: {Id}", session.Id);
+                Session session = (Session)stripeEvent.Data.Object;
 
-                    Console.WriteLine("Order received from: " + session.CustomerEmail);
+                _logger.LogInformation("Checkout Session Completed: {Id}", session.Id);
 
-                    var options = new SessionGetOptions();
-                    options.AddExpand("line_items");
+                Console.WriteLine("Order received from: " + session.CustomerEmail);
 
-                    var service = new SessionService();
-                    Session sessionWithLineItems = service.Get(session.Id, options);
-                    StripeList<LineItem> lineItems = sessionWithLineItems.LineItems;
+                var options = new SessionGetOptions();
+                options.AddExpand("line_items");
 
-                    //var shippingDetails = session.ShippingDetails;
+                var service = new SessionService();
+                Session sessionWithLineItems = service.Get(session.Id, options);
+                StripeList<LineItem> lineItems = sessionWithLineItems.LineItems;
+                //Console.WriteLine(lineItems);
 
-                    //await _orderService.PlaceOrder();
-                    session = null!;
-                    break;
+                var shippingDetails = session.ShippingDetails;
+                //Console.WriteLine(shippingDetails);
 
-                case Events.CheckoutSessionExpired:
-                    _logger.LogInformation("Checkout Session Expired: {Id}", session.Id);
-
-                    break;
-
-                default:
-                    _logger.LogError("Unhandled Stripe event type for {Id}: {ev}", session.Id, stripeEvent.Type);
-                    break;
+                //await _orderService.PlaceOrder();
+                session = null!;
+            }
+            else if (stripeEvent.Type == Events.PaymentIntentCreated)
+            {
+                var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+                _logger.LogInformation("Payment Intent Created: {Id}", paymentIntent?.Id);
+            }
+            else if (stripeEvent.Type == Events.PaymentIntentSucceeded)
+            {
+                var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+                _logger.LogInformation("Payment Intent Succeeded: {Id}", paymentIntent?.Id);
+            }
+            else if (stripeEvent.Type == Events.ChargeSucceeded)
+            {
+                var charge = stripeEvent.Data.Object as Charge;
+                _logger.LogInformation("Charge Suceeded: {Id}", charge?.Id);
+            }
+            else if (stripeEvent.Type == Events.CheckoutSessionExpired)
+            {
+                Session session = (Session)stripeEvent.Data.Object;
+                _logger.LogInformation("Checkout Session Expired: {Id}", session.Id);
+            }
+            else
+            {
+                // Unexpected event type
+                Session session = (Session)stripeEvent.Data.Object;
+                _logger.LogInformation("Unexpected Stripe event type for {Id}: {ev}", session.Id, stripeEvent.Type);
             }
 
-            return new EmptyResult(); // confirms to Stripe that the response has been received
+            return Ok(); // confirms to Stripe that the response has been received
         }
         catch (StripeException e)
         {
@@ -83,6 +100,5 @@ public class PaymentsController : BaseApiController
             _logger.LogError("Exception: {e}", e.Message);
             return BadRequest();
         }
-        
     }
 }
