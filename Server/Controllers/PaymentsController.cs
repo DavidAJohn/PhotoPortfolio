@@ -43,61 +43,64 @@ public class PaymentsController : BaseApiController
             {
                 Session session = (Session)stripeEvent.Data.Object;
 
-                _logger.LogInformation("Checkout Session Completed: {Id}", session.Id);
-
-                Console.WriteLine("Order received from: " + session.CustomerEmail);
+                _logger.LogInformation("STRIPE --> Checkout Session Completed: {Id}", session.Id);
 
                 var options = new SessionGetOptions();
-                options.AddExpand("line_items");
-
+                options.AddExpand("line_items"); // line items are not included by default, so must be requested explicitly
                 var service = new SessionService();
-                Session sessionWithLineItems = service.Get(session.Id, options);
-                StripeList<LineItem> lineItems = sessionWithLineItems.LineItems;
-                //Console.WriteLine(lineItems);
+                Session expandedSession = service.Get(session.Id, options);
+                StripeList<LineItem> lineItems = expandedSession.LineItems;
+
+                var customerEmail = session.CustomerDetails.Email;
+                Console.WriteLine("STRIPE --> Order received from: " + session.CustomerDetails.Name + "(" + session.CustomerDetails.Email + ")");
 
                 var shippingDetails = session.ShippingDetails;
-                //Console.WriteLine(shippingDetails);
 
-                //await _orderService.PlaceOrder();
+                //await _orderService.PlaceOrder(customerEmail, lineItems, shippingDetails);
                 session = null!;
             }
             else if (stripeEvent.Type == Events.PaymentIntentCreated)
             {
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-                _logger.LogInformation("Payment Intent Created: {Id}", paymentIntent?.Id);
+                _logger.LogInformation("STRIPE --> Payment Intent Created: {Id}", paymentIntent?.Id);
+                paymentIntent = null!;
             }
             else if (stripeEvent.Type == Events.PaymentIntentSucceeded)
             {
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-                _logger.LogInformation("Payment Intent Succeeded: {Id}", paymentIntent?.Id);
+                _logger.LogInformation("STRIPE --> Payment Intent Succeeded: {Id}", paymentIntent?.Id);
+                paymentIntent = null!;
             }
             else if (stripeEvent.Type == Events.ChargeSucceeded)
             {
                 var charge = stripeEvent.Data.Object as Charge;
-                _logger.LogInformation("Charge Suceeded: {Id}", charge?.Id);
+                _logger.LogInformation("STRIPE --> Charge Suceeded: {Id}", charge?.Id);
+                charge = null!;
             }
             else if (stripeEvent.Type == Events.CheckoutSessionExpired)
             {
                 Session session = (Session)stripeEvent.Data.Object;
-                _logger.LogInformation("Checkout Session Expired: {Id}", session.Id);
+                _logger.LogInformation("STRIPE --> Checkout Session Expired: {Id}", session.Id);
+                session = null!;
             }
             else
             {
                 // Unexpected event type
                 Session session = (Session)stripeEvent.Data.Object;
-                _logger.LogInformation("Unexpected Stripe event type for {Id}: {ev}", session.Id, stripeEvent.Type);
+                _logger.LogInformation("STRIPE --> Unexpected event type for {Id}: {ev}", session.Id, stripeEvent.Type);
+                session = null!;
             }
 
             return Ok(); // confirms to Stripe that the response has been received
         }
         catch (StripeException e)
         {
-            _logger.LogError("Stripe exception: {e}", e.Message);
+            _logger.LogError("STRIPE --> Stripe exception: {e}", e.Message);
             return BadRequest();
         }
         catch (Exception e)
         {
-            _logger.LogError("Exception: {e}", e.Message);
+            _logger.LogError("STRIPE --> Exception: {e}", e.Message);
             return BadRequest();
         }
     }
