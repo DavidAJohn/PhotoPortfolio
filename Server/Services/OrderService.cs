@@ -6,6 +6,13 @@ namespace PhotoPortfolio.Server.Services;
 
 public class OrderService : IOrderService
 {
+    private readonly IOrderRepository _orderRepository;
+
+    public OrderService(IOrderRepository orderRepository)
+    {
+        _orderRepository = orderRepository;
+    }
+
     public async Task<bool> PlaceOrder(
         PhotoPortfolioStripe.Customer customer,
         PhotoPortfolioStripe.LineItems lineItems,
@@ -43,8 +50,11 @@ public class OrderService : IOrderService
             StripeDetails = stripeDetails
         };
 
-        // TO DO: save to db
+        // save to db
+        var response = await _orderRepository.AddAsync(order);
 
-        return true;
+        if (response != null) return true;
+
+        return false;
     }
 }
