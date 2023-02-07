@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LinqKit;
+using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using Stripe.Checkout;
+using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
 
 namespace PhotoPortfolio.Server.Controllers;
 
@@ -9,12 +11,14 @@ public class PaymentsController : BaseApiController
     private readonly ILogger<AdminController> _logger;
     private readonly IConfiguration _config;
     private readonly IPaymentService _paymentService;
+    private readonly IOrderService _orderService;
 
-    public PaymentsController(ILogger<AdminController> logger, IConfiguration config, IPaymentService paymentService)
+    public PaymentsController(ILogger<AdminController> logger, IConfiguration config, IPaymentService paymentService, IOrderService orderService)
     {
         _logger = logger;
         _config = config;
         _paymentService = paymentService;
+        _orderService = orderService;
     }
 
     [HttpPost("session")]
@@ -49,15 +53,69 @@ public class PaymentsController : BaseApiController
                 options.AddExpand("line_items"); // line items are not included by default, so must be requested explicitly
                 var service = new SessionService();
                 Session expandedSession = service.Get(session.Id, options);
-                StripeList<LineItem> lineItems = expandedSession.LineItems;
+                StripeList<LineItem> stripeLineItems = expandedSession.LineItems;
 
-                var customerEmail = session.CustomerDetails.Email;
-                Console.WriteLine("STRIPE --> Order received from: " + session.CustomerDetails.Name + "(" + session.CustomerDetails.Email + ")");
+                var data = new List<LineItem>();
+                stripeLineItems.ForEach(item => data.Add(new LineItem
+                {
+                    Id = item.Id,
+                    Object =item.Object,
+                    AmountDiscount = item.AmountDiscount,
+                    AmountSubtotal = item.AmountSubtotal,
+                    AmountTax = item.AmountTax,
+                    AmountTotal = item.AmountTotal,
+                    Currency = item.Currency,
+                    Description = item.Description,
+                    Discounts = item.Discounts,
+                    Quantity = item.Quantity,
+                    Taxes = item.Taxes,
+                }));
 
-                var shippingDetails = session.ShippingDetails;
+                var lineItems = new PhotoPortfolioStripe.LineItems()
+                {
+                    Object = stripeLineItems.Object,
+                    Data = data,
+                    HasMore = stripeLineItems.HasMore,
+                    Url = stripeLineItems.Url
+                };
 
-                //await _orderService.PlaceOrder(customerEmail, lineItems, shippingDetails);
-                session = null!;
+                var customer = new PhotoPortfolioStripe.Customer() // PhotoPortfolio.Shared.Models.Stripe
+                {
+                    Name = session.CustomerDetails.Name,
+                    EmailAddress = session.CustomerDetails.Email
+                };
+
+                _logger.LogInformation("STRIPE --> Order received from: {name} ({email})", session.CustomerDetails.Name, session.CustomerDetails.Email);
+
+                var stripeShippingDetails = session.ShippingDetails;
+                var shippingDetails = new PhotoPortfolioStripe.ShippingDetails()
+                {
+                    Address = new()
+                    {
+                        City = stripeShippingDetails.Address.City,
+                        Country = stripeShippingDetails.Address.Country,
+                        Line1 = stripeShippingDetails.Address.Line1,
+                        Line2 = stripeShippingDetails.Address.Line2,
+                        PostalCode = stripeShippingDetails.Address.PostalCode,
+                        State = stripeShippingDetails.Address.State,
+                    },
+                    Carrier = stripeShippingDetails.Carrier,
+                    Name = stripeShippingDetails.Name,
+                    Phone = stripeShippingDetails.Phone,
+                    TrackingNumber = stripeShippingDetails.TrackingNumber
+                };
+
+                // pass details to order service to save in the db
+                var response = await _orderService.PlaceOrder(customer, lineItems, shippingDetails);
+                if (response)
+                {
+                    _logger.LogInformation("Order added to database successfully: {Id}", session.Id);
+                    session = null!;
+                }
+                else
+                {
+                    _logger.LogInformation("Order could NOT be added to database: {Id}", session.Id);
+                }
             }
             else if (stripeEvent.Type == Events.PaymentIntentCreated)
             {
