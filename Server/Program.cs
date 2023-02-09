@@ -46,6 +46,7 @@ try
     builder.Services.AddScoped<IPaymentService, PaymentService>();
     builder.Services.AddScoped<IOrderService, OrderService>();
     builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+    builder.Services.AddScoped<IQuoteService, QuoteService>();
 
     builder.Services.AddControllers()
         .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
