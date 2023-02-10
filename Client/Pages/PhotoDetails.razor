@@ -4,6 +4,7 @@
 @using PhotoPortfolio.Shared.Entities
 @using PhotoPortfolio.Shared.Models
 @using PhotoPortfolio.Shared.Models.Prodigi.Quotes
+@using static PhotoPortfolio.Client.Components.Dropdown;
 
 @inject IPhotoService photoService
 @inject IProductService productService
@@ -39,7 +40,7 @@
 
                 @if (dropdownOptions.Count > 0)
                 {
-                    <Dropdown DropdownTitle="Available as:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
+                    <Dropdown DropdownTitle="Available as:" DropdownItems="dropdownOptions" DropdownWidth="DropdownWidthOptions.Large" SelectedOption="SelectedOption" />
 
                     @if (!optionSelected)
                     {
@@ -69,7 +70,7 @@
                             @if (quoteReceived && quoteError == "")
                             {
                                 <div class="text-sm lg:text-base font-bold mt-8 text-slate-500" id="product-price">
-                                    Price: @productPrice (inc Tax & Standard Delivery)
+                                    <span class="inline">Price: @productPrice using <Dropdown DropdownTitle="@selectedDeliveryOption" DropdownWidth="DropdownWidthOptions.Medium" DropdownItems="deliveryDropdownOptions" SelectedOption="SelectedDeliveryOption" /></span>
                                 </div>
 
                                 <div class="mt-4 mb-8" id="product-purchase-button">
@@ -145,6 +146,8 @@
     private string errorMessage = "";
 
     private List<DropdownItem> dropdownOptions = new();
+    private List<DropdownItem> deliveryDropdownOptions = new();
+    private string selectedDeliveryOption = "Standard Delivery";
 
     private List<PhotoProduct> products = new();
     private PhotoProduct product = new();
@@ -225,7 +228,7 @@
         }
     }
 
-    private async Task GetProductQuote(Product product)
+    private async Task GetProductQuote(Product product, string deliveryOption = "Standard")
     {
         List<CreateQuoteItemDto> items = new();
         List<Dictionary<string, string>> assetList = new();
@@ -243,7 +246,7 @@
 
         CreateQuoteDto quote = new CreateQuoteDto()
             {
-                ShippingMethod = "Standard",
+                ShippingMethod = deliveryOption,
                 DestinationCountryCode = "GB",
                 CurrencyCode = "GBP",
                 Items = items
@@ -261,6 +264,19 @@
                 quoteReceived = true;
                 quoteError = "";
                 productPrice = "£" + quoteReturned.CostSummary.TotalCost.Amount;
+
+                // also set up delivery options
+                deliveryDropdownOptions.Clear();
+                string[] deliveryOptions = { "Standard", "Budget", "Express" };
+
+                foreach (var option in deliveryOptions)
+                {
+                    deliveryDropdownOptions.Add(new DropdownItem
+                        {
+                            OptionName = $"{option} Delivery",
+                            OptionRef = option
+                        });
+                }
             }
             else 
             {
@@ -296,5 +312,11 @@
         await basketState.SaveChangesAsync(); // save to local storage
         basketState.BasketItemCount++;
         snackbar.Add("A new item has been added to your basket", Severity.Success);
+    }
+
+    private async Task SelectedDeliveryOption(string deliveryOption)
+    {
+        await GetProductQuote(product, deliveryOption);
+        selectedDeliveryOption = $"{deliveryOption} Delivery";
     }
 }
