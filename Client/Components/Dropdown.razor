@@ -4,7 +4,7 @@
 {
     <div class="relative inline-block text-left" id="dropdown-container">
         <div>
-            <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 py-2 bg-white text-base font-semibold text-gray-600 focus:outline-none" 
+            <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 py-2 bg-white text-base font-semibold text-gray-600 focus:outline-none"
                 id="dropdown-button"
                 @onclick="ToggleDropdown">
                     @DropdownTitle
@@ -21,11 +21,11 @@
 
         @if (DropdownItems != null)
         {
-            <div class="origin-top-left absolute left-0 w-128 rounded-sm shadow-lg border border-gray-300 bg-white focus:outline-none @DropdownTransformClass" role="menu" tabindex="-1" id="dropdown-menu">
+            <div class="origin-top-left absolute left-0 @widthClass rounded-sm shadow-lg border border-gray-300 bg-white focus:outline-none @DropdownTransformClass" role="menu" tabindex="-1" id="dropdown-menu">
                 <div class="divide-y divide-gray-300" role="none">
                     @foreach (DropdownItem item in DropdownItems)
                     {
-                        <div class="dropdown-item text-gray-700 block py-2 px-2 text-base hover:cursor-pointer hover:bg-gray-200" 
+                        <div class="dropdown-item text-gray-700 block py-2 px-2 @(widthClass == "w-64" ? "text-sm" : "text-base") hover:cursor-pointer hover:bg-gray-200"
                             id="menu-item-@(@item.Id)"
                             @onclick="() => OnSelectedOption(item)"
                             role="menuitem" 
@@ -44,6 +44,9 @@
     public string DropdownTitle { get; set; } = "Select";
 
     [Parameter]
+    public DropdownWidthOptions DropdownWidth { get; set; } = DropdownWidthOptions.Large;
+
+    [Parameter]
     public List<DropdownItem> DropdownItems { get; set; } = null!;
 
     [Parameter]
@@ -55,6 +58,14 @@
         ? "transform opacity-0 scale-100 transition ease-out duration-100 z-0 hidden" 
         : "transform opacity-100 scale-95 transition ease-in duration-100 z-10 block";
 
+    private string widthClass => DropdownWidth switch
+    {
+        DropdownWidthOptions.Small => "w-64",
+        DropdownWidthOptions.Medium => "w-72",
+        DropdownWidthOptions.Large => "w-128",
+        _ => "w-128"
+    };
+    
     private void ToggleDropdown()
     {
         collapseDropdown = !collapseDropdown;
@@ -64,5 +75,12 @@
     {
         collapseDropdown = true;
         await SelectedOption.InvokeAsync(item.OptionRef);
+    }
+
+    public enum DropdownWidthOptions
+    {
+        Small,
+        Medium,
+        Large
     }
 }
