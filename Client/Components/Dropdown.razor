@@ -2,9 +2,9 @@
 
 @if (DropdownItems is not null)
 {
-    <div class="relative inline-block text-left" id="dropdown-container">
+    <div class="relative inline-block text-left outline outline-1 outline-slate-200 outline-offset-2 rounded-sm" id="dropdown-container">
         <div>
-            <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 py-2 bg-white text-base font-semibold text-gray-600 focus:outline-none"
+            <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 p-1 bg-white text-base font-semibold text-gray-600 focus:outline-none"
                 id="dropdown-button"
                 @onclick="ToggleDropdown">
                     @DropdownTitle
