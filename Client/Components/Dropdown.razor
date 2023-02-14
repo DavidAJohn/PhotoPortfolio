@@ -2,7 +2,7 @@
 
 @if (DropdownItems is not null)
 {
-    <div class="relative inline-block text-left outline outline-1 outline-slate-200 outline-offset-2 rounded-sm" id="dropdown-container">
+    <div class="relative inline-block text-left @DropdownOutlineStyles" id="dropdown-container">
         <div>
             <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 p-1 bg-white text-base font-semibold text-gray-600 focus:outline-none"
                 id="dropdown-button"
@@ -47,6 +47,9 @@
     public DropdownWidthOptions DropdownWidth { get; set; } = DropdownWidthOptions.Large;
 
     [Parameter]
+    public bool DropdownOutline { get; set; } = true;
+
+    [Parameter]
     public List<DropdownItem> DropdownItems { get; set; } = null!;
 
     [Parameter]
@@ -66,6 +69,10 @@
         _ => "w-128"
     };
     
+    private string DropdownOutlineStyles => DropdownOutline
+        ? "outline outline-1 outline-slate-200 outline-offset-2 rounded-sm"
+        : " ";
+
     private void ToggleDropdown()
     {
         collapseDropdown = !collapseDropdown;

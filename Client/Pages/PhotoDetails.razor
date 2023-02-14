@@ -40,7 +40,11 @@
 
                 @if (dropdownOptions.Count > 0)
                 {
-                    <Dropdown DropdownTitle="Available as:" DropdownItems="dropdownOptions" DropdownWidth="DropdownWidthOptions.Large" SelectedOption="SelectedOption" />
+                    <Dropdown DropdownTitle="Available as:" 
+                        DropdownItems="dropdownOptions" 
+                        DropdownWidth="DropdownWidthOptions.Large" 
+                        DropdownOutline=true 
+                        SelectedOption="SelectedOption" />
 
                     @if (!optionSelected)
                     {
