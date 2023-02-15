@@ -1,0 +1,69 @@
+﻿@page "/admin/siteprefs"
+@layout AdminLayout
+
+@using Microsoft.AspNetCore.Authorization
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+
+@inject IAdminService adminService
+
+@attribute [Authorize]
+
+<PageTitle>Photo Portfolio : Admin : Site Preferences</PageTitle>
+
+@if (errorMessage != "")
+{
+    <div class="mx-2 animate-pulse">
+        <div class="alert-box" role="alert">
+            <span class="block sm:inline">@errorMessage</span>
+        </div>
+    </div>
+}
+else if (preferences == null)
+{
+    <text>Loading site preferences...</text>
+}
+else
+{
+    <div class="m-4 md:m-8">
+        <div class="text-3xl">Site Preferences</div>
+        <div class="mt-8 flex flex-col">
+            @foreach (var pref in preferences)
+            {
+                <div class="text-base font-semibold">@pref</div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string errorMessage = "";
+    private List<string> preferences = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetSitePreferences();
+    }
+
+    private async Task GetSitePreferences()
+    {
+        try
+        {
+            List<string> prefs = new()
+            {
+                "OrdersSentToProdigiAutomatically",
+                "OrderPriceThreshold"
+            };
+
+            preferences = prefs;
+
+            //preferences = await adminService.GetSitePreferencesAsync();
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not retrieve site preferences";
+        }
+    }
+}
