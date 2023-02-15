@@ -6,4 +6,5 @@ public class BasketItem
     public ProductBasketItemDto Product { get; set; }
 
     public decimal Total { get; set; }
+    public string ShippingMethod { get; set; } = "Standard";
 }

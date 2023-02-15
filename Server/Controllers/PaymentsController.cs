@@ -196,7 +196,7 @@ public class PaymentsController : BaseApiController
 
         CreateQuoteDto quote = new CreateQuoteDto()
         {
-            ShippingMethod = "Standard",
+            ShippingMethod = basketItem.ShippingMethod,
             DestinationCountryCode = "GB",
             CurrencyCode = "GBP",
             Items = items
