@@ -1,12 +1,11 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace PhotoPortfolio.Shared.Entities
+namespace PhotoPortfolio.Shared.Entities;
+
+public abstract class BaseEntity
 {
-    public abstract class BaseEntity
-    {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id { get; set; }
-    }
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
 }
