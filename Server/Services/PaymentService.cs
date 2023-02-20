@@ -27,11 +27,16 @@ public class PaymentService : IPaymentService
                 ProductData = new SessionLineItemPriceDataProductDataOptions
                 {
                     Name = item.Product.ImageTitle + " " + "(" + item.Product.CustomDescription + ")",
-                    Images = new List<string> { item.Product.ImageUri }
+                    Images = new List<string> { item.Product.ImageUri },
+                    Metadata = new Dictionary<string, string>()
+                    {
+                        { "product_id", item.Product.Id },
+                        { "sku", item.Product.ProdigiSku }
+                    }
                 }
             },
             Quantity = item.Quantity
-        }));
+        })); 
 
         var options = new SessionCreateOptions
         {
@@ -46,7 +51,11 @@ public class PaymentService : IPaymentService
             LineItems = lineItems,
             Mode = "payment",
             SuccessUrl = "https://localhost:7200/checkout/success",
-            CancelUrl = "https://localhost:7200/checkout"
+            CancelUrl = "https://localhost:7200/checkout",
+            Metadata = new Dictionary<string, string>
+            {
+                { "shipping_method", basketItems.First().ShippingMethod } // temp solution to getting shipping method
+            }
         };
 
         var service = new SessionService();
