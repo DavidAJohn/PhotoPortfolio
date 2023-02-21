@@ -7,5 +7,7 @@ public interface IOrderService
     Task<bool> PlaceOrder(
         PhotoPortfolioStripe.Customer customer,
         PhotoPortfolioStripe.LineItems lineItems, 
-        PhotoPortfolioStripe.ShippingDetails shippingDetails);
+        PhotoPortfolioStripe.ShippingDetails shippingDetails,
+        string shippingMethod
+        );
 }

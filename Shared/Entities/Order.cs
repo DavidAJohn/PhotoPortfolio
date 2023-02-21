@@ -11,4 +11,5 @@ public class Order : BaseEntity
     public string EmailAddress { get; set; }
     public Prodigi.Address Address { get; set; }
     public StripeOrder StripeDetails { get; set; }
+    public string ShippingMethod { get; set; }
 }

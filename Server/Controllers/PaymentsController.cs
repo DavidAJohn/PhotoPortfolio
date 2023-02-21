@@ -120,8 +120,12 @@ public class PaymentsController : BaseApiController
                     TrackingNumber = stripeShippingDetails.TrackingNumber
                 };
 
+                var sessionMetadata = session.Metadata;
+                var shippingMethod = sessionMetadata.FirstOrDefault(x => x.Key == "shipping_method").Value ?? "";
+
                 // pass details to order service to save in the db
-                var response = await _orderService.PlaceOrder(customer, lineItems, shippingDetails);
+                var response = await _orderService.PlaceOrder(customer, lineItems, shippingDetails, shippingMethod);
+
                 if (response)
                 {
                     _logger.LogInformation("Order added to database successfully: {Id}", session.Id);

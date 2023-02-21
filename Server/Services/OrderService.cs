@@ -16,17 +16,18 @@ public class OrderService : IOrderService
     public async Task<bool> PlaceOrder(
         PhotoPortfolioStripe.Customer customer,
         PhotoPortfolioStripe.LineItems lineItems,
-        PhotoPortfolioStripe.ShippingDetails shippingDetails
+        PhotoPortfolioStripe.ShippingDetails shippingDetails,
+        string shippingMethod
         )
     {
         var address = new Prodigi.Address()
         {
             Line1 = shippingDetails.Address.Line1,
-            Line2 = shippingDetails.Address.Line2 ??= "",
+            Line2 =  string.IsNullOrWhiteSpace(shippingDetails.Address.Line2) ? "" : shippingDetails.Address.Line2,
             PostalOrZipCode = shippingDetails.Address.PostalCode,
             CountryCode = shippingDetails.Address.Country,
             TownOrCity = shippingDetails.Address.City,
-            StateOrCounty = shippingDetails.Address.State ??= ""
+            StateOrCounty = string.IsNullOrWhiteSpace(shippingDetails.Address.State) ? "" : shippingDetails.Address.State
         };
 
         var stripeDetails = new PhotoPortfolioStripe.StripeOrder()
@@ -36,7 +37,7 @@ public class OrderService : IOrderService
                 Object = lineItems.Object,
                 Data = lineItems.Data,
                 HasMore = lineItems.HasMore,
-                Url= lineItems.Url
+                Url = lineItems.Url
             },
             ShippingDetails = shippingDetails,
             Customer = customer,
@@ -47,7 +48,8 @@ public class OrderService : IOrderService
             Name = customer.Name,
             EmailAddress = customer.EmailAddress,
             Address = address,
-            StripeDetails = stripeDetails
+            StripeDetails = stripeDetails,
+            ShippingMethod = string.IsNullOrWhiteSpace(shippingMethod) ? "Standard" : shippingMethod
         };
 
         // save to db
