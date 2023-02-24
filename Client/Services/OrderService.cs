@@ -15,6 +15,33 @@ public class OrderService : IOrderService
         _httpClient = httpClient;
     }
 
+    public async Task<string> CreateInitialOrder(OrderBasketDto orderBasketDto)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI");
+
+            HttpContent basketJson = new StringContent(JsonSerializer.Serialize(orderBasketDto));
+            basketJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            HttpResponseMessage response = await client.PostAsync("orders", basketJson);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var orderId = await response.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrEmpty(orderId)) return null!;
+
+                return orderId;
+            }
+
+            return null!;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message);
+        }
+    }
+
     public async Task<string> CreateCheckoutSession(OrderBasketDto orderBasketDto)
     {
         try

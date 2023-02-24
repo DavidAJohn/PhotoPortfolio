@@ -13,7 +13,24 @@ public class OrderService : IOrderService
         _orderRepository = orderRepository;
     }
 
-    public async Task<bool> PlaceOrder(
+    public async Task<string> CreatOrder(List<BasketItem> lineItems, string shippingMethod)
+    {
+        var order = new Order()
+        {
+            Items = lineItems,
+            ShippingMethod = string.IsNullOrWhiteSpace(shippingMethod) ? "" : shippingMethod
+        };
+
+        // save to db
+        var newOrder = await _orderRepository.AddAsync(order);
+
+        if (newOrder is null) return "";
+
+        return newOrder.Id;
+    }
+
+    public async Task<bool> UpdateOrder(
+        string orderId,
         PhotoPortfolioStripe.Customer customer,
         PhotoPortfolioStripe.LineItems lineItems,
         PhotoPortfolioStripe.ShippingDetails shippingDetails,
@@ -42,19 +59,29 @@ public class OrderService : IOrderService
             ShippingDetails = shippingDetails
         };
 
-        var order = new Order()
+        // get existing order details
+        var existingOrder = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
+
+        if (existingOrder != null)
         {
-            Name = customer.Name,
-            EmailAddress = customer.EmailAddress,
-            Address = address,
-            StripeDetails = stripeDetails,
-            ShippingMethod = string.IsNullOrWhiteSpace(shippingMethod) ? "Standard" : shippingMethod
+            var order = new Order()
+            {
+                Id = orderId,
+                Name = customer.Name,
+                EmailAddress = customer.EmailAddress,
+                Items = existingOrder.Items,
+                Address = address,
+                StripeDetails = stripeDetails,
+                ShippingMethod = existingOrder.ShippingMethod
+            };
+
+            // update order with new details sent from Stripe
+            var response = await _orderRepository.UpdateAsync(order);
+
+            if (response != null) return true;
+
+            return false;
         };
-
-        // save to db
-        var response = await _orderRepository.AddAsync(order);
-
-        if (response != null) return true;
 
         return false;
     }

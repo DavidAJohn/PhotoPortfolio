@@ -57,7 +57,7 @@ public class PaymentService : IPaymentService
             Metadata = new Dictionary<string, string>
             {
                 { "shipping_method", orderBasketDto.ShippingMethod },
-                { "order_id", "order_id" }
+                { "order_id", orderBasketDto.OrderId }
             }
         };
 

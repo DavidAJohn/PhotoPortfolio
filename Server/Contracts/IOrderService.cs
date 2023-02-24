@@ -4,10 +4,13 @@ namespace PhotoPortfolio.Server.Contracts;
 
 public interface IOrderService
 {
-    Task<bool> PlaceOrder(
+    Task<string> CreatOrder(List<BasketItem> lineItems, string shippingMethod);
+
+    Task<bool> UpdateOrder(
+        string orderId,
         PhotoPortfolioStripe.Customer customer,
         PhotoPortfolioStripe.LineItems lineItems, 
         PhotoPortfolioStripe.ShippingDetails shippingDetails,
         string shippingMethod
-        );
+    );
 }

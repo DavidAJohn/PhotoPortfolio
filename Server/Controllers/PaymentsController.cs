@@ -124,18 +124,19 @@ public class PaymentsController : BaseApiController
 
                 var sessionMetadata = session.Metadata;
                 var shippingMethod = sessionMetadata.FirstOrDefault(x => x.Key == "shipping_method").Value ?? "";
+                var orderId = sessionMetadata.FirstOrDefault(x => x.Key == "order_id").Value ?? "";
 
-                // pass details to order service to save in the db
-                var response = await _orderService.PlaceOrder(customer, lineItems, shippingDetails, shippingMethod);
+                // pass details to order service to update the db
+                var response = await _orderService.UpdateOrder(orderId, customer, lineItems, shippingDetails, shippingMethod);
 
                 if (response)
                 {
-                    _logger.LogInformation("Order added to database successfully: {Id}", session.Id);
+                    _logger.LogInformation("Order details from Stripe added to database successfully: {Id}", session.Id);
                     session = null!;
                 }
                 else
                 {
-                    _logger.LogInformation("Order could NOT be added to database: {Id}", session.Id);
+                    _logger.LogInformation("Order details from Stripe could NOT be added to database: {Id}", session.Id);
                 }
             }
             else if (stripeEvent.Type == Events.PaymentIntentCreated)

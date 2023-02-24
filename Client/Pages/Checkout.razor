@@ -158,11 +158,25 @@
             ShippingMethod = selectedDeliveryOption
         };
 
-        var checkoutUrl = await orderService.CreateCheckoutSession(orderBasketDto);
+        // save initial order to db with items and shipping method
+        var orderId = await orderService.CreateInitialOrder(orderBasketDto);
 
-        if (!string.IsNullOrEmpty(checkoutUrl))
+        if (!string.IsNullOrEmpty(orderId))
         {
-            navigationManager.NavigateTo(checkoutUrl);
+            orderBasketDto.OrderId = orderId;
+
+            var checkoutUrl = await orderService.CreateCheckoutSession(orderBasketDto);
+
+            if (!string.IsNullOrEmpty(checkoutUrl))
+            {
+                navigationManager.NavigateTo(checkoutUrl);
+            }
+            else
+            {
+                ShowErrors = true;
+                ErrorMessage = "Sorry, there was a problem placing your order. Please try again.";
+                SubmitSpinnerHidden = "hidden";
+            }
         }
         else
         {
