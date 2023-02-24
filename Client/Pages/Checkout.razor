@@ -2,8 +2,13 @@
 
 @using PhotoPortfolio.Client.Contracts;
 @using PhotoPortfolio.Client.Shared;
+@using PhotoPortfolio.Shared.Entities;
+@using PhotoPortfolio.Shared.Models;
+@using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
+@using static PhotoPortfolio.Client.Components.Dropdown;
 
 @inject IOrderService orderService;
+@inject IQuoteService quoteService
 @inject NavigationManager navigationManager;
 
 <div class="h-auto">
@@ -19,7 +24,7 @@
                             <div class="text-lg text-center mb-8 md:text-xl lg:text-2xl font-bold">
                                 Order Summary
                             </div>
-                            <div class="p-4 mx-32 text-center" >
+                            <div class="p-4 mx-32 text-center">
                                 @foreach (BasketItem item in basketItems)
                                 {
                                     <div class="font-semibold text-sm md:text-base flex items-center justify-center">
@@ -34,7 +39,6 @@
                                         <div class="inline-block flex-shrink-0">
                                             <div class="mb-0">@item.Product.ImageTitle</div>
                                             <div class="font-medium text-sm">@item.Product.CustomDescription</div>
-                                            <div class="font-medium text-sm">@item.ShippingMethod Delivery</div>
                                         </div>
                                         <div class="ml-4 font-bold">=&nbsp; £@item.Total</div>
                                         <button type="button" class="inline-block ml-2 -mr-1 text-red-800" @onclick="() => DeleteItem(item)">
@@ -45,6 +49,10 @@
                                         </button>
                                     </div>
                                 }
+                            </div>
+                            <div class="text-sm lg:text-base font-bold flex items-center justify-center mt-4 mb-8 text-slate-500" id="product-price">
+                                <div class="mr-2">Shipping Method:</div>
+                                <div><Dropdown DropdownTitle="@($"{selectedDeliveryOption} Delivery")" DropdownWidth="DropdownWidthOptions.Medium" DropdownItems="deliveryDropdownOptions" SelectedOption="SelectedDeliveryOption" /></div>
                             </div>
                             <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
                                 Total:&nbsp; <span class="inline font-bold">£@basketState.Basket.BasketTotal</span>
@@ -103,10 +111,30 @@
     private bool ShowErrors = false;
     private string ErrorMessage = "";
 
+    private List<DropdownItem> deliveryDropdownOptions = new();
+    private string selectedDeliveryOption = "Standard";
+
     protected override async Task OnParametersSetAsync()
     {
         await Task.Run(()=> System.Threading.Thread.Sleep(1)); // forces the page to wait before getting the basket
         basketItems = basketState.Basket.BasketItems;
+
+        AddDeliveryOptions();
+    }
+
+    private void AddDeliveryOptions()
+    {
+        deliveryDropdownOptions.Clear();
+        string[] deliveryOptions = { "Standard", "Budget", "Express" };
+
+        foreach (var option in deliveryOptions)
+        {
+            deliveryDropdownOptions.Add(new DropdownItem
+                {
+                    OptionName = $"{option} Delivery",
+                    OptionRef = option
+                });
+        }
     }
 
     private async Task DeleteItem(BasketItem item)
@@ -124,7 +152,13 @@
     {
         SubmitSpinnerHidden = "";
 
-        var checkoutUrl = await orderService.CreateCheckoutSession(basketItems);
+        OrderBasketDto orderBasketDto = new OrderBasketDto()
+        {
+            BasketItems = basketItems,
+            ShippingMethod = selectedDeliveryOption
+        };
+
+        var checkoutUrl = await orderService.CreateCheckoutSession(orderBasketDto);
 
         if (!string.IsNullOrEmpty(checkoutUrl))
         {
@@ -136,5 +170,71 @@
             ErrorMessage = "Sorry, there was a problem placing your order. Please try again.";
             SubmitSpinnerHidden = "hidden";
         }
+    }
+
+    private async Task SelectedDeliveryOption(string deliveryOption)
+    {
+        foreach (var item in basketItems)
+        {
+            var quote = await GetProductQuote(item.Product, deliveryOption);
+
+            // if quote received is not 0, then use it
+            if (quote != 0) item.Total = quote;
+        }
+
+        selectedDeliveryOption = $"{deliveryOption}";
+    }
+
+    private async Task<decimal> GetProductQuote(ProductBasketItemDto product, string deliveryOption = "Standard")
+    {
+        List<CreateQuoteItemDto> items = new();
+        List<Dictionary<string, string>> assetList = new();
+        Dictionary<string, string> assets = new();
+
+        assets.Add("printArea", "default");
+        assetList.Add(assets);
+
+        items.Add(new CreateQuoteItemDto
+            {
+                Sku = product.ProdigiSku,
+                Copies = 1,
+                Assets = assetList
+            });
+
+        CreateQuoteDto quote = new CreateQuoteDto()
+            {
+                ShippingMethod = deliveryOption,
+                DestinationCountryCode = "GB",
+                CurrencyCode = "GBP",
+                Items = items
+            };
+
+        var quoteResponse = await quoteService.GetQuote(quote);
+
+        if (quoteResponse is not null)
+        {
+            var quotes = quoteResponse.Quotes;
+            var quoteReturned = quotes.FirstOrDefault();
+
+            if (quoteReturned is not null)
+            {
+                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.TotalCost.Amount))
+                {
+                    decimal totalCost = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
+                    return totalCost;
+                }
+
+                return 0;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        else 
+        {
+            return 0;
+        }
+
     }
 }

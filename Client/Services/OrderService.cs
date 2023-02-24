@@ -1,8 +1,7 @@
 ﻿using PhotoPortfolio.Client.Contracts;
-using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
+using PhotoPortfolio.Shared.Models;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace PhotoPortfolio.Client.Services;
@@ -16,13 +15,13 @@ public class OrderService : IOrderService
         _httpClient = httpClient;
     }
 
-    public async Task<string> CreateCheckoutSession(List<BasketItem> basketItems)
+    public async Task<string> CreateCheckoutSession(OrderBasketDto orderBasketDto)
     {
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI");
 
-            HttpContent basketJson = new StringContent(JsonSerializer.Serialize(basketItems));
+            HttpContent basketJson = new StringContent(JsonSerializer.Serialize(orderBasketDto));
             basketJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpResponseMessage response = await client.PostAsync("payments/session", basketJson);
 
@@ -42,5 +41,4 @@ public class OrderService : IOrderService
             throw new HttpRequestException(ex.Message);
         }
     }
-
 }

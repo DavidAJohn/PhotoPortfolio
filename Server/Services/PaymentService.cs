@@ -1,4 +1,5 @@
-﻿using Stripe;
+﻿using PhotoPortfolio.Shared.Models;
+using Stripe;
 using Stripe.Checkout;
 
 namespace PhotoPortfolio.Server.Services;
@@ -12,10 +13,11 @@ public class PaymentService : IPaymentService
         _config = config;
     }
 
-    public async Task<Session> CreateCheckoutSession(List<BasketItem> basketItems)
+    public async Task<Session> CreateCheckoutSession(OrderBasketDto orderBasketDto)
     {
         StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
 
+        var basketItems = orderBasketDto.BasketItems;
         var lineItems = new List<SessionLineItemOptions>();
 
         basketItems.ForEach(item => lineItems.Add(new SessionLineItemOptions
@@ -54,7 +56,8 @@ public class PaymentService : IPaymentService
             CancelUrl = "https://localhost:7200/checkout",
             Metadata = new Dictionary<string, string>
             {
-                { "shipping_method", basketItems.First().ShippingMethod } // temp solution to getting shipping method
+                { "shipping_method", orderBasketDto.ShippingMethod },
+                { "order_id", "order_id" }
             }
         };
 

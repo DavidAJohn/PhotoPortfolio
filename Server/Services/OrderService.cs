@@ -39,8 +39,7 @@ public class OrderService : IOrderService
                 HasMore = lineItems.HasMore,
                 Url = lineItems.Url
             },
-            ShippingDetails = shippingDetails,
-            Customer = customer,
+            ShippingDetails = shippingDetails
         };
 
         var order = new Order()

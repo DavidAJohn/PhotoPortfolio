@@ -1,5 +1,6 @@
 ﻿using LinqKit;
 using Microsoft.AspNetCore.Mvc;
+using PhotoPortfolio.Shared.Models;
 using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
 using Stripe;
 using Stripe.Checkout;
@@ -25,24 +26,24 @@ public class PaymentsController : BaseApiController
     }
 
     [HttpPost("session")]
-    public async Task<IActionResult> CreateCheckoutSession(List<BasketItem> basketItems)
+    public async Task<IActionResult> CreateCheckoutSession(OrderBasketDto orderBasketDto)
     {
         // check the price of each basket item
-        foreach (var item in basketItems)
+        foreach (var item in orderBasketDto.BasketItems)
         {
-            var quote = await GetItemQuote(item);
+            var quote = await GetItemQuote(item, orderBasketDto.ShippingMethod);
 
             if (quote != item.Total)
             {
                 _logger.LogWarning("Basket item price differed from quoted price. Basket: {basket} - Quoted: {quote}", item.Total, quote);
             }
-            
+
             // if quote received is not 0, then use it
             if (quote != 0) item.Total = quote;
         }
 
         // then supply it to the payment service
-        var session = await _paymentService.CreateCheckoutSession(basketItems);
+        var session = await _paymentService.CreateCheckoutSession(orderBasketDto);
         var url = session.Url;
 
         return Ok(url);
@@ -74,7 +75,7 @@ public class PaymentsController : BaseApiController
                 stripeLineItems.ForEach(item => data.Add(new LineItem
                 {
                     Id = item.Id,
-                    Object =item.Object,
+                    Object = item.Object,
                     AmountDiscount = item.AmountDiscount,
                     AmountSubtotal = item.AmountSubtotal,
                     AmountTax = item.AmountTax,
@@ -82,6 +83,7 @@ public class PaymentsController : BaseApiController
                     Currency = item.Currency,
                     Description = item.Description,
                     Discounts = item.Discounts,
+                    Price = item.Price,
                     Quantity = item.Quantity,
                     Taxes = item.Taxes,
                 }));
@@ -182,13 +184,14 @@ public class PaymentsController : BaseApiController
         }
     }
 
-    private async Task<decimal> GetItemQuote(BasketItem basketItem)
+    private async Task<decimal> GetItemQuote(BasketItem basketItem, string shippingMethod)
     {
         List<CreateQuoteItemDto> items = new();
         List<Dictionary<string, string>> assetList = new();
-        Dictionary<string, string> assets = new();
-
-        assets.Add("printArea", "default");
+        Dictionary<string, string> assets = new()
+        {
+            { "printArea", "default" }
+        };
         assetList.Add(assets);
 
         items.Add(new CreateQuoteItemDto
@@ -200,7 +203,7 @@ public class PaymentsController : BaseApiController
 
         CreateQuoteDto quote = new CreateQuoteDto()
         {
-            ShippingMethod = basketItem.ShippingMethod,
+            ShippingMethod = shippingMethod,
             DestinationCountryCode = "GB",
             CurrencyCode = "GBP",
             Items = items

@@ -1,6 +1,8 @@
-﻿namespace PhotoPortfolio.Client.Contracts;
+﻿using PhotoPortfolio.Shared.Models;
+
+namespace PhotoPortfolio.Client.Contracts;
 
 public interface IOrderService
 {
-    Task<string> CreateCheckoutSession(List<BasketItem> basketItems);
+    Task<string> CreateCheckoutSession(OrderBasketDto orderBasketDto);
 }
