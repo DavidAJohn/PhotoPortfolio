@@ -257,4 +257,44 @@ public class AdminService : IAdminService
         }
     }
 
+    public async Task<Preferences> GetSitePreferencesAsync()
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+            var prefs = await client.GetFromJsonAsync<Preferences>("admin/preferences");
+
+            if (prefs is null) return null!;
+
+            return prefs;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
+
+    public async Task<bool> UpdateSitePreferencesAsync(Preferences prefs)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+
+            HttpContent prefsJson = new StringContent(JsonSerializer.Serialize(prefs));
+            prefsJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            HttpResponseMessage response = await client.PutAsync("admin/preferences", prefsJson);
+
+            if (response.StatusCode == HttpStatusCode.NoContent)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
 }
