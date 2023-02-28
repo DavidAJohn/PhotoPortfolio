@@ -47,6 +47,7 @@ try
     builder.Services.AddScoped<IOrderService, OrderService>();
     builder.Services.AddScoped<IOrderRepository, OrderRepository>();
     builder.Services.AddScoped<IQuoteService, QuoteService>();
+    builder.Services.AddScoped<IPreferencesRepository, PreferencesRepository>();
 
     builder.Services.AddControllers()
         .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
