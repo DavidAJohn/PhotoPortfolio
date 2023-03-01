@@ -440,13 +440,14 @@ public class AdminController : BaseApiController
     [HttpGet("preferences")]
     public async Task<Preferences> GetSitePreferences()
     {
-        return await _preferencesRepository.GetSingleAsync(p => p.Id == "63ff656c79461a7346026485");
+        var sitePrefsId = _config["SitePreferencesId"];
+        return await _preferencesRepository.GetSingleAsync(p => p.Id == sitePrefsId);
     }
 
     [HttpPut("preferences")]
     public async Task<IActionResult> UpdateSitePrefences(Preferences prefs)
     {
-        prefs.Id = "63ff656c79461a7346026485";
+        prefs.Id = _config["SitePreferencesId"];
 
         var response = await _preferencesRepository.UpdateAsync(prefs);
 
