@@ -19,7 +19,7 @@
         </div>
     </div>
 }
-else if (preferences == null)
+else if (prefs == null)
 {
     <text>Loading site preferences...</text>
 }
@@ -28,9 +28,9 @@ else
     <div class="m-4 md:m-8">
         <div class="text-3xl">Site Preferences</div>
         <div class="mt-8 flex flex-col">
-            @foreach (var pref in preferences)
+            @foreach (var pref in prefs)
             {
-                <div class="text-base font-semibold">@pref</div>
+                <div class="text-base font-semibold">@pref.Key : @pref.Value</div>
             }
         </div>
     </div>
@@ -38,7 +38,7 @@ else
 
 @code {
     private string errorMessage = "";
-    private List<string> preferences = null!;
+    private Dictionary<string, string> prefs = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,15 +49,8 @@ else
     {
         try
         {
-            List<string> prefs = new()
-            {
-                "OrdersSentToProdigiAutomatically",
-                "OrderPriceThreshold"
-            };
-
-            preferences = prefs;
-
-            //preferences = await adminService.GetSitePreferencesAsync();
+            var preferences = await adminService.GetSitePreferencesAsync();
+            prefs = preferences.Metadata;
             errorMessage = "";
         }
         catch (Exception ex)

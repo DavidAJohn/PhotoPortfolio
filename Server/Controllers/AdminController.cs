@@ -20,18 +20,21 @@ public class AdminController : BaseApiController
     private readonly IGalleryRepository _galleryRepository;
     private readonly IPhotoRepository _photoRepository;
     private readonly IProductRepository _productRepository;
+    private readonly IPreferencesRepository _preferencesRepository;
     private readonly IConfiguration _config;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(IGalleryRepository galleryRepository, 
         IPhotoRepository photoRepository, 
         IProductRepository productRepository,
+        IPreferencesRepository preferencesRepository,
         IConfiguration config, 
         ILogger<AdminController> logger)
     {
         _galleryRepository = galleryRepository;
         _photoRepository = photoRepository;
         _productRepository = productRepository;
+        _preferencesRepository = preferencesRepository;
         _config = config;
         _logger = logger;
     }
@@ -429,6 +432,28 @@ public class AdminController : BaseApiController
         }
 
         await _productRepository.UpdateAsync(product);
+
+        return NoContent();
+    }
+
+    // SITE PREFERENCES
+    [HttpGet("preferences")]
+    public async Task<Preferences> GetSitePreferences()
+    {
+        return await _preferencesRepository.GetSingleAsync(p => p.Id == "63ff656c79461a7346026485");
+    }
+
+    [HttpPut("preferences")]
+    public async Task<IActionResult> UpdateSitePrefences(Preferences prefs)
+    {
+        prefs.Id = "63ff656c79461a7346026485";
+
+        var response = await _preferencesRepository.UpdateAsync(prefs);
+
+        if (response == null)
+        {
+            return BadRequest();
+        }
 
         return NoContent();
     }

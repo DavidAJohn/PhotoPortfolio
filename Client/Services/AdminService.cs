@@ -262,7 +262,7 @@ public class AdminService : IAdminService
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var prefs = await client.GetFromJsonAsync<Preferences>("admin/preferences");
+            var prefs = await client.GetFromJsonAsync<Preferences>("preferences");
 
             if (prefs is null) return null!;
 
@@ -283,7 +283,7 @@ public class AdminService : IAdminService
             HttpContent prefsJson = new StringContent(JsonSerializer.Serialize(prefs));
             prefsJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpResponseMessage response = await client.PutAsync("admin/preferences", prefsJson);
+            HttpResponseMessage response = await client.PutAsync("preferences", prefsJson);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
             {
