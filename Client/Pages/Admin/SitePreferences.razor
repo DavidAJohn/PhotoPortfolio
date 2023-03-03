@@ -19,7 +19,7 @@
         </div>
     </div>
 }
-else if (prefs == null)
+else if (prefsMetadata == null)
 {
     <text>Loading site preferences...</text>
 }
@@ -28,21 +28,29 @@ else
     <div class="m-4 md:m-8">
         <div class="text-3xl">Site Preferences</div>
         <div class="mt-8 flex flex-col">
-            @foreach (var pref in prefs)
+            @*@foreach (var pref in prefsMetadata)
             {
                 <div class="text-base font-semibold">@pref.Key : @pref.Value</div>
-            }
+            }*@
+            <MudRadioGroup @bind-SelectedOption="OrderApproval">
+                <MudRadio Option="1" Size="Size.Small" OrderApproval="AllAuto">All Orders Auto-Approved</MudRadio>
+                <MudRadio Option="2" Size="Size.Small">All Orders Need Manual Approval</MudRadio>
+                <MudRadio Option="3" Size="Size.Small">Orders Below Threshold Amount Auto-Approved</MudRadio>
+            </MudRadioGroup>
         </div>
     </div>
 }
 
 @code {
     private string errorMessage = "";
-    private Dictionary<string, string> prefs = new();
+    private Dictionary<string, string> prefsMetadata = new();
+    public string OrderApproval = "2";
+
 
     protected override async Task OnInitializedAsync()
     {
         await GetSitePreferences();
+        prefsMetadata.TryGetValue("OrdersSentToProdigiAutomatically", out OrderApproval);
     }
 
     private async Task GetSitePreferences()
@@ -50,13 +58,40 @@ else
         try
         {
             var preferences = await adminService.GetSitePreferencesAsync();
-            prefs = preferences.Metadata;
+            prefsMetadata = preferences.Metadata;
             errorMessage = "";
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
             errorMessage = "Could not retrieve site preferences";
+        }
+    }
+
+    private async Task UpdateSitePreferences()
+    {
+        try
+        {
+            var preferences = await adminService.GetSitePreferencesAsync();
+
+            // TO DO : update preferences.Metadata with form values from page
+
+            var response = await adminService.UpdateSitePreferencesAsync(preferences);
+
+            if (response)
+            {
+                errorMessage = "";
+            }
+            else
+            {
+                Console.WriteLine("Could not update site preferences");
+                errorMessage = "Could not update site preferences";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not update site preferences";
         }
     }
 }
