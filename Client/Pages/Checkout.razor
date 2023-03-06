@@ -186,17 +186,17 @@
         }
     }
 
-    private async Task SelectedDeliveryOption(string deliveryOption)
+    private async Task SelectedDeliveryOption(DropdownItem deliveryOption)
     {
         foreach (var item in basketItems)
         {
-            var quote = await GetProductQuote(item.Product, deliveryOption);
+            var quote = await GetProductQuote(item.Product, deliveryOption.OptionRef);
 
             // if quote received is not 0, then use it
             if (quote != 0) item.Total = quote;
         }
 
-        selectedDeliveryOption = $"{deliveryOption}";
+        selectedDeliveryOption = deliveryOption.OptionRef;
     }
 
     private async Task<decimal> GetProductQuote(ProductBasketItemDto product, string deliveryOption = "Standard")

@@ -253,8 +253,9 @@ else
         visible = false;
     }
 
-    private void SelectedOption(string sku)
+    private void SelectedOption(DropdownItem selectedOption)
     {
+        string sku = selectedOption.OptionRef;
         selectedProduct = products.FirstOrDefault(p => p.ProdigiSku == sku) ?? null!;
     }
 

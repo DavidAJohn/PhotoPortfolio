@@ -205,8 +205,9 @@
         }
     }
 
-    private async Task SelectedOption(string sku)
+    private async Task SelectedOption(DropdownItem selectedOption)
     {
+        string sku = selectedOption.OptionRef;
         productPrice = "";
 
         if (products is not null)
