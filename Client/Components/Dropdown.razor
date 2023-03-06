@@ -25,7 +25,7 @@
                 <div class="divide-y divide-gray-300" role="none">
                     @foreach (DropdownItem item in DropdownItems)
                     {
-                        <div class="dropdown-item text-gray-700 block py-2 px-2 @(widthClass == "w-64" ? "text-sm" : "text-base") hover:cursor-pointer hover:bg-gray-200"
+                        <div class="dropdown-item text-gray-700 block py-2 px-2 @(widthClass == "w-64" ? "text-sm" : "text-base") @(item.OptionRef == SelectedItemRef ? "bg-gray-200 italic" : "") hover:cursor-pointer hover:bg-gray-300"
                             id="menu-item-@(@item.Id)"
                             @onclick="() => OnSelectedOption(item)"
                             role="menuitem" 
@@ -54,6 +54,9 @@
 
     [Parameter]
     public EventCallback<DropdownItem> SelectedOption { get; set; }
+
+    [Parameter]
+    public string SelectedItemRef { get; set; } = "";
 
     private bool collapseDropdown = true;
 
