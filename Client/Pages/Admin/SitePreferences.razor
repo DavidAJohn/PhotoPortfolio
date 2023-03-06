@@ -4,6 +4,8 @@
 @using Microsoft.AspNetCore.Authorization
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models;
+@using static PhotoPortfolio.Client.Components.Dropdown;
 
 @inject IAdminService adminService
 
@@ -27,16 +29,12 @@ else
 {
     <div class="m-4 md:m-8">
         <div class="text-3xl">Site Preferences</div>
-        <div class="mt-8 flex flex-col">
-            @*@foreach (var pref in prefsMetadata)
-            {
-                <div class="text-base font-semibold">@pref.Key : @pref.Value</div>
-            }*@
-            <MudRadioGroup @bind-SelectedOption="OrderApproval">
-                <MudRadio Option="1" Size="Size.Small" OrderApproval="AllAuto">All Orders Auto-Approved</MudRadio>
-                <MudRadio Option="2" Size="Size.Small">All Orders Need Manual Approval</MudRadio>
-                <MudRadio Option="3" Size="Size.Small">Orders Below Threshold Amount Auto-Approved</MudRadio>
-            </MudRadioGroup>
+        <div class="mt-8 w-full lg:w-1/2">
+            <Dropdown DropdownTitle="@($"{selectedApprovalOptionName}")"
+                DropdownWidth="DropdownWidthOptions.Large"
+                DropdownItems="approvalDropdownOptions"
+                SelectedOption="SelectedApprovalOption"
+                SelectedItemRef="@($"{selectedApprovalOptionRef}")" />
         </div>
     </div>
 }
@@ -44,13 +42,25 @@ else
 @code {
     private string errorMessage = "";
     private Dictionary<string, string> prefsMetadata = new();
-    public string OrderApproval = "2";
 
+    private List<DropdownItem> approvalDropdownOptions = new();
+    private string selectedApprovalOptionName = "";
+    private string selectedApprovalOptionRef = "";
 
     protected override async Task OnInitializedAsync()
     {
+        AddApprovalOptions();
         await GetSitePreferences();
-        prefsMetadata.TryGetValue("OrdersSentToProdigiAutomatically", out OrderApproval);
+
+        string orderApproval;
+        prefsMetadata.TryGetValue("OrdersSentToProdigiAutomatically", out orderApproval);
+
+        if (!string.IsNullOrWhiteSpace(orderApproval))
+        {
+            DropdownItem option = approvalDropdownOptions.FirstOrDefault(x => x.OptionRef == orderApproval);
+            selectedApprovalOptionRef = option.OptionRef;
+            selectedApprovalOptionName = option.OptionName;
+        }
     }
 
     private async Task GetSitePreferences()
@@ -74,7 +84,13 @@ else
         {
             var preferences = await adminService.GetSitePreferencesAsync();
 
-            // TO DO : update preferences.Metadata with form values from page
+            // update preferences.Metadata with form values from page
+            prefsMetadata = preferences.Metadata;
+
+            if (prefsMetadata.ContainsKey("OrdersSentToProdigiAutomatically"))
+            {
+                prefsMetadata["OrdersSentToProdigiAutomatically"] = selectedApprovalOptionRef;
+            }
 
             var response = await adminService.UpdateSitePreferencesAsync(preferences);
 
@@ -93,5 +109,36 @@ else
             Console.WriteLine(ex.Message);
             errorMessage = "Could not update site preferences";
         }
+    }
+
+    private void AddApprovalOptions()
+    {
+        approvalDropdownOptions.Clear();
+
+        approvalDropdownOptions.Add(new DropdownItem
+            {
+                OptionName = "Auto-Approve All Orders",
+                OptionRef = "AutoApproveAll"
+            });
+
+        approvalDropdownOptions.Add(new DropdownItem
+            {
+                OptionName = "All Orders Manually Approved",
+                OptionRef = "ManuallyApproveAll"
+            });
+
+        approvalDropdownOptions.Add(new DropdownItem
+            {
+                OptionName = "Auto-Approve Below Threshold Amount",
+                OptionRef = "AutoApproveBelow"
+            });
+    }
+
+    private async Task SelectedApprovalOption(DropdownItem selectedOption)
+    {
+        selectedApprovalOptionRef = selectedOption.OptionRef;
+        selectedApprovalOptionName = selectedOption.OptionName;
+
+        await UpdateSitePreferences();
     }
 }
