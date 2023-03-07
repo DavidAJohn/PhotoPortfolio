@@ -30,6 +30,12 @@ else
     <div class="m-4 md:m-8">
         <div class="text-3xl">Site Preferences</div>
         <div class="mt-8 w-full lg:w-1/2">
+            <span class="inline">Site Name: </span>
+            <input class="rounded-sm w-64 border border-gray-700 shadow-sm px-2 py-1 bg-white focus:outline-none"
+               @bind-value="@siteName" />
+        </div>
+        <div class="mt-8 w-full lg:w-1/2">
+            <span>Order Approval: </span>
             <Dropdown DropdownTitle="@($"{selectedApprovalOptionName}")"
                 DropdownWidth="DropdownWidthOptions.Large"
                 DropdownItems="approvalDropdownOptions"
@@ -42,6 +48,7 @@ else
 @code {
     private string errorMessage = "";
     private Dictionary<string, string> prefsMetadata = new();
+    private string siteName = "";
 
     private List<DropdownItem> approvalDropdownOptions = new();
     private string selectedApprovalOptionName = "";
@@ -68,6 +75,7 @@ else
         try
         {
             var preferences = await adminService.GetSitePreferencesAsync();
+            siteName = preferences.SiteName;
             prefsMetadata = preferences.Metadata;
             errorMessage = "";
         }
