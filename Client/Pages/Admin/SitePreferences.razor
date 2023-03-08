@@ -31,7 +31,7 @@ else
         <div class="text-3xl">Site Preferences</div>
         <div class="mt-8 w-full lg:w-1/2">
             <span class="inline">Site Name: </span>
-            <input class="rounded-sm w-64 border border-gray-700 shadow-sm px-2 py-1 bg-white focus:outline-none"
+            <input class="rounded-sm w-64 border border-gray-300 shadow-sm px-2 py-1 bg-white focus:outline-none"
                @bind-value="@siteName" />
         </div>
         <div class="mt-8 w-full lg:w-1/2">
@@ -42,6 +42,11 @@ else
                 SelectedOption="SelectedApprovalOption"
                 SelectedItemRef="@($"{selectedApprovalOptionRef}")" />
         </div>
+        <div class="mt-8 w-full lg:w-1/2">
+            <span class="inline">Auto-Approval Limit: </span>
+            <input class="rounded-sm w-48 border border-gray-300 shadow-sm px-2 py-1 bg-white focus:outline-none"
+               @bind-value="@autoApproveLimit" />
+        </div>
     </div>
 }
 
@@ -49,6 +54,7 @@ else
     private string errorMessage = "";
     private Dictionary<string, string> prefsMetadata = new();
     private string siteName = "";
+    private string autoApproveLimit = "";
 
     private List<DropdownItem> approvalDropdownOptions = new();
     private string selectedApprovalOptionName = "";
@@ -67,6 +73,14 @@ else
             DropdownItem option = approvalDropdownOptions.FirstOrDefault(x => x.OptionRef == orderApproval);
             selectedApprovalOptionRef = option.OptionRef;
             selectedApprovalOptionName = option.OptionName;
+        }
+
+        string approvalLimit;
+        prefsMetadata.TryGetValue("OrderAutoApproveLimit", out approvalLimit);
+
+        if (!string.IsNullOrWhiteSpace(approvalLimit))
+        {
+            autoApproveLimit = approvalLimit;
         }
     }
 
