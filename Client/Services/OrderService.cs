@@ -2,6 +2,7 @@
 using PhotoPortfolio.Shared.Models;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace PhotoPortfolio.Client.Services;
@@ -62,6 +63,23 @@ public class OrderService : IOrderService
             }
 
             return null!;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message);
+        }
+    }
+
+    public async Task<CheckoutSessionResponse> GetOrderFromCheckoutSession(string sessionId)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI");
+            var checkoutResponse = await client.GetFromJsonAsync<CheckoutSessionResponse>($"payments/session/{sessionId}");
+
+            if (checkoutResponse is null) return null!;
+
+            return checkoutResponse;
         }
         catch (HttpRequestException ex)
         {
