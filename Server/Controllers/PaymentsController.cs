@@ -49,6 +49,16 @@ public class PaymentsController : BaseApiController
         return Ok(url);
     }
 
+    [HttpGet("session/{id}")]
+    public async Task<IActionResult> GetCheckoutSessionFromId(string id)
+    {
+        var checkoutSessionResponse = await _paymentService.GetOrderFromCheckoutSessionId(id);
+
+        if (checkoutSessionResponse == null) return null!;
+
+        return Ok(checkoutSessionResponse);
+    }
+
     [HttpPost("webhook")]
     public async Task<ActionResult> StripeWebhook()
     {

@@ -52,7 +52,7 @@ public class PaymentService : IPaymentService
             },
             LineItems = lineItems,
             Mode = "payment",
-            SuccessUrl = "https://localhost:7200/checkout/success",
+            SuccessUrl = "https://localhost:7200/checkout/success?session_id={CHECKOUT_SESSION_ID}",
             CancelUrl = "https://localhost:7200/checkout",
             Metadata = new Dictionary<string, string>
             {
@@ -64,5 +64,25 @@ public class PaymentService : IPaymentService
         var service = new SessionService();
         Session session = service.Create(options);
         return session;
+    }
+
+    public async Task<CheckoutSessionResponse> GetOrderFromCheckoutSessionId(string sessionId)
+    {
+        StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
+
+        var sessionService = new SessionService();
+        Session session = sessionService.Get(sessionId);
+
+        var sessionMetadata = session.Metadata;
+        var orderId = sessionMetadata.FirstOrDefault(x => x.Key == "order_id").Value ?? "";
+        var customerName = session.CustomerDetails.Name;
+
+        var checkoutResponse = new CheckoutSessionResponse()
+        {
+            OrderId = orderId,
+            CustomerName = customerName
+        };
+
+        return checkoutResponse;
     }
 }

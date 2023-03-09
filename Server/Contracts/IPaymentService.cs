@@ -6,4 +6,5 @@ namespace PhotoPortfolio.Server.Contracts;
 public interface IPaymentService
 {
     Task<Session> CreateCheckoutSession(OrderBasketDto orderBasketDto);
+    Task<CheckoutSessionResponse> GetOrderFromCheckoutSessionId(string sessionId);
 }
