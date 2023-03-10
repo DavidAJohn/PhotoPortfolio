@@ -1,4 +1,5 @@
-﻿using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
+﻿using PhotoPortfolio.Shared.Models;
+using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
 
 namespace PhotoPortfolio.Server.Contracts;
 
@@ -13,4 +14,6 @@ public interface IOrderService
         PhotoPortfolioStripe.ShippingDetails shippingDetails,
         string shippingMethod
     );
+
+    Task<OrderDetailsDto> GetOrderDetailsFromId(string orderId);
 }

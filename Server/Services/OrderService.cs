@@ -1,4 +1,5 @@
 ﻿using PhotoPortfolio.Shared.Entities;
+using PhotoPortfolio.Shared.Models;
 using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
 using Prodigi = PhotoPortfolio.Shared.Models.Prodigi.Orders;
 
@@ -84,5 +85,24 @@ public class OrderService : IOrderService
         };
 
         return false;
+    }
+
+    public async Task<OrderDetailsDto> GetOrderDetailsFromId(string orderId)
+    {
+        var order = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
+
+        if (order is null) return null!;
+
+        var orderDetails = new OrderDetailsDto()
+        {
+            Id = order.Id,
+            Name = order.Name,
+            EmailAddress = order.EmailAddress,
+            Items = order.Items,
+            Address = order.Address,
+            ShippingMethod = order.ShippingMethod
+        };
+
+        return orderDetails;
     }
 }

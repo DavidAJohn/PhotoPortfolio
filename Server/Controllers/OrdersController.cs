@@ -30,4 +30,14 @@ public class OrdersController : BaseApiController
             return BadRequest();
         }
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetCheckoutSessionFromId(string id)
+    {
+        var order = await _orderService.GetOrderDetailsFromId(id);
+
+        if (order == null) return NotFound();
+
+        return Ok(order);
+    }
 }

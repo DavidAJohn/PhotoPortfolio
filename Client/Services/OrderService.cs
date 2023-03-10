@@ -86,4 +86,21 @@ public class OrderService : IOrderService
             throw new HttpRequestException(ex.Message);
         }
     }
+
+    public async Task<OrderDetailsDto> GetOrderDetailsFromId(string orderId)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI");
+            var order = await client.GetFromJsonAsync<OrderDetailsDto>($"orders/{orderId}");
+
+            if (order is null) return null!;
+
+            return order;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message);
+        }
+    }
 }
