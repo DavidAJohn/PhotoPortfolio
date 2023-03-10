@@ -136,6 +136,12 @@ public class PaymentsController : BaseApiController
                 var shippingMethod = sessionMetadata.FirstOrDefault(x => x.Key == "shipping_method").Value ?? "";
                 var orderId = sessionMetadata.FirstOrDefault(x => x.Key == "order_id").Value ?? "";
 
+                if (string.IsNullOrEmpty(orderId))
+                {
+                    // if the order_id can't be retrieved from Stripe's response, this needs to be logged
+                    _logger.LogWarning("OrderId from Stripe metadata could not be retrieved: {Id}", session.Id);
+                }
+
                 // pass details to order service to update the db
                 var response = await _orderService.UpdateOrder(orderId, customer, lineItems, shippingDetails, shippingMethod);
 
