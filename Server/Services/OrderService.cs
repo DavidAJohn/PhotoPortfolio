@@ -1,4 +1,5 @@
-﻿using PhotoPortfolio.Shared.Entities;
+﻿using MongoDB.Bson;
+using PhotoPortfolio.Shared.Entities;
 using PhotoPortfolio.Shared.Models;
 using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
 using Prodigi = PhotoPortfolio.Shared.Models.Prodigi.Orders;
@@ -19,7 +20,8 @@ public class OrderService : IOrderService
         var order = new Order()
         {
             Items = lineItems,
-            ShippingMethod = string.IsNullOrWhiteSpace(shippingMethod) ? "" : shippingMethod
+            ShippingMethod = string.IsNullOrWhiteSpace(shippingMethod) ? "" : shippingMethod,
+            OrderCreated = BsonDateTime.Create(DateTime.UtcNow)
         };
 
         // save to db
@@ -70,6 +72,8 @@ public class OrderService : IOrderService
                 Id = orderId,
                 Name = customer.Name,
                 EmailAddress = customer.EmailAddress,
+                OrderCreated = existingOrder.OrderCreated,
+                PaymentCompleted = BsonDateTime.Create(DateTime.UtcNow),
                 Items = existingOrder.Items,
                 Address = address,
                 StripeDetails = stripeDetails,
