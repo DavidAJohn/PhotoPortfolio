@@ -74,46 +74,23 @@ public class PaymentsController : BaseApiController
                 Session session = (Session)stripeEvent.Data.Object;
 
                 _logger.LogInformation("STRIPE --> Checkout Session Completed: {Id}", session.Id);
-
-                var options = new SessionGetOptions();
-                options.AddExpand("line_items"); // line items are not included by default, so must be requested explicitly
-                var service = new SessionService();
-                Session expandedSession = service.Get(session.Id, options);
-                StripeList<LineItem> stripeLineItems = expandedSession.LineItems;
-
-                var data = new List<LineItem>();
-                stripeLineItems.ForEach(item => data.Add(new LineItem
-                {
-                    Id = item.Id,
-                    Object = item.Object,
-                    AmountDiscount = item.AmountDiscount,
-                    AmountSubtotal = item.AmountSubtotal,
-                    AmountTax = item.AmountTax,
-                    AmountTotal = item.AmountTotal,
-                    Currency = item.Currency,
-                    Description = item.Description,
-                    Discounts = item.Discounts,
-                    Price = item.Price,
-                    Quantity = item.Quantity,
-                    Taxes = item.Taxes,
-                }));
-
-                var lineItems = new PhotoPortfolioStripe.LineItems()
-                {
-                    Object = stripeLineItems.Object,
-                    Data = data,
-                    HasMore = stripeLineItems.HasMore,
-                    Url = stripeLineItems.Url
-                };
-
+                
                 var customer = new PhotoPortfolioStripe.Customer() // PhotoPortfolio.Shared.Models.Stripe
                 {
                     Name = session.CustomerDetails.Name,
                     EmailAddress = session.CustomerDetails.Email
                 };
 
-                _logger.LogInformation("STRIPE --> Order received from: {name} ({email})", session.CustomerDetails.Name, session.CustomerDetails.Email);
-
+                if (string.IsNullOrWhiteSpace(session.CustomerDetails.Name) || string.IsNullOrWhiteSpace(session.CustomerDetails.Email))
+                {
+                    // if the customer name or email address can't be retrieved from Stripe's response, this needs to be logged
+                    _logger.LogWarning("Customer name or email could NOT be retrieved from Stripe metadata : {Id}", session.Id);
+                }
+                else
+                {
+                    _logger.LogInformation("STRIPE --> Order received from: {name} ({email})", session.CustomerDetails.Name, session.CustomerDetails.Email);
+                }
+                    
                 var stripeShippingDetails = session.ShippingDetails;
                 var shippingDetails = new PhotoPortfolioStripe.ShippingDetails()
                 {
@@ -143,7 +120,7 @@ public class PaymentsController : BaseApiController
                 }
 
                 // pass details to order service to update the db
-                var response = await _orderService.UpdateOrder(orderId, customer, lineItems, shippingDetails, shippingMethod);
+                var response = await _orderService.UpdateOrder(orderId, customer, shippingDetails, shippingMethod);
 
                 if (response)
                 {

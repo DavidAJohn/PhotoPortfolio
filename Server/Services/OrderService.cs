@@ -35,7 +35,6 @@ public class OrderService : IOrderService
     public async Task<bool> UpdateOrder(
         string orderId,
         PhotoPortfolioStripe.Customer customer,
-        PhotoPortfolioStripe.LineItems lineItems,
         PhotoPortfolioStripe.ShippingDetails shippingDetails,
         string shippingMethod
         )
@@ -48,18 +47,6 @@ public class OrderService : IOrderService
             CountryCode = shippingDetails.Address.Country,
             TownOrCity = shippingDetails.Address.City,
             StateOrCounty = string.IsNullOrWhiteSpace(shippingDetails.Address.State) ? "" : shippingDetails.Address.State
-        };
-
-        var stripeDetails = new PhotoPortfolioStripe.StripeOrder()
-        {
-            LineItems = new()
-            {
-                Object = lineItems.Object,
-                Data = lineItems.Data,
-                HasMore = lineItems.HasMore,
-                Url = lineItems.Url
-            },
-            ShippingDetails = shippingDetails
         };
 
         // get existing order details
@@ -76,7 +63,6 @@ public class OrderService : IOrderService
                 PaymentCompleted = BsonDateTime.Create(DateTime.UtcNow),
                 Items = existingOrder.Items,
                 Address = address,
-                StripeDetails = stripeDetails,
                 ShippingMethod = existingOrder.ShippingMethod
             };
 

@@ -10,7 +10,6 @@ public interface IOrderService
     Task<bool> UpdateOrder(
         string orderId,
         PhotoPortfolioStripe.Customer customer,
-        PhotoPortfolioStripe.LineItems lineItems, 
         PhotoPortfolioStripe.ShippingDetails shippingDetails,
         string shippingMethod
     );

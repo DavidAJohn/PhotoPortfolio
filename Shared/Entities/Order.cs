@@ -1,7 +1,6 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using Prodigi = PhotoPortfolio.Shared.Models.Prodigi.Orders;
-using PhotoPortfolio.Shared.Models.Stripe;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using PhotoPortfolio.Shared.Models.Prodigi.Orders;
 
 namespace PhotoPortfolio.Shared.Entities;
 
@@ -13,8 +12,6 @@ public class Order : BaseEntity
     public BsonDateTime OrderCreated { get; set; }
     public BsonDateTime? PaymentCompleted { get; set; }
     public List<BasketItem> Items { get; set; }
-    public Prodigi.Address Address { get; set; }
-    [BsonIgnore]
-    public StripeOrder StripeDetails { get; set; }
+    public Address Address { get; set; }
     public string ShippingMethod { get; set; }
 }
