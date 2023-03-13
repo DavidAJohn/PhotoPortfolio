@@ -17,11 +17,19 @@ public class OrderService : IOrderService
 
     public async Task<string> CreatOrder(List<BasketItem> lineItems, string shippingMethod)
     {
+        decimal totalCost = 0;
+
+        foreach(var item in lineItems)
+        {
+            totalCost += item.Total;
+        }
+
         var order = new Order()
         {
             Items = lineItems,
             ShippingMethod = string.IsNullOrWhiteSpace(shippingMethod) ? "" : shippingMethod,
-            OrderCreated = BsonDateTime.Create(DateTime.UtcNow)
+            OrderCreated = BsonDateTime.Create(DateTime.UtcNow),
+            TotalCost = (BsonDecimal128)totalCost
         };
 
         // save to db
@@ -62,6 +70,7 @@ public class OrderService : IOrderService
                 OrderCreated = existingOrder.OrderCreated,
                 PaymentCompleted = BsonDateTime.Create(DateTime.UtcNow),
                 Items = existingOrder.Items,
+                TotalCost = existingOrder.TotalCost,
                 Address = address,
                 ShippingMethod = existingOrder.ShippingMethod
             };
@@ -89,6 +98,7 @@ public class OrderService : IOrderService
             Name = order.Name,
             EmailAddress = order.EmailAddress,
             Items = order.Items,
+            TotalCost = order.TotalCost.ToDecimal(),
             Address = order.Address,
             ShippingMethod = order.ShippingMethod
         };

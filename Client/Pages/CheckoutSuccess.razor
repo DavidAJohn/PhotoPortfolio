@@ -41,6 +41,9 @@
                             <div class="ml-4 font-bold">=&nbsp; £@item.Total</div>
                         </div>
                     }
+                    <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
+                        Total:&nbsp; <span class="inline font-bold">£@orderTotal</span>
+                    </div>
                 }
             </div>
             <div class="mt-8 text-center">
@@ -62,6 +65,7 @@
     private string orderId = "";
     private string customerName = "";
     private List<BasketItem>? orderItems;
+    private decimal orderTotal = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -90,6 +94,7 @@
             if (order is not null)
             {
                 orderItems = order.Items;
+                orderTotal = order.TotalCost;
             }
         }
         else

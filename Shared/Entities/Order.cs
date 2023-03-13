@@ -12,6 +12,7 @@ public class Order : BaseEntity
     public BsonDateTime OrderCreated { get; set; }
     public BsonDateTime? PaymentCompleted { get; set; }
     public List<BasketItem> Items { get; set; }
+    public BsonDecimal128 TotalCost { get; set; }
     public Address Address { get; set; }
     public string ShippingMethod { get; set; }
 }
