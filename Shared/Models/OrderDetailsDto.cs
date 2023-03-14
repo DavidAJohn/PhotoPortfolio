@@ -9,6 +9,7 @@ public class OrderDetailsDto : BaseEntity
 {
     public string Name { get; set; }
     public string EmailAddress { get; set; }
+    public DateTime OrderDate { get; set; }
     public List<BasketItem> Items { get; set; }
     public decimal TotalCost { get; set; }
     public Address Address { get; set; }

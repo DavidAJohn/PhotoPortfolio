@@ -97,6 +97,7 @@ public class OrderService : IOrderService
             Id = order.Id,
             Name = order.Name,
             EmailAddress = order.EmailAddress,
+            OrderDate = order.PaymentCompleted!.ToLocalTime(),
             Items = order.Items,
             TotalCost = order.TotalCost.ToDecimal(),
             Address = order.Address,
