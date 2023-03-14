@@ -52,11 +52,36 @@
                             </div>
                             <div class="text-sm lg:text-base font-bold flex items-center justify-center mt-4 mb-8 text-slate-500" id="product-price">
                                 <div class="mr-2">Shipping Method:</div>
-                                <div><Dropdown DropdownTitle="@($"{selectedDeliveryOption} Delivery")" DropdownWidth="DropdownWidthOptions.Medium" DropdownItems="deliveryDropdownOptions" SelectedOption="SelectedDeliveryOption" /></div>
+                                <div>
+                                    <Dropdown DropdownTitle="@($"{selectedDeliveryOption} Delivery")" DropdownWidth="DropdownWidthOptions.Medium" DropdownItems="deliveryDropdownOptions" SelectedOption="SelectedDeliveryOption" />
+                                </div>
+                                <div class="ml-4">
+                                    <svg version="1.1" id="delivery-spinner" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                        class="h-5 w-5 @DeliverySpinnerVisible" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">
+                                        <path fill="currentColor" d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z">
+                                            <animateTransform attributeType="xml"
+                                                attributeName="transform"
+                                                type="rotate"
+                                                from="0 25 25"
+                                                to="360 25 25"
+                                                dur="0.7s"
+                                                repeatCount="indefinite" />
+                                        </path>
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
-                                Total:&nbsp; <span class="inline font-bold">£@basketState.Basket.BasketTotal</span>
-                            </div>
+                            @if (DeliverySpinnerVisible != "invisible")
+                            {
+                                <div class="my-2 px-4 flex justify-center text-sm md:text-base font-semibold">
+                                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="125px" Height="33px" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
+                                    Total:&nbsp; <span class="inline font-bold">£@basketState.Basket.BasketTotal</span>
+                                </div>
+                            }
                             <div class="mt-8 flex justify-center">
                                 <button type="button" class="flex justify-center align-items-center py-2 px-4 my-3 bg-green-600 text-white rounded-sm text-sm hover:opacity-90" @onclick="() => PlaceOrder()">
                                     <svg version="1.1" id="order-spinner" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -108,6 +133,7 @@
     private List<BasketItem> basketItems { get; set; }
 
     private string SubmitSpinnerHidden = "hidden";
+    private string DeliverySpinnerVisible = "invisible";
     private bool ShowErrors = false;
     private string ErrorMessage = "";
 
@@ -188,6 +214,8 @@
 
     private async Task SelectedDeliveryOption(DropdownItem deliveryOption)
     {
+        DeliverySpinnerVisible = "visible";
+
         foreach (var item in basketItems)
         {
             var quote = await GetProductQuote(item.Product, deliveryOption.OptionRef);
@@ -195,6 +223,8 @@
             // if quote received is not 0, then use it
             if (quote != 0) item.Total = quote;
         }
+
+        DeliverySpinnerVisible = "invisible";
 
         selectedDeliveryOption = deliveryOption.OptionRef;
     }
