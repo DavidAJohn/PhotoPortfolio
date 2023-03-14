@@ -1,6 +1,7 @@
 ﻿@page "/checkout/success/"
 
 @using PhotoPortfolio.Client.Contracts;
+@using PhotoPortfolio.Shared.Models;
 
 @inject IOrderService orderService;
 
@@ -20,10 +21,13 @@
                     <div class="ml-2 text-lg md:text-xl lg:text-2xl font-bold relative">Thanks for your order, @customerName !</div>
                 }
             </div>
-            <div class="p-4 mt-8 mx-8 lg:mx-32 text-center">
-                @if (orderItems is not null)
+            <div class="p-4 mx-8 lg:mx-32 text-center">
+                @if (order.Items is not null)
                 {
-                    @foreach (BasketItem item in orderItems)
+                    <div class="mb-8 text-center">
+                        <div class="text-lg font-bold">Order Placed on: @order.OrderDate.ToShortDateString()</div>
+                    </div>
+                    @foreach (BasketItem item in order.Items)
                     {
                         <div class="font-semibold text-sm md:text-base flex items-center justify-center">
                             @if (!string.IsNullOrEmpty(item.Product.ImageUri))
@@ -42,13 +46,12 @@
                         </div>
                     }
                     <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
-                        Total:&nbsp; <span class="inline font-bold">£@orderTotal</span>
+                        Total:&nbsp; <span class="inline font-bold">£@order.TotalCost</span>
                     </div>
                 }
             </div>
             <div class="mt-8 text-center">
                 <div class="text-lg font-bold mb-4">We have received your order and will arrange for delivery.</div>
-                <div class="text-lg font-bold mb-4">Your Order Id: @orderId</div>
             </div>
         </div>
     </div>
@@ -64,8 +67,7 @@
 
     private string orderId = "";
     private string customerName = "";
-    private List<BasketItem>? orderItems;
-    private decimal orderTotal = 0;
+    private OrderDetailsDto order = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,12 +91,11 @@
             orderId = checkoutSessionResponse.OrderId;
             customerName = checkoutSessionResponse.CustomerName;
 
-            var order = await orderService.GetOrderDetailsFromId(orderId);
+            var completedOrder = await orderService.GetOrderDetailsFromId(orderId);
 
-            if (order is not null)
+            if (completedOrder is not null)
             {
-                orderItems = order.Items;
-                orderTotal = order.TotalCost;
+                order = completedOrder;
             }
         }
         else
