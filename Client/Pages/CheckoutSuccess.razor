@@ -51,7 +51,14 @@
                 }
             </div>
             <div class="mt-8 text-center">
-                <div class="text-lg font-bold mb-4">We have received your order and will arrange for delivery.</div>
+                @if (order is not null && orderApproved)
+                {
+                    <div class="text-lg font-bold mb-4">We have received your order and will arrange for delivery.</div>
+                }
+                else
+                {
+                    <div class="text-lg font-bold mb-4">We have received your order and will check everything before arranging for delivery.</div>
+                }
             </div>
         </div>
     </div>
@@ -68,6 +75,7 @@
     private string orderId = "";
     private string customerName = "";
     private OrderDetailsDto order = new();
+    private bool orderApproved = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,11 +104,21 @@
             if (completedOrder is not null)
             {
                 order = completedOrder;
+
+                // check if order should be auto-approved
+                var approve = await ShouldApproveOrder(orderId);
+
+                if (approve) orderApproved = true;
             }
         }
         else
         {
             orderId = "Unknown";
         }
+    }
+
+    private async Task<bool> ShouldApproveOrder(string orderId)
+    {
+        return await orderService.ShouldApproveOrder(orderId);
     }
 }
