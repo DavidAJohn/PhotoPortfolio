@@ -1,5 +1,4 @@
-﻿using LinqKit;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PhotoPortfolio.Shared.Models;
 using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
 using Stripe;
@@ -10,13 +9,13 @@ namespace PhotoPortfolio.Server.Controllers;
 
 public class PaymentsController : BaseApiController
 {
-    private readonly ILogger<AdminController> _logger;
+    private readonly ILogger<PaymentsController> _logger;
     private readonly IConfiguration _config;
     private readonly IPaymentService _paymentService;
     private readonly IOrderService _orderService;
     private readonly IQuoteService _quoteService;
 
-    public PaymentsController(ILogger<AdminController> logger, IConfiguration config, IPaymentService paymentService, IOrderService orderService, IQuoteService quoteService)
+    public PaymentsController(ILogger<PaymentsController> logger, IConfiguration config, IPaymentService paymentService, IOrderService orderService, IQuoteService quoteService)
     {
         _logger = logger;
         _config = config;
@@ -54,7 +53,7 @@ public class PaymentsController : BaseApiController
     {
         var checkoutSessionResponse = await _paymentService.GetOrderFromCheckoutSessionId(id);
 
-        if (checkoutSessionResponse == null) return null!;
+        if (checkoutSessionResponse == null) return BadRequest();
 
         return Ok(checkoutSessionResponse);
     }

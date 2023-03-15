@@ -75,11 +75,18 @@ public class OrderService : IOrderService
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI");
-            var checkoutResponse = await client.GetFromJsonAsync<CheckoutSessionResponse>($"payments/session/{sessionId}");
+            HttpResponseMessage response = await client.GetAsync($"payments/session/{sessionId}");
 
-            if (checkoutResponse is null) return null!;
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var checkoutResponse = await response.Content.ReadFromJsonAsync<CheckoutSessionResponse>();
 
-            return checkoutResponse;
+                if (checkoutResponse is null) return null!;
+
+                return checkoutResponse;
+            }
+
+            return null!;
         }
         catch (HttpRequestException ex)
         {

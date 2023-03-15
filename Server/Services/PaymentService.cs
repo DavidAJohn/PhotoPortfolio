@@ -7,10 +7,12 @@ namespace PhotoPortfolio.Server.Services;
 public class PaymentService : IPaymentService
 {
     private readonly IConfiguration _config;
+    private readonly ILogger<PaymentService> _logger;
 
-    public PaymentService(IConfiguration config)
+    public PaymentService(IConfiguration config, ILogger<PaymentService> logger)
     {
         _config = config;
+        _logger = logger;
     }
 
     public async Task<Session> CreateCheckoutSession(OrderBasketDto orderBasketDto)
@@ -68,21 +70,29 @@ public class PaymentService : IPaymentService
 
     public async Task<CheckoutSessionResponse> GetOrderFromCheckoutSessionId(string sessionId)
     {
-        StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
-
-        var sessionService = new SessionService();
-        Session session = sessionService.Get(sessionId);
-
-        var sessionMetadata = session.Metadata;
-        var orderId = sessionMetadata.FirstOrDefault(x => x.Key == "order_id").Value ?? "";
-        var customerName = session.CustomerDetails.Name;
-
-        var checkoutResponse = new CheckoutSessionResponse()
+        try
         {
-            OrderId = orderId,
-            CustomerName = customerName
-        };
+            StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
 
-        return checkoutResponse;
+            var sessionService = new SessionService();
+            Session session = await sessionService.GetAsync(sessionId);
+
+            var sessionMetadata = session.Metadata;
+            var orderId = sessionMetadata.FirstOrDefault(x => x.Key == "order_id").Value ?? "";
+            var customerName = session.CustomerDetails.Name;
+
+            var checkoutResponse = new CheckoutSessionResponse()
+            {
+                OrderId = orderId,
+                CustomerName = customerName
+            };
+
+            return checkoutResponse;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error when retrieving Checkout Session (Id: {sessionId}) from Stripe: {message}", sessionId, ex.Message);
+            return null!;
+        }
     }
 }
