@@ -40,4 +40,14 @@ public class OrdersController : BaseApiController
 
         return Ok(order);
     }
+
+    [HttpGet("approve/{id}")]
+    public async Task<IActionResult> ShouldApproveOrderFromId(string id)
+    {
+        var approve = await _orderService.ShouldApproveOrder(id);
+
+        if (!approve) return BadRequest();
+
+        return Ok(approve);
+    }
 }

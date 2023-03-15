@@ -103,4 +103,29 @@ public class OrderService : IOrderService
             throw new HttpRequestException(ex.Message);
         }
     }
+
+    public async Task<bool> ShouldApproveOrder(string orderId)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI");
+            HttpResponseMessage response = await client.GetAsync($"orders/approve/{orderId}");
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var approve = await response.Content.ReadAsStringAsync();
+
+                // OK response should only return true, but as insurance:
+                if (string.IsNullOrEmpty(approve) || approve == "false") return false;
+
+                return true;
+            }
+
+            return false;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message);
+        }
+    }
 }

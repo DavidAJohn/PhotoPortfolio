@@ -9,10 +9,14 @@ namespace PhotoPortfolio.Server.Services;
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
+    private readonly IPreferencesRepository _preferencesRepository;
+    private readonly IConfiguration _config;
 
-    public OrderService(IOrderRepository orderRepository)
+    public OrderService(IOrderRepository orderRepository, IPreferencesRepository preferencesRepository, IConfiguration config)
     {
         _orderRepository = orderRepository;
+        _preferencesRepository = preferencesRepository;
+        _config = config;
     }
 
     public async Task<string> CreatOrder(List<BasketItem> lineItems, string shippingMethod)
@@ -105,5 +109,39 @@ public class OrderService : IOrderService
         };
 
         return orderDetails;
+    }
+
+    public async Task<bool> ShouldApproveOrder(string orderId)
+    {
+        var sitePrefsId = _config["SitePreferencesId"];
+        if (string.IsNullOrWhiteSpace(sitePrefsId)) return false;
+
+        var prefs = await _preferencesRepository.GetSingleAsync(p => p.Id == sitePrefsId);
+        var order = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
+
+        if (prefs is null || order is null) return false;
+
+        prefs.Metadata.TryGetValue("OrdersSentToProdigiAutomatically", out string autoApproval);
+        prefs.Metadata.TryGetValue("OrderAutoApproveLimit", out string approvalLimitString);
+
+        var totalCost = order.TotalCost.ToDecimal();
+        var approvalLimit = decimal.Parse(approvalLimitString);
+        bool approveDecision = false;
+
+        approveDecision = autoApproval switch
+        {
+            "AutoApproveAll" => true,
+            "ManuallyApproveAll" => false,
+            _ => false
+        };
+
+        // check for auto-approval below a limit
+        if (autoApproval == "AutoApproveBelow")
+        {
+            if (totalCost < approvalLimit) approveDecision = true;
+            else approveDecision = false;
+        }
+
+        return approveDecision;
     }
 }

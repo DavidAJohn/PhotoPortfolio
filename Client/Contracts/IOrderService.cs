@@ -8,4 +8,5 @@ public interface IOrderService
     Task<string> CreateInitialOrder(OrderBasketDto orderBasketDto);
     Task<CheckoutSessionResponse> GetOrderFromCheckoutSession(string sessionId);
     Task<OrderDetailsDto> GetOrderDetailsFromId(string orderId);
+    Task<bool> ShouldApproveOrder(string orderId);
 }
