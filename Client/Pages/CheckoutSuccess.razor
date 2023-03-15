@@ -5,7 +5,7 @@
 
 @inject IOrderService orderService;
 
-<PageTitle>Thank You!</PageTitle>
+<PageTitle>@pageTitle</PageTitle>
 
 <div class="min-h-full">
     <div class="mt-8 md:container md:max-w-7xl mb-24">
@@ -91,12 +91,15 @@
     private bool ShowErrors = false;
     private string ErrorMessage = "";
 
+    private string pageTitle = "";
+
     protected override async Task OnInitializedAsync()
     {
         if (string.IsNullOrWhiteSpace(Session_Id))
         {
             ShowErrors = true;
             ErrorMessage = "Order details could not be retrieved";
+            pageTitle = "Error!";
         }
         else
         {
@@ -126,6 +129,7 @@
             if (completedOrder is not null)
             {
                 order = completedOrder;
+                pageTitle = "Thank You!";
 
                 // check if order should be auto-approved
                 var approve = await ShouldApproveOrder(orderId);
@@ -136,12 +140,14 @@
             {
                 ShowErrors = true;
                 ErrorMessage = "Order details could not be retrieved";
+                pageTitle = "Error!";
             }
         }
         else
         {
             ShowErrors = true;
             ErrorMessage = "Order details could not be retrieved";
+            pageTitle = "Error!";
         }
     }
 
