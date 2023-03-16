@@ -15,4 +15,15 @@ public class Order : BaseEntity
     public BsonDecimal128 TotalCost { get; set; }
     public Address Address { get; set; }
     public string ShippingMethod { get; set; }
+    public OrderStatus Status { get; set; } = OrderStatus.NotReady;
+}
+
+public enum OrderStatus
+{
+    NotReady,
+    Ready,
+    Approved,
+    InProgress,
+    Completed,
+    Cancelled
 }
