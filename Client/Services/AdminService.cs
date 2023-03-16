@@ -297,4 +297,21 @@ public class AdminService : IAdminService
             throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
         }
     }
+
+    public async Task<List<Order>> GetOrdersAsync()
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+            var orders = await client.GetFromJsonAsync<List<Order>>("orders");
+
+            if (orders is null) return null!;
+
+            return orders;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
 }

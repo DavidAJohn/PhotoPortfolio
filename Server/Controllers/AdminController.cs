@@ -21,6 +21,7 @@ public class AdminController : BaseApiController
     private readonly IPhotoRepository _photoRepository;
     private readonly IProductRepository _productRepository;
     private readonly IPreferencesRepository _preferencesRepository;
+    private readonly IOrderRepository _orderRepository;
     private readonly IConfiguration _config;
     private readonly ILogger<AdminController> _logger;
 
@@ -28,6 +29,7 @@ public class AdminController : BaseApiController
         IPhotoRepository photoRepository, 
         IProductRepository productRepository,
         IPreferencesRepository preferencesRepository,
+        IOrderRepository orderRepository,
         IConfiguration config, 
         ILogger<AdminController> logger)
     {
@@ -35,6 +37,7 @@ public class AdminController : BaseApiController
         _photoRepository = photoRepository;
         _productRepository = productRepository;
         _preferencesRepository = preferencesRepository;
+        _orderRepository = orderRepository;
         _config = config;
         _logger = logger;
     }
@@ -437,6 +440,8 @@ public class AdminController : BaseApiController
     }
 
     // SITE PREFERENCES
+    //
+
     [HttpGet("preferences")]
     public async Task<Preferences> GetSitePreferences()
     {
@@ -458,6 +463,16 @@ public class AdminController : BaseApiController
 
         return NoContent();
     }
+
+    // ORDERS
+    //
+
+    [HttpGet("orders")]
+    public async Task<List<Order>> GetAllOrders()
+    {
+        return await _orderRepository.GetAllAsync();
+    }
+
 
 
     private List<string> BasicFileChecks(IFormFile file, string permittedFileExtensions, long fileSizeLimit, int fileNameLengthLimit, string fileExtension = "unknown")
