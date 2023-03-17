@@ -1,0 +1,71 @@
+﻿@page "/admin/orders"
+@layout AdminLayout
+
+@using Microsoft.AspNetCore.Authorization
+@using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Entities
+
+@inject IAdminService adminService
+@inject NavigationManager navigationManager
+
+@attribute [Authorize]
+
+<PageTitle>Photo Portfolio : Admin : Orders</PageTitle>
+
+@if (errorMessage != "")
+{
+    <div class="mx-2 animate-pulse">
+        <div class="alert-box" role="alert">
+            <span class="block sm:inline">@errorMessage</span>
+        </div>
+    </div>
+}
+else if (orders == null)
+{
+    <text>Loading orders...</text>
+}
+else
+{
+    <div class="m-4 md:m-8">
+        <div class="text-3xl">Orders</div>
+        <div class="w-full lg:w-1/2">
+            @if (orders is not null && orders.Count > 0)
+            {
+                @foreach (Order order in orders)
+                {
+                    <div class="p-8 mb-4 shadow-lg rounded-md flex flex-row hover:cursor-pointer">
+                        <div class="w-2/3">
+                            <div class="text-lg font-semibold">@order.Id</div>
+                            <div class="text-base">@order.Name</div>
+                            <div class="text-base">@order.EmailAddress</div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<Order> orders { get; set; }
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetOrders();
+    }
+
+    private async Task GetOrders()
+    {
+        try
+        {
+            orders = await adminService.GetOrdersAsync();
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not retrieve list of orders";
+        }
+    }
+}
