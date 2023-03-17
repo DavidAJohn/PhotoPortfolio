@@ -40,6 +40,7 @@ else
                             <div class="text-base">Date: @order.OrderDate</div>
                             <div class="text-base">Name: @order.Name</div>
                             <div class="text-base">Email Address: @order.EmailAddress</div>
+                            <div class="text-base">Status: @order.Status</div>
                         </div>
                     </div>
                 }
@@ -49,7 +50,7 @@ else
 }
 
 @code {
-    private List<OrderDetailsDto> orders { get; set; }
+    private List<OrderDetailsDto> orders { get; set; } = null!;
     private string errorMessage = "";
 
     protected override async Task OnInitializedAsync()

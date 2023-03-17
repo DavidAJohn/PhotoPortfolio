@@ -131,7 +131,8 @@ public class OrderService : IOrderService
             Items = order.Items,
             TotalCost = order.TotalCost.ToDecimal(),
             Address = order.Address,
-            ShippingMethod = order.ShippingMethod
+            ShippingMethod = order.ShippingMethod,
+            Status = order.Status.ToString()
         };
 
         if (order.PaymentCompleted is null)
@@ -140,7 +141,7 @@ public class OrderService : IOrderService
         }
         else
         {
-            orderDetails.OrderDate = order.PaymentCompleted!.ToLocalTime();
+            orderDetails.OrderDate = order.PaymentCompleted.ToLocalTime();
         }
 
         return orderDetails;

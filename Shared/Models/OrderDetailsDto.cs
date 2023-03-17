@@ -14,4 +14,5 @@ public class OrderDetailsDto : BaseEntity
     public decimal TotalCost { get; set; }
     public Address Address { get; set; }
     public string ShippingMethod { get; set; }
+    public string Status { get; set; }
 }
