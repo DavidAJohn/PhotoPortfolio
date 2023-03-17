@@ -298,12 +298,12 @@ public class AdminService : IAdminService
         }
     }
 
-    public async Task<List<Order>> GetOrdersAsync()
+    public async Task<List<OrderDetailsDto>> GetOrdersAsync()
     {
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var orders = await client.GetFromJsonAsync<List<Order>>("orders");
+            var orders = await client.GetFromJsonAsync<List<OrderDetailsDto>>("orders");
 
             if (orders is null) return null!;
 

@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
+@using PhotoPortfolio.Shared.Models;
 
 @inject IAdminService adminService
 @inject NavigationManager navigationManager
@@ -31,13 +32,14 @@ else
         <div class="w-full lg:w-1/2">
             @if (orders is not null && orders.Count > 0)
             {
-                @foreach (Order order in orders)
+                @foreach (OrderDetailsDto order in orders)
                 {
                     <div class="p-8 mb-4 shadow-lg rounded-md flex flex-row hover:cursor-pointer">
                         <div class="w-2/3">
-                            <div class="text-lg font-semibold">@order.Id</div>
-                            <div class="text-base">@order.Name</div>
-                            <div class="text-base">@order.EmailAddress</div>
+                            <div class="text-lg font-semibold">Order Id: @order.Id</div>
+                            <div class="text-base">Date: @order.OrderDate</div>
+                            <div class="text-base">Name: @order.Name</div>
+                            <div class="text-base">Email Address: @order.EmailAddress</div>
                         </div>
                     </div>
                 }
@@ -47,7 +49,7 @@ else
 }
 
 @code {
-    private List<Order> orders { get; set; }
+    private List<OrderDetailsDto> orders { get; set; }
     private string errorMessage = "";
 
     protected override async Task OnInitializedAsync()

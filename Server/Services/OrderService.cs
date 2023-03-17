@@ -111,6 +111,41 @@ public class OrderService : IOrderService
         return orderDetails;
     }
 
+    public async Task<List<OrderDetailsDto>> GetOrderDetails()
+    {
+        var orders = await _orderRepository.GetAllAsync();
+
+        List<OrderDetailsDto> orderDetails = orders.ConvertAll(
+            new Converter<Order, OrderDetailsDto>(OrderToDetailsConverter));
+
+        return orderDetails;
+    }
+
+    private OrderDetailsDto OrderToDetailsConverter(Order order)
+    {
+        var orderDetails = new OrderDetailsDto()
+        {
+            Id = order.Id,
+            Name = order.Name,
+            EmailAddress = order.EmailAddress,
+            Items = order.Items,
+            TotalCost = order.TotalCost.ToDecimal(),
+            Address = order.Address,
+            ShippingMethod = order.ShippingMethod
+        };
+
+        if (order.PaymentCompleted is null)
+        {
+           orderDetails.OrderDate = order.OrderCreated.ToLocalTime();
+        }
+        else
+        {
+            orderDetails.OrderDate = order.PaymentCompleted!.ToLocalTime();
+        }
+
+        return orderDetails;
+    }
+
     public async Task<bool> ShouldApproveOrder(string orderId)
     {
         var sitePrefsId = _config["SitePreferencesId"];

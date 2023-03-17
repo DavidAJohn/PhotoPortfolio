@@ -15,5 +15,6 @@ public interface IOrderService
     );
 
     Task<OrderDetailsDto> GetOrderDetailsFromId(string orderId);
+    Task<List<OrderDetailsDto>> GetOrderDetails();
     Task<bool> ShouldApproveOrder(string orderId);
 }

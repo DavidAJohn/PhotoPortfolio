@@ -18,5 +18,5 @@ public interface IAdminService
     Task<bool> UpdateProductAsync(Product product);
     Task<Preferences> GetSitePreferencesAsync();
     Task<bool> UpdateSitePreferencesAsync(Preferences prefs);
-    Task<List<Order>> GetOrdersAsync();
+    Task<List<OrderDetailsDto>> GetOrdersAsync();
 }
