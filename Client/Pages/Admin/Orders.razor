@@ -34,13 +34,13 @@ else
             {
                 @foreach (OrderDetailsDto order in orders)
                 {
-                    <div class="p-8 mb-4 shadow-lg rounded-md flex flex-row hover:cursor-pointer">
-                        <div class="w-2/3">
-                            <div class="text-lg font-semibold">Order Id: @order.Id</div>
-                            <div class="text-base">Date: @order.OrderDate</div>
-                            <div class="text-base">Name: @order.Name</div>
-                            <div class="text-base">Email Address: @order.EmailAddress</div>
-                            <div class="text-base">Status: @order.Status</div>
+                    <div class="p-8 mb-4 shadow-lg rounded-md flex flex-row">
+                        <div class="w-2/3 text-base ">
+                            <div class="font-semibold">Order Id:&nbsp;<span class="font-medium">@order.Id</span></div>
+                            <div class="font-semibold">Date:&nbsp;<span class="font-medium">@order.OrderDate</span></div>
+                            <div class="font-semibold">Name:&nbsp;<span class="font-medium">@order.Name</span></div>
+                            <div class="font-semibold">Email Address:&nbsp;<span class="font-medium">@order.EmailAddress</span></div>
+                            <div class="font-semibold">Status:&nbsp;<span class="font-medium">@order.Status</span></div>
                         </div>
                     </div>
                 }
