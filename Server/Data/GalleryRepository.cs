@@ -1,6 +1,7 @@
 ﻿using LinqKit;
 using MongoDB.Bson;
 using PhotoPortfolio.Shared.Entities;
+using PhotoPortfolio.Shared.Helpers;
 using System.Linq.Expressions;
 
 namespace PhotoPortfolio.Server.Data;
