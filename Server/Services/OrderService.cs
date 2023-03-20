@@ -111,9 +111,18 @@ public class OrderService : IOrderService
         return orderDetails;
     }
 
-    public async Task<List<OrderDetailsDto>> GetOrderDetails()
+    public async Task<List<OrderDetailsDto>> GetOrderDetails(OrderSpecificationParams? orderParams)
     {
-        var orders = await _orderRepository.GetAllAsync();
+        var orders = new List<Order>();
+
+        if (orderParams is null)
+        {
+            orders = await _orderRepository.GetAllAsync();
+        }
+        else
+        {
+            orders = await _orderRepository.GetFilteredOrdersAsync(orderParams);
+        }
 
         List<OrderDetailsDto> orderDetails = orders.ConvertAll(
             new Converter<Order, OrderDetailsDto>(OrderToDetailsConverter));
