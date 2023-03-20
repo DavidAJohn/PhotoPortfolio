@@ -1,4 +1,4 @@
-﻿namespace PhotoPortfolio.Server.Helpers;
+﻿namespace PhotoPortfolio.Shared.Helpers;
 
 public class PhotoSpecificationParams
 {

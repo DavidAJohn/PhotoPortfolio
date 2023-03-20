@@ -2,7 +2,7 @@
 using PhotoPortfolio.Shared.Entities;
 using System.Linq.Expressions;
 
-namespace PhotoPortfolio.Server.Helpers;
+namespace PhotoPortfolio.Shared.Helpers;
 
 public class PhotoSpecification
 {

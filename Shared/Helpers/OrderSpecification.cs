@@ -2,7 +2,7 @@
 using PhotoPortfolio.Shared.Entities;
 using System.Linq.Expressions;
 
-namespace PhotoPortfolio.Server.Helpers;
+namespace PhotoPortfolio.Shared.Helpers;
 
 public class OrderSpecification
 {
@@ -21,11 +21,11 @@ public class OrderSpecification
 
             if (orderParams.CustomerEmail is not null)
             {
-                predicate = predicate.And(o => o.EmailAddress.Equals(orderParams.CustomerEmail));
+                predicate = predicate.And(o => o.EmailAddress.Contains(orderParams.CustomerEmail));
             }
 
             var numOfDays = orderParams.InLastNumberOfDays * -1;
-            predicate = predicate.And(o => o.OrderCreated.ToUniversalTime() > DateTime.Now.AddDays(numOfDays));
+            predicate = predicate.And(o => o.OrderCreated > DateTime.Now.AddDays(numOfDays));
         }
 
         return predicate;
