@@ -8,6 +8,7 @@ using MetadataExtractor.Formats.Png;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PhotoPortfolio.Shared.Entities;
+using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolio.Shared.Models;
 using SerilogTimings;
 using System.Web;

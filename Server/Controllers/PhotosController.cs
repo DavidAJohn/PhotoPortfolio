@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PhotoPortfolio.Shared.Entities;
+using PhotoPortfolio.Shared.Helpers;
 
 namespace PhotoPortfolio.Server.Controllers;
 

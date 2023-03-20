@@ -1,4 +1,5 @@
 ﻿using PhotoPortfolio.Shared.Entities;
+using PhotoPortfolio.Shared.Helpers;
 
 namespace PhotoPortfolio.Server.Contracts;
 

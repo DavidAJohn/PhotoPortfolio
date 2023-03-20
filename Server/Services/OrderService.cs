@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using PhotoPortfolio.Shared.Entities;
+using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolio.Shared.Models;
 using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
 using Prodigi = PhotoPortfolio.Shared.Models.Prodigi.Orders;
