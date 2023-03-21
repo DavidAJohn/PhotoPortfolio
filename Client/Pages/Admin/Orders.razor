@@ -1,6 +1,7 @@
 ﻿@page "/admin/orders"
 @layout AdminLayout
 
+@using Humanizer;
 @using Microsoft.AspNetCore.Authorization
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Helpers;
@@ -49,7 +50,7 @@ else
                             <div class="font-semibold">Date:&nbsp;<span class="font-medium">@order.OrderDate</span></div>
                             <div class="font-semibold">Name:&nbsp;<span class="font-medium">@order.Name</span></div>
                             <div class="font-semibold">Email Address:&nbsp;<span class="font-medium">@order.EmailAddress</span></div>
-                            <div class="font-semibold">Status:&nbsp;<span class="font-medium">@order.Status</span></div>
+                            <div class="font-semibold">Status:&nbsp;<span class="font-medium">@order.Status.Humanize(LetterCasing.Title)</span></div>
                         </div>
                     </div>
                 }
