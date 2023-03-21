@@ -39,6 +39,13 @@ else
                 DropdownOutline=true
                 SelectedOption="SelectedSortOption" />
         </div>
+        <div class="w-full lg:w-1/2 my-4">
+            <Dropdown DropdownTitle="@filterTimeTitle"
+                DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
+                DropdownItems="@filterTimeOptions"
+                DropdownOutline=true
+                SelectedOption="SelectedFilterOption" />
+        </div>
         <div class="w-full lg:w-1/2">
             @if (orders is not null && orders.Count > 0)
             {
@@ -67,11 +74,17 @@ else
     private List<DropdownItem> sortOptions = new();
     private string sortTitle = "Sorted By";
 
+    private List<DropdownItem> filterTimeOptions = new();
+    private string filterTimeTitle = "In Last Year";
+
     protected override async Task OnInitializedAsync()
     {
         orderParams.SortBy = "ordercreated";
         orderParams.SortOrder = "desc";
         sortTitle = "Order Date (Most Recent First)";
+
+        orderParams.InLastNumberOfDays = 365;
+        filterTimeTitle = "In Last Year";
 
         await GetOrders();
     }
@@ -79,10 +92,13 @@ else
     protected override void OnInitialized()
     {
         SetSortOptions();
+        SetFilterTimeOptions();
     }
 
     private void SetSortOptions()
     {
+        sortOptions.Clear();
+
         sortOptions.Add(new DropdownItem
             {
                 OptionName = "Order Date (Most Recent First)",
@@ -93,6 +109,41 @@ else
             {
                 OptionName = "Order Date (Oldest First)",
                 OptionRef = "ordercreated_asc"
+            });
+    }
+
+    private void SetFilterTimeOptions()
+    {
+        filterTimeOptions.Clear();
+
+        filterTimeOptions.Add(new DropdownItem
+            {
+                OptionName = "In Last 7 Days",
+                OptionRef = "7"
+            });
+
+        filterTimeOptions.Add(new DropdownItem
+            {
+                OptionName = "In Last 14 Days",
+                OptionRef = "14"
+            });
+
+        filterTimeOptions.Add(new DropdownItem
+            {
+                OptionName = "In Last 30 Days",
+                OptionRef = "30"
+            });
+
+        filterTimeOptions.Add(new DropdownItem
+            {
+                OptionName = "In Last 6 Months",
+                OptionRef = "180"
+            });
+
+        filterTimeOptions.Add(new DropdownItem
+            {
+                OptionName = "In Last Year",
+                OptionRef = "365"
             });
     }
 
@@ -125,5 +176,22 @@ else
         };
 
         orders = await adminService.GetOrdersAsync(orderParams);
+    }
+
+    private async Task SelectedFilterOption(DropdownItem selectedOption)
+    {
+        try
+        {
+            filterTimeTitle = selectedOption.OptionName;
+
+            orderParams.InLastNumberOfDays = int.Parse(selectedOption.OptionRef);
+
+            orders = await adminService.GetOrdersAsync(orderParams);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not retrieve list of orders";
+        }
     }
 }
