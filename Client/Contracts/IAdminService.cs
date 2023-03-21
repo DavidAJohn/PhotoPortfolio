@@ -1,4 +1,5 @@
-﻿using PhotoPortfolio.Shared.Entities;
+﻿using PhotoPortfolio.Shared.Helpers;
+using PhotoPortfolio.Shared.Entities;
 using PhotoPortfolio.Shared.Models;
 
 namespace PhotoPortfolio.Client.Contracts;
@@ -18,5 +19,5 @@ public interface IAdminService
     Task<bool> UpdateProductAsync(Product product);
     Task<Preferences> GetSitePreferencesAsync();
     Task<bool> UpdateSitePreferencesAsync(Preferences prefs);
-    Task<List<OrderDetailsDto>> GetOrdersAsync();
+    Task<List<OrderDetailsDto>> GetOrdersAsync(OrderSpecificationParams? orderParams);
 }

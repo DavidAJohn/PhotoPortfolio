@@ -3,6 +3,7 @@
 
 @using Microsoft.AspNetCore.Authorization
 @using PhotoPortfolio.Client.Contracts
+@using PhotoPortfolio.Shared.Helpers;
 @using PhotoPortfolio.Shared.Entities
 @using PhotoPortfolio.Shared.Models;
 
@@ -29,6 +30,14 @@ else
 {
     <div class="m-4 md:m-8">
         <div class="text-3xl">Orders</div>
+        <div class="w-full lg:w-1/2 my-4">
+            <Dropdown 
+                DropdownTitle="@sortTitle"
+                DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
+                DropdownItems="@sortOptions"
+                DropdownOutline=true
+                SelectedOption="SelectedSortOption" />
+        </div>
         <div class="w-full lg:w-1/2">
             @if (orders is not null && orders.Count > 0)
             {
@@ -53,16 +62,44 @@ else
     private List<OrderDetailsDto> orders { get; set; } = null!;
     private string errorMessage = "";
 
+    private OrderSpecificationParams orderParams = new ();
+    private List<DropdownItem> sortOptions = new();
+    private string sortTitle = "Sorted By";
+
     protected override async Task OnInitializedAsync()
     {
+        orderParams.SortBy = "ordercreated";
+        orderParams.SortOrder = "desc";
+        sortTitle = "Order Date (Most Recent First)";
+
         await GetOrders();
+    }
+
+    protected override void OnInitialized()
+    {
+        SetSortOptions();
+    }
+
+    private void SetSortOptions()
+    {
+        sortOptions.Add(new DropdownItem
+            {
+                OptionName = "Order Date (Most Recent First)",
+                OptionRef = "ordercreated_desc"
+            });
+
+        sortOptions.Add(new DropdownItem
+            {
+                OptionName = "Order Date (Oldest First)",
+                OptionRef = "ordercreated_asc"
+            });
     }
 
     private async Task GetOrders()
     {
         try
         {
-            orders = await adminService.GetOrdersAsync();
+            orders = await adminService.GetOrdersAsync(orderParams);
             errorMessage = "";
         }
         catch (Exception ex)
@@ -70,5 +107,22 @@ else
             Console.WriteLine(ex.Message);
             errorMessage = "Could not retrieve list of orders";
         }
+    }
+
+    private async Task SelectedSortOption(DropdownItem selectedOption)
+    {
+        string sortBy = selectedOption.OptionRef;
+        sortTitle = selectedOption.OptionName;
+
+        orderParams.SortBy = "ordercreated";
+
+        orderParams.SortOrder = sortBy switch
+        {
+            "ordercreated_asc" => "asc",
+            "ordercreated_desc" => "desc",
+            _ => "desc"
+        };
+
+        orders = await adminService.GetOrdersAsync(orderParams);
     }
 }

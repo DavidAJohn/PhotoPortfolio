@@ -1,5 +1,7 @@
-﻿using PhotoPortfolio.Client.Contracts;
+﻿using Microsoft.AspNetCore.WebUtilities;
+using PhotoPortfolio.Client.Contracts;
 using PhotoPortfolio.Shared.Entities;
+using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolio.Shared.Models;
 using System.Net;
 using System.Net.Http.Headers;
@@ -298,16 +300,57 @@ public class AdminService : IAdminService
         }
     }
 
-    public async Task<List<OrderDetailsDto>> GetOrdersAsync()
+    public async Task<List<OrderDetailsDto>> GetOrdersAsync(OrderSpecificationParams? orderParams)
     {
         try
         {
+            var request = new HttpRequestMessage();
+
+            if (orderParams is not null)
+            {
+                var queryStringParams = new Dictionary<string, string>();
+
+                if (!string.IsNullOrWhiteSpace(orderParams.SortBy))
+                {
+                    queryStringParams.Add("sortBy", orderParams.SortBy);
+                };
+
+                if (!string.IsNullOrWhiteSpace(orderParams.SortOrder))
+                {
+                    queryStringParams.Add("sortOrder", orderParams.SortOrder);
+                };
+
+                request = new HttpRequestMessage(HttpMethod.Get, QueryHelpers.AddQueryString("orders", queryStringParams));
+            }
+            else
+            {
+                request = new HttpRequestMessage(HttpMethod.Get, "orders");
+            }
+
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var orders = await client.GetFromJsonAsync<List<OrderDetailsDto>>("orders");
+            HttpResponseMessage response = await client.SendAsync(request);
 
-            if (orders is null) return null!;
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var content = await response.Content.ReadAsStringAsync();
 
-            return orders;
+                if (content is not null)
+                {
+                    var orders = JsonSerializer.Deserialize<List<OrderDetailsDto>>(
+                            content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                    );
+
+                    if (orders is null) return null!;
+
+                    return orders;
+                }
+                else
+                {
+                    return null!;
+                }
+            }
+
+            return null!;
         }
         catch (HttpRequestException ex)
         {

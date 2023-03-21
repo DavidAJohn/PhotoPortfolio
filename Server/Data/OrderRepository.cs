@@ -1,4 +1,5 @@
 ﻿using PhotoPortfolio.Shared.Entities;
+using PhotoPortfolio.Shared.Helpers;
 using System.Linq.Expressions;
 
 namespace PhotoPortfolio.Server.Data;
@@ -26,8 +27,8 @@ public class OrderRepository : BaseRepository<Order>, IOrderRepository
         {
             SortByPredicate = orderParams.SortBy.ToLower() switch
             {
-                "ordercreated" => o => o.OrderCreated.ToUniversalTime(),
-                _ => o => o.OrderCreated.ToUniversalTime()
+                "ordercreated" => o => o.OrderCreated,
+                _ => o => o.OrderCreated
             };
         }
 
@@ -49,7 +50,7 @@ public class OrderRepository : BaseRepository<Order>, IOrderRepository
 
         return await _orders
             .Find(filter)
-            .SortBy(o => o.OrderCreated.ToUniversalTime())
+            .SortBy(o => o.OrderCreated)
             .ToListAsync();
     }
 }
