@@ -16,9 +16,20 @@ public class OrderSpecification
         {
             if (orderParams.Status is not null)
             {
-                predicate = predicate.And(o => o.Status.Equals(orderParams.Status));
-            }
+                // converting o.Status ToString() then using Equals when building the predicate does not work,
+                // so converted orderParams.Status string value to an OrderStatus instead
+                var statusAsOrderStatus = orderParams.Status switch
+                {
+                    "NotReady" => OrderStatus.NotReady,
+                    "Ready" => OrderStatus.Ready,
+                    "InProgress" => OrderStatus.InProgress,
+                    "Completed" => OrderStatus.Completed,
+                    "Cancelled" => OrderStatus.Cancelled
+                };
 
+                predicate = predicate.And(o => o.Status.Equals(statusAsOrderStatus));
+            }
+            
             if (orderParams.CustomerEmail is not null)
             {
                 predicate = predicate.And(o => o.EmailAddress.Contains(orderParams.CustomerEmail));

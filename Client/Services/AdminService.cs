@@ -320,6 +320,11 @@ public class AdminService : IAdminService
                     queryStringParams.Add("sortOrder", orderParams.SortOrder);
                 };
 
+                if (!string.IsNullOrWhiteSpace(orderParams.Status))
+                {
+                    queryStringParams.Add("status", orderParams.Status);
+                };
+
                 queryStringParams.Add("inLastNumberOfDays", orderParams.InLastNumberOfDays.ToString());
 
                 request = new HttpRequestMessage(HttpMethod.Get, QueryHelpers.AddQueryString("orders", queryStringParams));

@@ -44,7 +44,14 @@ else
                 DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
                 DropdownItems="@filterTimeOptions"
                 DropdownOutline=true
-                SelectedOption="SelectedFilterOption" />
+                SelectedOption="SelectedTimeFilterOption" />
+        </div>
+        <div class="w-full lg:w-1/2 my-4">
+            <Dropdown DropdownTitle="@filterStatusTitle"
+                DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
+                DropdownItems="@filterStatusOptions"
+                DropdownOutline=true
+                SelectedOption="SelectedStatusFilterOption" />
         </div>
         <div class="w-full lg:w-1/2">
             @if (orders is not null && orders.Count > 0)
@@ -77,6 +84,9 @@ else
     private List<DropdownItem> filterTimeOptions = new();
     private string filterTimeTitle = "In Last Year";
 
+    private List<DropdownItem> filterStatusOptions = new();
+    private string filterStatusTitle = "Any Status";
+
     protected override async Task OnInitializedAsync()
     {
         orderParams.SortBy = "ordercreated";
@@ -86,6 +96,9 @@ else
         orderParams.InLastNumberOfDays = 365;
         filterTimeTitle = "In Last Year";
 
+        orderParams.Status = "";
+        filterStatusTitle = "Any Status";
+
         await GetOrders();
     }
 
@@ -93,6 +106,7 @@ else
     {
         SetSortOptions();
         SetFilterTimeOptions();
+        SetFilterStatusOptions();
     }
 
     private void SetSortOptions()
@@ -147,6 +161,47 @@ else
             });
     }
 
+    private void SetFilterStatusOptions()
+    {
+        filterStatusOptions.Clear();
+
+        filterStatusOptions.Add(new DropdownItem
+            {
+                OptionName = "Any Status",
+                OptionRef = "Any"
+            });
+
+        filterStatusOptions.Add(new DropdownItem
+            {
+                OptionName = "Not Ready",
+                OptionRef = "NotReady"
+            });
+
+        filterStatusOptions.Add(new DropdownItem
+            {
+                OptionName = "Ready",
+                OptionRef = "Ready"
+            });
+
+        filterStatusOptions.Add(new DropdownItem
+            {
+                OptionName = "In Progress",
+                OptionRef = "InProgress"
+            });
+
+        filterStatusOptions.Add(new DropdownItem
+            {
+                OptionName = "Completed",
+                OptionRef = "Completed"
+            });
+
+        filterStatusOptions.Add(new DropdownItem
+            {
+                OptionName = "Cancelled",
+                OptionRef = "Cancelled"
+            });
+    }
+
     private async Task GetOrders()
     {
         try
@@ -178,13 +233,37 @@ else
         orders = await adminService.GetOrdersAsync(orderParams);
     }
 
-    private async Task SelectedFilterOption(DropdownItem selectedOption)
+    private async Task SelectedTimeFilterOption(DropdownItem selectedOption)
     {
         try
         {
             filterTimeTitle = selectedOption.OptionName;
 
             orderParams.InLastNumberOfDays = int.Parse(selectedOption.OptionRef);
+
+            orders = await adminService.GetOrdersAsync(orderParams);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not retrieve list of orders";
+        }
+    }
+
+    private async Task SelectedStatusFilterOption(DropdownItem selectedOption)
+    {
+        try
+        {
+            filterStatusTitle = selectedOption.OptionName;
+
+            if (selectedOption.OptionRef != "Any")
+            {
+                orderParams.Status = selectedOption.OptionRef;
+            }
+            else
+            {
+                orderParams.Status = "";
+            }
 
             orders = await adminService.GetOrdersAsync(orderParams);
         }
