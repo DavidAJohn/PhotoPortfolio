@@ -180,35 +180,16 @@ else
                 OptionRef = "Any"
             });
 
-        filterStatusOptions.Add(new DropdownItem
-            {
-                OptionName = "Not Ready",
-                OptionRef = "NotReady"
-            });
+        string[] statusNames = Enum.GetNames<OrderStatus>();
 
-        filterStatusOptions.Add(new DropdownItem
+        foreach(string name in statusNames)
+        {
+            filterStatusOptions.Add(new DropdownItem
             {
-                OptionName = "Awaiting Approval",
-                OptionRef = "AwaitingApproval"
+                OptionName = name.Humanize(LetterCasing.Title), // eg. "Awaiting Approval"
+                OptionRef = name
             });
-
-        filterStatusOptions.Add(new DropdownItem
-            {
-                OptionName = "In Progress",
-                OptionRef = "InProgress"
-            });
-
-        filterStatusOptions.Add(new DropdownItem
-            {
-                OptionName = "Completed",
-                OptionRef = "Completed"
-            });
-
-        filterStatusOptions.Add(new DropdownItem
-            {
-                OptionName = "Cancelled",
-                OptionRef = "Cancelled"
-            });
+        }
     }
 
     private async Task GetOrders()
