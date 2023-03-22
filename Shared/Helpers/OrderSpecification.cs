@@ -35,6 +35,11 @@ public class OrderSpecification
                 predicate = predicate.And(o => o.EmailAddress.Contains(orderParams.CustomerEmail));
             }
 
+            if (orderParams.InLastNumberOfDays <= 0) // checks for any zero or negative values inadvertently supplied
+            {
+                orderParams.InLastNumberOfDays = 365;
+            }
+
             var numOfDays = orderParams.InLastNumberOfDays * -1;
             predicate = predicate.And(o => o.OrderCreated > DateTime.Now.AddDays(numOfDays));
         }
