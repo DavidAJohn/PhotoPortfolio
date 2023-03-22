@@ -33,8 +33,7 @@ public class Order : BaseEntity
 public enum OrderStatus
 {
     NotReady,
-    Ready,
-    Approved,
+    AwaitingApproval,
     InProgress,
     Completed,
     Cancelled

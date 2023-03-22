@@ -21,7 +21,7 @@ public class OrderSpecification
                 var statusAsOrderStatus = orderParams.Status switch
                 {
                     "NotReady" => OrderStatus.NotReady,
-                    "Ready" => OrderStatus.Ready,
+                    "AwaitingApproval" => OrderStatus.AwaitingApproval,
                     "InProgress" => OrderStatus.InProgress,
                     "Completed" => OrderStatus.Completed,
                     "Cancelled" => OrderStatus.Cancelled

@@ -5,7 +5,6 @@
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
 @using PhotoPortfolio.Shared.Models;
-@using static PhotoPortfolio.Client.Components.Dropdown;
 
 @inject IAdminService adminService
 
@@ -37,7 +36,7 @@ else
         <div class="mt-8 w-full lg:w-1/2">
             <span>Order Approval: </span>
             <Dropdown DropdownTitle="@($"{selectedApprovalOptionName}")"
-                DropdownWidth="DropdownWidthOptions.Large"
+                DropdownWidth="Dropdown.DropdownWidthOptions.Large"
                 DropdownItems="approvalDropdownOptions"
                 SelectedOption="SelectedApprovalOption"
                 SelectedItemRef="@($"{selectedApprovalOptionRef}")" />
