@@ -30,30 +30,39 @@ else if (orders == null)
 else
 {
     <div class="m-4 md:m-8">
-        <div class="text-3xl">Orders</div>
-        <div class="w-full lg:w-1/2 my-4">
-            <Dropdown 
-                DropdownTitle="@sortTitle"
-                DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
-                DropdownItems="@sortOptions"
-                DropdownOutline=true
-                SelectedOption="SelectedSortOption" />
+        <div class="text-3xl mb-8">Orders</div>
+        <div class="w-full lg:w-1/2 my-4 flex justify-items-start items-center">
+            <div class="mr-2 font-semibold text-base">Sort By:</div>
+            <div>
+                <Dropdown 
+                    DropdownTitle="@sortTitle"
+                    DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
+                    DropdownItems="@sortOptions"
+                    DropdownOutline=true
+                    SelectedOption="SelectedSortOption" />
+            </div>
         </div>
-        <div class="w-full lg:w-1/2 my-4">
-            <Dropdown DropdownTitle="@filterTimeTitle"
-                DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
-                DropdownItems="@filterTimeOptions"
-                DropdownOutline=true
-                SelectedOption="SelectedTimeFilterOption" />
+        <div class="w-full lg:w-1/2 my-4 flex justify-items-start items-center">
+            <div class="mr-2 font-semibold text-base">Time Period:</div>
+            <div>
+                <Dropdown DropdownTitle="@filterTimeTitle"
+                    DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
+                    DropdownItems="@filterTimeOptions"
+                    DropdownOutline=true
+                    SelectedOption="SelectedTimeFilterOption" />
+            </div>
         </div>
-        <div class="w-full lg:w-1/2 my-4">
-            <Dropdown DropdownTitle="@filterStatusTitle"
-                DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
-                DropdownItems="@filterStatusOptions"
-                DropdownOutline=true
-                SelectedOption="SelectedStatusFilterOption" />
+        <div class="w-full lg:w-1/2 my-4 flex justify-items-start items-center">
+            <div class="mr-2 font-semibold text-base">Status:</div>
+            <div>
+                <Dropdown DropdownTitle="@filterStatusTitle"
+                    DropdownWidth="Dropdown.DropdownWidthOptions.Medium"
+                    DropdownItems="@filterStatusOptions"
+                    DropdownOutline=true
+                    SelectedOption="SelectedStatusFilterOption" />
+            </div>
         </div>
-        <div class="w-full lg:w-1/2">
+        <div class="w-full lg:w-1/2 mt-8">
             @if (orders is not null && orders.Count > 0)
             {
                 @foreach (OrderDetailsDto order in orders)
