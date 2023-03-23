@@ -1,5 +1,6 @@
 ﻿using LinqKit;
 using PhotoPortfolio.Shared.Entities;
+using PhotoPortfolio.Shared.Models;
 using System.Linq.Expressions;
 
 namespace PhotoPortfolio.Shared.Helpers;

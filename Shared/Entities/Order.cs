@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using PhotoPortfolio.Shared.Models;
 using PhotoPortfolio.Shared.Models.Prodigi.Orders;
 using System.ComponentModel.DataAnnotations;
 
@@ -28,13 +29,4 @@ public class Order : BaseEntity
     public string ShippingMethod { get; set; }
 
     public OrderStatus Status { get; set; } = OrderStatus.NotReady;
-}
-
-public enum OrderStatus
-{
-    NotReady,
-    AwaitingApproval,
-    InProgress,
-    Completed,
-    Cancelled
 }
