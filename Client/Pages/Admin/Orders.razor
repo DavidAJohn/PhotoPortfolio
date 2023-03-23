@@ -71,8 +71,10 @@ else
                         <div class="w-2/3 text-base ">
                             <div class="font-semibold">Order Id:&nbsp;<span class="font-medium">@order.Id</span></div>
                             <div class="font-semibold">Date:&nbsp;<span class="font-medium">@order.OrderDate</span></div>
-                            <div class="font-semibold">Name:&nbsp;<span class="font-medium">@order.Name</span></div>
-                            <div class="font-semibold">Email Address:&nbsp;<span class="font-medium">@order.EmailAddress</span></div>
+                            @if (!string.IsNullOrEmpty(order.Name))
+                            {
+                                <div class="font-semibold">Customer:&nbsp;<span class="font-medium">@order.Name (@order.EmailAddress)</span></div>
+                            }
                             <div class="font-semibold">Status:&nbsp;<span class="font-medium">@order.Status.Humanize(LetterCasing.Title)</span></div>
                         </div>
                     </div>
