@@ -78,6 +78,35 @@ else
                                 <span class="font-medium">£@order.TotalCost (Items: @order.Items.Count)</span>
                             </div>
                             <div class="font-semibold">Status:&nbsp;<span class="font-medium">@order.Status.Humanize(LetterCasing.Title)</span></div>
+                            <div class="flex items-baseline my-4 text-blue-600 hover:text-blue-800 focus:text-blue-800 hover:cursor-pointer" @onclick="@(() => ViewOrderDetails(order.Id!))">
+                                <span class="text-base">@(order.Id == expandedOrderId ? "Hide" : "View") Order Details</span>
+                                <span class="text-xs ml-1">&#x279c;</span>
+                            </div>
+                            <div id="order-details" class="mt-8 @(order.Id == expandedOrderId ? "block" : "hidden")">
+                                <div>
+                                    @foreach (BasketItem item in order.Items)
+                                    {
+                                        <div class="mb-0 font-semibold">Id:&nbsp;<span class="font-medium">@order.Id</span></div>
+                                        <div class="mb-4 font-semibold">Shipping Method:&nbsp;<span class="font-medium">@order.ShippingMethod</span></div>
+                                        <div class="font-semibold text-sm md:text-base flex items-center">
+                                            @if (!string.IsNullOrEmpty(item.Product.ImageUri))
+                                            {
+                                                <div class="inline-block w-12 h-auto mr-8"><img src="@item.Product.ImageUri" /></div>
+                                            }
+                                            @if (string.IsNullOrEmpty(item.Product.ImageUri) && !string.IsNullOrEmpty(item.Product.MockupImageUri))
+                                            {
+                                                <div class="inline-block w-12 h-auto mr-8"><img src="@item.Product.MockupImageUri" /></div>
+                                            }
+                                            <div class="inline-block flex-shrink-0">
+                                                <div class="mb-0 font-semibold">@item.Product.ImageTitle</div>
+                                                <div class="font-medium text-sm">@item.Product.CustomDescription</div>
+                                                <div class="font-medium text-xs">Sku:&nbsp;@item.Product.ProdigiSku</div>
+                                            </div>
+                                            <div class="ml-4 font-semibold">=&nbsp; £@item.Total</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </div>
                 }
@@ -99,6 +128,8 @@ else
 
     private List<DropdownItem> filterStatusOptions = new();
     private string filterStatusTitle = "Any Status";
+
+    private string expandedOrderId = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -271,6 +302,18 @@ else
         {
             Console.WriteLine(ex.Message);
             errorMessage = "Could not retrieve list of orders";
+        }
+    }
+
+    private void ViewOrderDetails(string orderId)
+    {
+        if (orderId == expandedOrderId)
+        {
+            expandedOrderId = "";
+        }
+        else
+        {
+            expandedOrderId = orderId;
         }
     }
 }
