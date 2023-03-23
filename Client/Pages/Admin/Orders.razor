@@ -82,11 +82,26 @@ else
                                 <span class="text-base">@(order.Id == expandedOrderId ? "Hide" : "View") Order Details</span>
                                 <span class="text-xs ml-1">&#x279c;</span>
                             </div>
-                            <div id="order-details" class="mt-8 @(order.Id == expandedOrderId ? "block" : "hidden")">
+                            <div id="order-details" class="mt-4 @(order.Id == expandedOrderId ? "block" : "hidden")">
                                 <div>
                                     @foreach (BasketItem item in order.Items)
                                     {
                                         <div class="mb-0 font-semibold">Id:&nbsp;<span class="font-medium">@order.Id</span></div>
+                                        @if (!string.IsNullOrEmpty(order.StripePaymentIntentId))
+                                        {
+                                            <div class="mb-0 font-semibold">Payment Intent Id:&nbsp;
+                                                <div class="font-medium inline">
+                                                    <span>
+                                                        @order.StripePaymentIntentId
+                                                    </span>
+                                                    <span>
+                                                        <a href="@("https://dashboard.stripe.com/test/payments/" + @order.StripePaymentIntentId)" target="_blank">
+                                                            <MudIcon Icon="@Icons.Filled.OpenInNew" Size="Size.Small" Color="Color.Primary" />
+                                                        </a>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        }
                                         <div class="mb-4 font-semibold">Shipping Method:&nbsp;<span class="font-medium">@order.ShippingMethod</span></div>
                                         <div class="font-semibold text-sm md:text-base flex items-center">
                                             @if (!string.IsNullOrEmpty(item.Product.ImageUri))

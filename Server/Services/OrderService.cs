@@ -49,7 +49,8 @@ public class OrderService : IOrderService
         string orderId,
         PhotoPortfolioStripe.Customer customer,
         PhotoPortfolioStripe.ShippingDetails shippingDetails,
-        string shippingMethod
+        string shippingMethod,
+        string paymentIntentId
         )
     {
         var address = new Prodigi.Address()
@@ -77,7 +78,8 @@ public class OrderService : IOrderService
                 Items = existingOrder.Items,
                 TotalCost = existingOrder.TotalCost,
                 Address = address,
-                ShippingMethod = existingOrder.ShippingMethod
+                ShippingMethod = existingOrder.ShippingMethod,
+                StripePaymentIntentId = paymentIntentId
             };
 
             // update order with new details sent from Stripe
@@ -106,7 +108,9 @@ public class OrderService : IOrderService
             Items = order.Items,
             TotalCost = order.TotalCost.ToDecimal(),
             Address = order.Address,
-            ShippingMethod = order.ShippingMethod
+            ShippingMethod = order.ShippingMethod,
+            StripePaymentIntentId = order.StripePaymentIntentId,
+            Status = order.Status.ToString()
         };
 
         return orderDetails;
@@ -142,6 +146,7 @@ public class OrderService : IOrderService
             TotalCost = order.TotalCost.ToDecimal(),
             Address = order.Address,
             ShippingMethod = order.ShippingMethod,
+            StripePaymentIntentId = order.StripePaymentIntentId,
             Status = order.Status.ToString()
         };
 

@@ -12,7 +12,8 @@ public interface IOrderService
         string orderId,
         PhotoPortfolioStripe.Customer customer,
         PhotoPortfolioStripe.ShippingDetails shippingDetails,
-        string shippingMethod
+        string shippingMethod,
+        string paymentIntentId
     );
 
     Task<OrderDetailsDto> GetOrderDetailsFromId(string orderId);

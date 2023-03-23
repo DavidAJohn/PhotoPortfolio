@@ -9,8 +9,8 @@ namespace PhotoPortfolio.Shared.Entities;
 [BsonIgnoreExtraElements]
 public class Order : BaseEntity
 {
-    public string Name { get; set; }
-    public string EmailAddress { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string EmailAddress { get; set; } = string.Empty;
 
     [Required]
     public BsonDateTime OrderCreated { get; set; }
@@ -27,6 +27,8 @@ public class Order : BaseEntity
 
     [Required] 
     public string ShippingMethod { get; set; }
+
+    public string StripePaymentIntentId { get; set; } = string.Empty;
 
     public OrderStatus Status { get; set; } = OrderStatus.NotReady;
 }

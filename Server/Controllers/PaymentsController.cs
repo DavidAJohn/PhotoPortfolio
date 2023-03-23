@@ -111,6 +111,7 @@ public class PaymentsController : BaseApiController
                 var sessionMetadata = session.Metadata;
                 var shippingMethod = sessionMetadata.FirstOrDefault(x => x.Key == "shipping_method").Value ?? "";
                 var orderId = sessionMetadata.FirstOrDefault(x => x.Key == "order_id").Value ?? "";
+                var paymentIntentId = session.PaymentIntentId;
 
                 if (string.IsNullOrEmpty(orderId))
                 {
@@ -119,7 +120,7 @@ public class PaymentsController : BaseApiController
                 }
 
                 // pass details to order service to update the db
-                var response = await _orderService.UpdateOrder(orderId, customer, shippingDetails, shippingMethod);
+                var response = await _orderService.UpdateOrder(orderId, customer, shippingDetails, shippingMethod, paymentIntentId);
 
                 if (response)
                 {
