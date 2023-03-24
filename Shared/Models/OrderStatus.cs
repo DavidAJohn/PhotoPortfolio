@@ -2,7 +2,7 @@
 
 public enum OrderStatus
 {
-    NotReady,
+    PaymentIncomplete,
     AwaitingApproval,
     InProgress,
     Completed,

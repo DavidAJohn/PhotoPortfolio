@@ -30,5 +30,5 @@ public class Order : BaseEntity
 
     public string StripePaymentIntentId { get; set; } = string.Empty;
 
-    public OrderStatus Status { get; set; } = OrderStatus.NotReady;
+    public OrderStatus Status { get; set; } = OrderStatus.PaymentIncomplete;
 }

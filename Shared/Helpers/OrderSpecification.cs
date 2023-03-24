@@ -21,7 +21,7 @@ public class OrderSpecification
                 // so converted orderParams.Status string value to an OrderStatus instead
                 var statusAsOrderStatus = orderParams.Status switch
                 {
-                    "NotReady" => OrderStatus.NotReady,
+                    "PaymentIncomplete" => OrderStatus.PaymentIncomplete,
                     "AwaitingApproval" => OrderStatus.AwaitingApproval,
                     "InProgress" => OrderStatus.InProgress,
                     "Completed" => OrderStatus.Completed,
