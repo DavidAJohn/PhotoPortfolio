@@ -74,6 +74,10 @@ else
                             {
                                 <div class="font-semibold">Customer:&nbsp;<span class="font-medium">@order.Name (@order.EmailAddress)</span></div>
                             }
+                            else
+                            {
+                                <div class="font-semibold">Customer:&nbsp;<span class="font-medium">Unknown</span></div>
+                            }
                             <div class="font-semibold">Total Cost:&nbsp;
                                 <span class="font-medium">£@order.TotalCost (Items: @order.Items.Count)</span>
                             </div>
