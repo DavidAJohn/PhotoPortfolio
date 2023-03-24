@@ -10,23 +10,28 @@ public class OrderSpecification
     public static Expression<Func<Order, bool>> CreateOrderSpecificationPredicate(OrderSpecificationParams orderParams)
     {
         // as a fallback, this initially creates a predicate that would return all records,
-        // which we still want to do if the orderParams properties (checked below) are null
+        // which we still want to do if the orderParams properties are null
         Expression<Func<Order, bool>> predicate = PredicateBuilder.New<Order>(_ => true);
 
-        if (orderParams != null) // now we potentially add conditions which would filter the records
+        if (orderParams != null)
         {
             if (orderParams.Status is not null)
             {
-                // converting o.Status ToString() then using Equals when building the predicate does not work,
-                // so converted orderParams.Status string value to an OrderStatus instead
-                var statusAsOrderStatus = orderParams.Status switch
+                // converting o.Status ToString() then using Equals when building the predicate does not work
+                // as expected, so the orderParams.Status string value is converted to an OrderStatus instead
+                string[] statusNames = Enum.GetNames<OrderStatus>();
+                var statusAsOrderStatus = OrderStatus.PaymentIncomplete;
+
+                foreach (string name in statusNames)
                 {
-                    "PaymentIncomplete" => OrderStatus.PaymentIncomplete,
-                    "AwaitingApproval" => OrderStatus.AwaitingApproval,
-                    "InProgress" => OrderStatus.InProgress,
-                    "Completed" => OrderStatus.Completed,
-                    "Cancelled" => OrderStatus.Cancelled
-                };
+                    if (name == orderParams.Status)
+                    {
+                        if (Enum.TryParse(orderParams.Status, out OrderStatus enumStatus))
+                        {
+                            statusAsOrderStatus = enumStatus;
+                        }
+                    }
+                }
 
                 predicate = predicate.And(o => o.Status.Equals(statusAsOrderStatus));
             }
