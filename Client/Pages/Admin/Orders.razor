@@ -10,6 +10,7 @@
 
 @inject IAdminService adminService
 @inject NavigationManager navigationManager
+@inject IConfiguration config
 
 @attribute [Authorize]
 
@@ -99,7 +100,7 @@ else
                                                         @order.StripePaymentIntentId
                                                     </span>
                                                     <span>
-                                                        <a href="@("https://dashboard.stripe.com/test/payments/" + @order.StripePaymentIntentId)" target="_blank">
+                                                        <a href="@(@stripeDashboardUrl + @order.StripePaymentIntentId)" target="_blank">
                                                             <MudIcon Icon="@Icons.Filled.OpenInNew" Size="Size.Small" Color="Color.Primary" />
                                                         </a>
                                                     </span>
@@ -149,6 +150,8 @@ else
     private string filterStatusTitle = "Any Status";
 
     private string expandedOrderId = "";
+
+    private string stripeDashboardUrl => config["Stripe_DashboardRootUrl"] ?? "https://dashboard.stripe.com/test/payments/";
 
     protected override async Task OnInitializedAsync()
     {
