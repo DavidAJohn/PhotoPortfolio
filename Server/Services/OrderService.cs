@@ -79,7 +79,8 @@ public class OrderService : IOrderService
                 TotalCost = existingOrder.TotalCost,
                 Address = address,
                 ShippingMethod = existingOrder.ShippingMethod,
-                StripePaymentIntentId = paymentIntentId
+                StripePaymentIntentId = paymentIntentId,
+                Status = OrderStatus.AwaitingApproval
             };
 
             // update order with new details sent from Stripe
