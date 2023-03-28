@@ -71,6 +71,7 @@ else
                     Size="Size.Medium" 
                     Color="Color.Primary"
                     CheckedChanged="((e) => CheckBoxExcludeIncomplete_CheckedChanged(e))"
+                    Checked="excludeIncompleteChecked"
                 >
                 </MudCheckBox>
             </div>
@@ -168,6 +169,9 @@ else
     private string expandedOrderId = "";
     private string stripeDashboardUrl => config["Stripe_DashboardRootUrl"] ?? "https://dashboard.stripe.com/test/payments/";
 
+    private Dictionary<string, string> prefsMetadata = new();
+    private bool excludeIncompleteChecked = false;
+
     protected override async Task OnInitializedAsync()
     {
         orderParams.SortBy = "ordercreated";
@@ -180,6 +184,7 @@ else
         orderParams.Status = "";
         filterStatusTitle = "Any Status";
 
+        await GetSitePreferences();
         await GetOrders();
     }
 
@@ -369,8 +374,70 @@ else
         }
 
         SetFilterStatusOptions(excludeIncomplete);
-
+        excludeIncompleteChecked = excludeIncomplete;
         orderParams.ExcludePaymentIncomplete = excludeIncomplete;
+        await UpdateSitePreferences(excludeIncomplete);
         await GetOrders();
+    }
+
+    private async Task GetSitePreferences()
+    {
+        try
+        {
+            var preferences = await adminService.GetSitePreferencesAsync();
+            prefsMetadata = preferences.Metadata;
+
+            if (prefsMetadata.ContainsKey("ExcludeIncompleteFromOrderSearch"))
+            {
+                bool boolOut;
+
+                if (bool.TryParse(prefsMetadata["ExcludeIncompleteFromOrderSearch"], out boolOut))
+                {
+                    excludeIncompleteChecked = Convert.ToBoolean(prefsMetadata["ExcludeIncompleteFromOrderSearch"]);
+                }
+            }
+
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not retrieve site preferences";
+        }
+    }
+
+    private async Task UpdateSitePreferences(bool excludeIncomplete)
+    {
+        try
+        {
+            var preferences = await adminService.GetSitePreferencesAsync();
+            prefsMetadata = preferences.Metadata;
+
+            if (prefsMetadata.ContainsKey("ExcludeIncompleteFromOrderSearch"))
+            {
+                prefsMetadata["ExcludeIncompleteFromOrderSearch"] = excludeIncomplete.ToString();
+            }
+            else
+            {
+                prefsMetadata.Add("ExcludeIncompleteFromOrderSearch", excludeIncomplete.ToString());
+            }
+
+            var response = await adminService.UpdateSitePreferencesAsync(preferences);
+
+            if (response)
+            {
+                errorMessage = "";
+            }
+            else
+            {
+                Console.WriteLine("Could not update site preferences");
+                errorMessage = "Could not update site preferences";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Could not update site preferences";
+        }
     }
 }
