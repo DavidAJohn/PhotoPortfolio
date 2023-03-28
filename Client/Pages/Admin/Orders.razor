@@ -75,7 +75,11 @@ else
                 </MudCheckBox>
             </div>
         </div>
-        <div class="w-full lg:w-1/2 mt-8">
+        <div class="w-full lg:w-1/2 mt-4">
+            @if (orders is not null)
+            {
+                <div class="font-semibold text-lg italic mb-4 ml-2">@orders.Count orders found</div>
+            }
             @if (orders is not null && orders.Count > 0)
             {
                 @foreach (OrderDetailsDto order in orders)
@@ -359,7 +363,6 @@ else
         {
             if (filterStatusTitle == "Payment Incomplete")
             {
-
                 orderParams.Status = "";
                 filterStatusTitle = "Any Status";
             }
