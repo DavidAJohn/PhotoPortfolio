@@ -244,7 +244,7 @@ else
             });
     }
 
-    private void SetFilterStatusOptions()
+    private void SetFilterStatusOptions(bool excludePaymentIncomplete = false)
     {
         filterStatusOptions.Clear();
 
@@ -258,11 +258,14 @@ else
 
         foreach(string name in statusNames)
         {
-            filterStatusOptions.Add(new DropdownItem
+            if (!excludePaymentIncomplete || (excludePaymentIncomplete && name != "PaymentIncomplete"))
             {
-                OptionName = name.Humanize(LetterCasing.Title), // eg. "Awaiting Approval"
-                OptionRef = name
-            });
+                filterStatusOptions.Add(new DropdownItem
+                    {
+                        OptionName = name.Humanize(LetterCasing.Title), // eg. "Awaiting Approval"
+                        OptionRef = name
+                    });
+            }
         }
     }
 
@@ -350,9 +353,21 @@ else
         }
     }
 
-    private async Task CheckBoxExcludeIncomplete_CheckedChanged(bool e)
+    private async Task CheckBoxExcludeIncomplete_CheckedChanged(bool excludeIncomplete)
     {
-        orderParams.ExcludePaymentIncomplete = e;
+        if (excludeIncomplete == true)
+        {
+            if (filterStatusTitle == "Payment Incomplete")
+            {
+
+                orderParams.Status = "";
+                filterStatusTitle = "Any Status";
+            }
+        }
+
+        SetFilterStatusOptions(excludeIncomplete);
+
+        orderParams.ExcludePaymentIncomplete = excludeIncomplete;
         await GetOrders();
     }
 }
