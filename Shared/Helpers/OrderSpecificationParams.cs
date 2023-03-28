@@ -7,4 +7,5 @@ public class OrderSpecificationParams
     public int InLastNumberOfDays { get; set; } = 365;
     public string? SortBy { get; set; }
     public string? SortOrder { get; set; }
+    public bool ExcludePaymentIncomplete { get; set; } = false;
 }

@@ -33,9 +33,14 @@ public class OrderSpecification
                     }
                 }
 
-                predicate = predicate.And(o => o.Status.Equals(statusAsOrderStatus));
+                predicate = predicate.And(o => o.Status.Equals(statusAsOrderStatus)); 
             }
-            
+
+            if (orderParams.ExcludePaymentIncomplete)
+            {
+                predicate = predicate.And(o => o.Status != OrderStatus.PaymentIncomplete);
+            }
+
             if (orderParams.CustomerEmail is not null)
             {
                 predicate = predicate.And(o => o.EmailAddress.Contains(orderParams.CustomerEmail));

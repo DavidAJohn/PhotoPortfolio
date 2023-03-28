@@ -325,6 +325,11 @@ public class AdminService : IAdminService
                     queryStringParams.Add("status", orderParams.Status);
                 };
 
+                if (orderParams.ExcludePaymentIncomplete)
+                {
+                    queryStringParams.Add("excludePaymentIncomplete", "true");
+                };
+
                 queryStringParams.Add("inLastNumberOfDays", orderParams.InLastNumberOfDays.ToString());
 
                 request = new HttpRequestMessage(HttpMethod.Get, QueryHelpers.AddQueryString("orders", queryStringParams));

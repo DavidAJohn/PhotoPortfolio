@@ -63,6 +63,18 @@ else
                     SelectedOption="SelectedStatusFilterOption" />
             </div>
         </div>
+        <div class="w-full lg:w-1/2 my-4 -ml-2 flex justify-items-start items-center">
+            <div class="font-semibold text-base">
+                <MudCheckBox 
+                    T="Boolean"
+                    Label="Exlude Orders Where Payments Are Incomplete?" 
+                    Size="Size.Medium" 
+                    Color="Color.Primary"
+                    CheckedChanged="((e) => CheckBoxExcludeIncomplete_CheckedChanged(e))"
+                >
+                </MudCheckBox>
+            </div>
+        </div>
         <div class="w-full lg:w-1/2 mt-8">
             @if (orders is not null && orders.Count > 0)
             {
@@ -150,7 +162,6 @@ else
     private string filterStatusTitle = "Any Status";
 
     private string expandedOrderId = "";
-
     private string stripeDashboardUrl => config["Stripe_DashboardRootUrl"] ?? "https://dashboard.stripe.com/test/payments/";
 
     protected override async Task OnInitializedAsync()
@@ -337,5 +348,11 @@ else
         {
             expandedOrderId = orderId;
         }
+    }
+
+    private async Task CheckBoxExcludeIncomplete_CheckedChanged(bool e)
+    {
+        orderParams.ExcludePaymentIncomplete = e;
+        await GetOrders();
     }
 }
