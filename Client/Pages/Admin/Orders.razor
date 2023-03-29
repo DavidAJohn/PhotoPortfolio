@@ -419,6 +419,7 @@ else
                 if (bool.TryParse(prefsMetadata["ExcludeIncompleteFromOrderSearch"], out boolOut))
                 {
                     excludeIncompleteChecked = Convert.ToBoolean(prefsMetadata["ExcludeIncompleteFromOrderSearch"]);
+                    orderParams.ExcludePaymentIncomplete = excludeIncompleteChecked;
                 }
             }
 
