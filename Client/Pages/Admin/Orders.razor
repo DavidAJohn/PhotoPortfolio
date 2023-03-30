@@ -11,6 +11,8 @@
 @inject IAdminService adminService
 @inject NavigationManager navigationManager
 @inject IConfiguration config
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 @attribute [Authorize]
 
@@ -474,7 +476,31 @@ else
 
     private async Task OnApproveClick(string orderId)
     {
-        // approve order
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", "Are you sure? The order will be sent to the Prodigi Print API immediately");
+        parameters.Add("ButtonText", "Yes, approve it");
+        parameters.Add("Color", Color.Success);
 
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small };
+
+        var dialog = DialogService.Show<ConfirmDialog>("Approve Order", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled) // user must have clicked the approve button - cancelling just closes the confirm dialog
+        {
+            // TO DO: send order id to an approve order method
+            // var orderApproved = await adminService.ApproveOrder(orderId);
+            var orderApproved = true;
+
+            if (orderApproved)
+            {
+                await InvokeAsync(StateHasChanged);
+                Snackbar.Add($"This order has now been approve", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("The order could NOT be approved", Severity.Error);
+            }
+        }
     }
 }
