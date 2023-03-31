@@ -11,7 +11,7 @@
       ],
       "UpstreamPathTemplate": "/prodigi/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ],
-      "FileCacheOptions": { "TtlSeconds": 3600 },
+      "FileCacheOptions": { "TtlSeconds": 120 },
       "RateLimitOptions": {
         "ClientWhitelist": [],
         "EnableRateLimiting": true,
