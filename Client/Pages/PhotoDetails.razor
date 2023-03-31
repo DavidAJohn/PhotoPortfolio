@@ -262,33 +262,40 @@
         {
             var quotes = quoteResponse.Quotes;
             var quoteReturned = quotes.FirstOrDefault();
-            
-            if (quoteReturned is not null)
+
+            if (quoteReturned is not null && quoteReturned.CostSummary is not null)
             {
-                var totalCost = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
-
-                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Items.Amount))
+                if (AnyNulls(quoteReturned.CostSummary) == false)
                 {
-                    totalCost = 0m;
-                    decimal decimalItemsCost = decimal.Parse(quoteReturned.CostSummary.Items.Amount);
-                    totalCost += ((decimalItemsCost * product.MarkupPercentage) / 100);
-                    //Console.WriteLine("Items Cost: " + decimalItemsCost.ToString());
-                }
+                    var totalCost = decimal.Parse(quoteReturned.CostSummary.TotalCost!.Amount);
 
-                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Shipping.Amount))
+                    if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Items!.Amount))
+                    {
+                        totalCost = 0m;
+                        decimal decimalItemsCost = decimal.Parse(quoteReturned.CostSummary.Items.Amount);
+                        totalCost += ((decimalItemsCost * product.MarkupPercentage) / 100);
+                        //Console.WriteLine("Items Cost: " + decimalItemsCost.ToString());
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Shipping!.Amount))
+                    {
+                        decimal decimalShippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
+                        totalCost += decimalShippingCost;
+                        //Console.WriteLine("Shipping Cost: " + decimalShippingCost.ToString());
+                    }
+
+                    // add VAT after item total + shipping
+                    decimal taxRate = 1.2m;
+                    totalCost = (totalCost * taxRate);
+
+                    quoteReceived = true;
+                    quoteError = "";
+                    productPrice = "£" + totalCost.ToString("0.00");
+                }
+                else
                 {
-                    decimal decimalShippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
-                    totalCost += decimalShippingCost;
-                    //Console.WriteLine("Shipping Cost: " + decimalShippingCost.ToString());
+                    quoteError = "Unfortunately, we could not retrieve a price for this item at the moment";
                 }
-
-                // add VAT after item total + shipping
-                decimal taxRate = 1.2m;
-                totalCost = (totalCost * taxRate);
-
-                quoteReceived = true;
-                quoteError = "";
-                productPrice = "£" + totalCost.ToString("0.00");
             }
             else 
             {
@@ -323,5 +330,18 @@
         await basketState.SaveChangesAsync(); // save to local storage
         basketState.BasketItemCount++;
         snackbar.Add("A new item has been added to your basket", Severity.Success);
+    }
+
+    private bool AnyNulls(CostSummary costSummary)
+    {
+        foreach (object prop in costSummary.GetType().GetProperties())
+        {
+            if (prop is null)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
