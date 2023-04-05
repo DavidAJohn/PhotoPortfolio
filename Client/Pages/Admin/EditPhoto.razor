@@ -52,7 +52,7 @@ else
     <div class="m-4 md:m-8 ">
         <div class="text-2xl mb-8">Products</div>
         <div class="my-4 flex">
-            <MudButton OnClick="OpenProductDialog" Variant="Variant.Filled" Color="Color.Primary">
+            <MudButton OnClick="OpenAddProductDialog" Variant="Variant.Filled" Color="Color.Primary">
                 Add A Product
             </MudButton>
         </div>
@@ -84,8 +84,16 @@ else
                                 }
                             </div>
                         </div>
-                        
-                        <div class="text-sm lg:text-base mt-4">
+
+                        <div class="text-sm lg:text-base mt-4 flex space-x-2 justify-items-start">
+                            <MudButton Variant="Variant.Filled"
+                               StartIcon="@Icons.Material.Filled.EditNote"
+                               Size="Size.Small"
+                               Color="Color.Success"
+                               @onclick="@(() => OpenEditProductDialog(product))"
+                            >
+                                Edit
+                            </MudButton>
                             <MudButton 
                                 Variant="Variant.Filled" 
                                 StartIcon="@Icons.Material.Filled.DeleteForever" 
@@ -107,43 +115,65 @@ else
                 There are currently no products associated with this image
             </div>
         }
-            <MudDialog @bind-IsVisible="visible" Options="dialogOptions">
-                <TitleContent>
-                    <MudText Typo="Typo.h6">
-                        <MudIcon Icon="@Icons.Material.Filled.AddToPhotos" Class="mr-3" /> Add A Product
-                    </MudText>
-                </TitleContent>
-                <DialogContent>
-                    <div class="p-2">
-                        @if (products is not null)
+
+        <MudDialog @bind-IsVisible="addDialogVisible" Options="dialogOptions">
+            <TitleContent>
+                <MudText Typo="Typo.h6">
+                    <MudIcon Icon="@Icons.Material.Filled.AddToPhotos" Class="mr-3" /> Add A Product
+                </MudText>
+            </TitleContent>
+            <DialogContent>
+                <div class="p-2">
+                    @if (products is not null)
+                    {
+                    <EditForm id="@AddProductFormId" Model="@model" OnValidSubmit="OnValidSubmit">
+                        <DataAnnotationsValidator />
+                        <Dropdown DropdownTitle="Select a Product:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
+                        @if (selectedProduct is not null)
                         {
-                        <EditForm id="@ProductFormId" Model="@model" OnValidSubmit="OnValidSubmit">
-                            <DataAnnotationsValidator />
-                            <Dropdown DropdownTitle="Select a Product:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
-                            @if (selectedProduct is not null)
-                            {
-                                <div class="mb-4 text-sm lg:text-base text-slate-800 font-semibold">
-                                    @selectedProduct.ProdigiSku
-                                </div>
-                            }
-                            <MudTextField Label="Description" @bind-Value="model.CustomDescription" For="@(() => model.CustomDescription)" />
-                            <MudTextField Label="Further Details" Class="mt-3" @bind-Value="model.FurtherDetails" For="@(() => model.FurtherDetails)" />
-                            <MudTextField Label="Markup %" Class="mt-3" @bind-Value="model.MarkupPercentage" For="@(() => model.MarkupPercentage)" />
-                        </EditForm>
+                            <div class="mb-4 text-sm lg:text-base text-slate-800 font-semibold">
+                                @selectedProduct.ProdigiSku
+                            </div>
                         }
-                        else
-                        {
-                        <div class="text-sm lg:text-base font-semibold mb-4 text-justify" id="products-dialog-empty">
-                            There are currently no products available to be added to this image
-                        </div>
-                        }
+                        <MudTextField Label="Description" @bind-Value="model.CustomDescription" For="@(() => model.CustomDescription)" />
+                        <MudTextField Label="Further Details" Class="mt-3" @bind-Value="model.FurtherDetails" For="@(() => model.FurtherDetails)" />
+                        <MudTextField Label="Markup %" Class="mt-3" @bind-Value="model.MarkupPercentage" For="@(() => model.MarkupPercentage)" />
+                    </EditForm>
+                    }
+                    else
+                    {
+                    <div class="text-sm lg:text-base font-semibold mb-4 text-justify" id="products-dialog-empty">
+                        There are currently no products available to be added to this image
                     </div>
-                </DialogContent>
-                <DialogActions>
-                    <MudButton Variant="Variant.Filled" Color="Color.Success" Disabled="!formIsValid" ButtonType="ButtonType.Submit" form="@ProductFormId" Class="px-10">Save</MudButton>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-10">Close</MudButton>
-                </DialogActions>
-            </MudDialog>
+                    }
+                </div>
+            </DialogContent>
+            <DialogActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Success" Disabled="!addFormIsValid" ButtonType="ButtonType.Submit" form="@AddProductFormId" Class="px-10">Save</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-10">Close</MudButton>
+            </DialogActions>
+        </MudDialog>
+
+        <MudDialog @bind-IsVisible="editDialogVisible" Options="dialogOptions">
+            <TitleContent>
+                <MudText Typo="Typo.h6">
+                    <MudIcon Icon="@Icons.Material.Filled.EditNote" Class="mr-3" /> Edit Product
+                </MudText>
+            </TitleContent>
+            <DialogContent>
+                <div class="p-2">
+                    <MudPaper Class="mx-2 my-2">
+                        <MudText>@editedProduct.ProdigiDescription</MudText>
+                        <MudText>@editedProduct.CustomDescription</MudText>
+                        <MudTextField Label="Markup Percentage (%)" @bind-Value="editedMarkupPercentage" />
+                    </MudPaper>
+                </div>
+            </DialogContent>
+            <DialogActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => EditProduct(editedMarkupPercentage))" form="@EditProductFormId" Class="px-10">Save</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-10">Close</MudButton>
+            </DialogActions>
+        </MudDialog>
     </div>
 }
 
@@ -154,7 +184,8 @@ else
     Photo photo = new Photo();
     private string errorMessage = "";
 
-    private bool visible = false;
+    private bool addDialogVisible = false;
+    private bool editDialogVisible = false;
     private int rating;
     private DialogOptions dialogOptions = new() { FullWidth = true };
     private List<Product> products = null!;
@@ -163,8 +194,11 @@ else
 
     CreatePhotoProductDto model = new();
     Product selectedProduct = new();
-    private string ProductFormId = "productFormId";
-    private bool formIsValid => selectedProduct.Id != null ? true : false;
+    PhotoProduct editedProduct { get; set; }
+    int editedMarkupPercentage = 100;
+    private string AddProductFormId = "addProductFormId";
+    private string EditProductFormId = "editProductFormId";
+    private bool addFormIsValid => selectedProduct.Id != null ? true : false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -237,9 +271,9 @@ else
         }
     }
 
-    private async Task OpenProductDialog()
+    private async Task OpenAddProductDialog()
     {
-        visible = true;
+        addDialogVisible = true;
 
         // clear the form
         selectedProduct = new();
@@ -248,9 +282,18 @@ else
         await GetAvailableProducts();
     }
 
+    private async Task OpenEditProductDialog(PhotoProduct product)
+    {
+        editDialogVisible = true;
+
+        editedProduct = product;
+        editedMarkupPercentage = product.MarkupPercentage;
+    }
+
     void Close()
     {
-        visible = false;
+        addDialogVisible = false;
+        editDialogVisible = false;
     }
 
     private void SelectedOption(DropdownItem selectedOption)
@@ -261,7 +304,7 @@ else
 
     private async Task OnValidSubmit()
     {
-        var productToAdd = new PhotoProduct()
+        var productToAdd = new PhotoProduct(selectedProduct)
         {
             ProdigiSku = selectedProduct.ProdigiSku,
             ProdigiDescription = selectedProduct.ProdigiDescription,
@@ -278,7 +321,7 @@ else
 
         if (photoUpdated)
         {
-            visible = false;
+            addDialogVisible = false;
             Snackbar.Add($"'{productToAdd.ProdigiSku}' has now been added to this photo", Severity.Success);
         }
         else
@@ -295,12 +338,35 @@ else
 
         if (photoUpdated)
         {
-            visible = false;
+            addDialogVisible = false;
             Snackbar.Add($"'{product.ProdigiSku}' has now been removed from this photo", Severity.Success);
         }
         else
         {
             Snackbar.Add("Sorry, there was a problem removing this product from the photo", Severity.Error);
+        }
+    }
+
+    private async Task EditProduct(int markupPercentage)
+    {
+        var productToUpdate = photo.Products.FirstOrDefault(p => p.ProdigiSku == editedProduct.ProdigiSku) ?? null!;
+        productToUpdate.MarkupPercentage = markupPercentage;
+
+        if (string.IsNullOrEmpty(productToUpdate.Id))
+        {
+            productToUpdate.Id = null!; // photo update does not work if Id == "" - it must be null
+        }
+        
+        var photoUpdated = await adminService.UpdatePhotoAsync(photo);
+
+        if (photoUpdated)
+        {
+            editDialogVisible = false;
+            Snackbar.Add($"'{editedProduct.ProdigiSku}' has now been updated for this photo", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Sorry, there was a problem editing this product", Severity.Error);
         }
     }
 }
