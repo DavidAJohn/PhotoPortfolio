@@ -3,7 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<div class="relative inline-block text-left ">
+<div class="relative inline-block text-left">
     <div class="flex flex-row justify-between items-center cursor-pointer" @onclick="ToggleDropdown">
         <span class="text-white text-sm ">Basket:</span>
         <span class="text-white ml-2">
@@ -26,11 +26,11 @@
     {
         @if (basketItems.Count > 0)
         {
-            <div class="origin-top-right absolute right-0 mt-0 w-112 rounded-md shadow-lg text-slate-500 bg-white focus:outline-none z-10 transition ease-in-out duration-300 @DropdownTransformClass" role="menu" tabindex="-1">
-                <div class="p-4 text-right" role="none">
+            <div class="origin-top-right absolute right-0 mt-0 w-112 rounded-md shadow-lg text-slate-500 bg-white focus:outline-none z-20 transition ease-in-out duration-300 @DropdownTransformClass" role="menu" tabindex="-1">
+                <div class="p-4 mt-2 text-right" role="none">
                     @foreach (BasketItem item in basketItems)
                     {
-                        <div class="font-semibold text-sm flex items-center justify-end">
+                        <div class="font-semibold text-sm mb-2 flex items-center justify-end">
                             @if (!string.IsNullOrEmpty(item.Product.ImageUri))
                             {
                                 <div class="inline-block w-12 h-auto mr-2"><img src="@item.Product.ImageUri" /></div>
@@ -53,10 +53,10 @@
                         </div>
                     }
                 </div>
-                <div class="mt-2 px-4 text-right text-sm font-semibold">
+                <div class="my-2 px-4 text-right text-sm font-semibold">
                     Total:&nbsp; £@basketState.Basket.BasketTotal.ToString("0.00")
                 </div>
-                <div class="mt-2 px-4 text-right">
+                <div class="my-2 px-4 text-right">
                     <button type="button" class="p-2 my-3 bg-slate-800 text-white rounded-sm text-sm hover:opacity-90" @onclick="GoToCheckout">
                         Checkout
                     </button>&nbsp;
