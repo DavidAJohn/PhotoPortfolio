@@ -43,7 +43,7 @@
                                 <div class="mb-0">@item.Product.ImageTitle</div>
                                 <div class="font-medium text-sm">@item.Product.CustomDescription</div>
                             </div>
-                            <div class="ml-4 font-bold">=&nbsp; £@item.Total</div>
+                            <div class="ml-4 font-bold">=&nbsp; £@item.Total.ToString("0.00")</div>
                             <button type="button" class="inline-block ml-2 -mr-1 text-red-800" @onclick="() => DeleteItem(item)">
                                 <!-- heroicons: x-circle (solid) -->
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
@@ -54,7 +54,7 @@
                     }
                 </div>
                 <div class="mt-2 px-4 text-right text-sm font-semibold">
-                    Total:&nbsp; £@basketState.Basket.BasketTotal
+                    Total:&nbsp; £@basketState.Basket.BasketTotal.ToString("0.00")
                 </div>
                 <div class="mt-2 px-4 text-right">
                     <button type="button" class="p-2 my-3 bg-slate-800 text-white rounded-sm text-sm hover:opacity-90" @onclick="GoToCheckout">
