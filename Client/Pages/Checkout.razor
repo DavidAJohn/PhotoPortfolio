@@ -5,10 +5,11 @@
 @using PhotoPortfolio.Shared.Entities;
 @using PhotoPortfolio.Shared.Models;
 @using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
-@using static PhotoPortfolio.Client.Components.Dropdown;
 
 @inject IOrderService orderService;
-@inject IQuoteService quoteService
+@inject IQuoteService quoteService;
+@inject IProductService productService;
+@inject IPhotoService photoService;
 @inject NavigationManager navigationManager;
 
 <div class="h-auto">
@@ -40,7 +41,7 @@
                                             <div class="mb-0">@item.Product.ImageTitle</div>
                                             <div class="font-medium text-sm">@item.Product.CustomDescription</div>
                                         </div>
-                                        <div class="ml-4 font-bold">=&nbsp; £@item.Total</div>
+                                        <div class="ml-4 font-bold">=&nbsp; £@item.Total.ToString("0.00")</div>
                                         <button type="button" class="inline-block ml-2 -mr-1 text-red-800" @onclick="() => DeleteItem(item)">
                                             <!-- heroicons: x-circle (solid) -->
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
@@ -53,7 +54,7 @@
                             <div class="text-sm lg:text-base font-bold flex items-center justify-center mt-4 mb-8 text-slate-500" id="product-price">
                                 <div class="mr-2">Shipping Method:</div>
                                 <div>
-                                    <Dropdown DropdownTitle="@($"{selectedDeliveryOption} Delivery")" DropdownWidth="DropdownWidthOptions.Medium" DropdownItems="deliveryDropdownOptions" SelectedOption="SelectedDeliveryOption" />
+                                    <Dropdown DropdownTitle="@($"{selectedDeliveryOption} Delivery")" DropdownWidth="Dropdown.DropdownWidthOptions.Medium" DropdownItems="deliveryDropdownOptions" SelectedOption="SelectedDeliveryOption" />
                                 </div>
                                 <div class="ml-4">
                                     <svg version="1.1" id="delivery-spinner" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -79,7 +80,7 @@
                             else
                             {
                                 <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
-                                    Total:&nbsp; <span class="inline font-bold">£@basketState.Basket.BasketTotal</span>
+                                    Total:&nbsp; <span class="inline font-bold">£@basketState.Basket.BasketTotal.ToString("0.00")</span>
                                 </div>
                             }
                             <div class="mt-8 flex justify-center">
@@ -218,10 +219,32 @@
 
         foreach (var item in basketItems)
         {
-            var quote = await GetProductQuote(item.Product, deliveryOption.OptionRef);
+            var productId = item.Product.Id;
+            var photoId = item.Product.PhotoId;
+            var photo = await photoService.GetPhotoByIdAsync(photoId);
+
+            var quote = 0m;
+
+            if (photo is not null)
+            {
+                if (photo.Products is not null)
+                {
+                    var product = photo.Products.FirstOrDefault(p => p.Id == productId) ?? null!;
+
+                    if (product is not null)
+                    {
+                        item.Product.MarkupPercentage = product.MarkupPercentage;
+                        quote = await GetProductQuote(item.Product, deliveryOption.OptionRef);
+                    }
+                }
+            }
 
             // if quote received is not 0, then use it
-            if (quote != 0) item.Total = quote;
+            if (quote != 0)
+            {
+                item.Total = quote;
+                await basketState.SaveChangesAsync(); // save to local storage
+            }
         }
 
         DeliverySpinnerVisible = "invisible";
@@ -229,7 +252,7 @@
         selectedDeliveryOption = deliveryOption.OptionRef;
     }
 
-    private async Task<decimal> GetProductQuote(ProductBasketItemDto product, string deliveryOption = "Standard")
+    private async Task<decimal> GetProductQuote(PhotoProduct product, string deliveryOption = "Standard")
     {
         List<CreateQuoteItemDto> items = new();
         List<Dictionary<string, string>> assetList = new();
@@ -262,13 +285,29 @@
 
             if (quoteReturned is not null)
             {
-                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.TotalCost.Amount))
+                var totalCost = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
+
+                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Items.Amount))
                 {
-                    decimal totalCost = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
-                    return totalCost;
+                    totalCost = 0m;
+                    decimal decimalItemsCost = decimal.Parse(quoteReturned.CostSummary.Items.Amount);
+                    totalCost += ((decimalItemsCost * product.MarkupPercentage) / 100);
+                    //Console.WriteLine("markup %: " + product.MarkupPercentage);
+                    //Console.WriteLine("item cost: " + decimalItemsCost);
                 }
 
-                return 0;
+                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Shipping.Amount))
+                {
+                    decimal decimalShippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
+                    totalCost += decimalShippingCost;
+                    //Console.WriteLine("shipping cost: " + decimalShippingCost);
+                }
+
+                // add VAT after item total + shipping
+                decimal taxRate = 1.2m;
+                totalCost = (totalCost * taxRate);
+
+                return totalCost;
             }
             else
             {
@@ -279,6 +318,5 @@
         {
             return 0;
         }
-
     }
 }
