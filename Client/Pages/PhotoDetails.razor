@@ -4,7 +4,6 @@
 @using PhotoPortfolio.Shared.Entities
 @using PhotoPortfolio.Shared.Models
 @using PhotoPortfolio.Shared.Models.Prodigi.Quotes
-@using static PhotoPortfolio.Client.Components.Dropdown;
 
 @inject IPhotoService photoService
 @inject IProductService productService
@@ -42,7 +41,7 @@
                 {
                     <Dropdown DropdownTitle="Available as:" 
                         DropdownItems="dropdownOptions" 
-                        DropdownWidth="DropdownWidthOptions.Large" 
+                        DropdownWidth="Dropdown.DropdownWidthOptions.Large" 
                         DropdownOutline=true 
                         SelectedOption="SelectedOption" />
 
@@ -318,6 +317,7 @@
                 CustomDescription = product.CustomDescription,
                 FurtherDetails = product.FurtherDetails,
                 MockupImageUri = product.MockupImageUri,
+                PhotoId = photo.Id,
                 ImageUri = photo.Uri,
                 ImageTitle = photo.Title
             };
