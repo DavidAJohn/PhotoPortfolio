@@ -153,7 +153,7 @@
     private List<DropdownItem> dropdownOptions = new();
 
     private List<PhotoProduct> products = new();
-    private PhotoProduct product = new();
+    private PhotoProduct product { get; set; }
 
     private string initialInstructionsText = "Choose an option above to see further details, including prices.";
 
@@ -310,7 +310,7 @@
 
     private async Task AddItemToBasket()
     {
-        var productToAdd = new ProductBasketItemDto
+        var productToAdd = new ProductBasketItemDto(product)
             {
                 Id = product.Id,
                 ProdigiSku = product.ProdigiSku,
