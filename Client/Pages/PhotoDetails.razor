@@ -73,10 +73,8 @@
                             @if (quoteReceived && quoteError == "")
                             {
                                 <div class="text-sm lg:text-base font-bold mt-8 text-slate-500" id="product-price">
-                                    <div class="">Price: @productPrice (using Standard Delivery)</div>
-                                    <div class="text-xs mt-4"><span class="text-sm font-bold">Please Note:</span> The total cost of your order may increase or decrease depending on the delivery option you choose when finalising your order on the checkout page.</div>
+                                    <div class="">Price: @productPrice (excluding delivery)</div>
                                 </div>
-
                                 <div class="mt-4 mb-8" id="product-purchase-button">
                                     <button class="flex flex-row justify-start items-center bg-emerald-800 p-2 rounded-sm sm:text-center hover:opacity-90" @onclick="AddItemToBasket">
                                         <span class="text-gray-50 ml-2">
@@ -266,26 +264,32 @@
             {
                 if (AnyNulls(quoteReturned.CostSummary) == false)
                 {
-                    var totalCost = decimal.Parse(quoteReturned.CostSummary.TotalCost!.Amount);
+                    decimal itemsCost = 0m;
+                    decimal shippingCost = 0m;
+                    decimal salesTaxCost = 0m;
 
                     if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Items!.Amount))
                     {
-                        totalCost = 0m;
-                        decimal decimalItemsCost = decimal.Parse(quoteReturned.CostSummary.Items.Amount);
-                        totalCost += ((decimalItemsCost * product.MarkupPercentage) / 100);
-                        //Console.WriteLine("Items Cost: " + decimalItemsCost.ToString());
+                        itemsCost = decimal.Parse(quoteReturned.CostSummary.Items.Amount);
+                        //Console.WriteLine("Items Cost: " + itemsCost.ToString("0.00"));
                     }
 
                     if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Shipping!.Amount))
                     {
-                        decimal decimalShippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
-                        totalCost += decimalShippingCost;
-                        //Console.WriteLine("Shipping Cost: " + decimalShippingCost.ToString());
+                        shippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
+                        //Console.WriteLine("Shipping Cost: " + shippingCost.ToString());
                     }
 
-                    // add VAT after item total + shipping
-                    decimal taxRate = 1.2m;
-                    totalCost = (totalCost * taxRate);
+                    if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.TotalTax!.Amount))
+                    {
+                        salesTaxCost = decimal.Parse(quoteReturned.CostSummary.TotalTax.Amount);
+                        //Console.WriteLine("Sales Tax Cost: " + salesTaxCost.ToString("0.00"));
+                    }
+
+                    decimal salesTaxMultiplier = ((100 / ((itemsCost + shippingCost) / salesTaxCost)) / 100) + 1;
+                    //Console.WriteLine("Sales Tax Multiplier: " + salesTaxRate.ToString("0.00"));
+                    
+                    var totalCost = (((itemsCost * salesTaxMultiplier) * product.MarkupPercentage) / 100);
 
                     quoteReceived = true;
                     quoteError = "";
