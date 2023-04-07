@@ -9,6 +9,7 @@
 @inject IPhotoService photoService
 @inject IAdminService adminService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 @attribute [Authorize]
 
@@ -332,18 +333,31 @@ else
 
     private async Task DeleteProduct(PhotoProduct product)
     {
-        photo.Products?.Remove(product);
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", "Are you sure you want to remove this product from this photo?");
+        parameters.Add("ButtonText", "Yes, Delete It");
+        parameters.Add("Color", Color.Error);
 
-        var photoUpdated = await adminService.UpdatePhotoAsync(photo);
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
 
-        if (photoUpdated)
+        var dialog = DialogService.Show<ConfirmDialog>("Delete", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
         {
-            addDialogVisible = false;
-            Snackbar.Add($"'{product.ProdigiSku}' has now been removed from this photo", Severity.Success);
-        }
-        else
-        {
-            Snackbar.Add("Sorry, there was a problem removing this product from the photo", Severity.Error);
+            photo.Products?.Remove(product);
+
+            var photoUpdated = await adminService.UpdatePhotoAsync(photo);
+
+            if (photoUpdated)
+            {
+                addDialogVisible = false;
+                Snackbar.Add($"'{product.ProdigiSku}' has now been removed from this photo", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Sorry, there was a problem removing this product from the photo", Severity.Error);
+            }
         }
     }
 
