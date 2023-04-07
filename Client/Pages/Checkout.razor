@@ -9,7 +9,6 @@
 @inject IOrderService orderService;
 @inject IQuoteService quoteService;
 @inject IProductService productService;
-@inject IPhotoService photoService;
 @inject NavigationManager navigationManager;
 
 <div class="h-auto">
@@ -28,7 +27,7 @@
                             <div class="p-4 mx-32 text-center">
                                 @foreach (BasketItem item in basketItems)
                                 {
-                                    <div class="font-semibold text-sm md:text-base flex items-center justify-center">
+                                    <div class="font-semibold text-sm mb-2 md:text-base flex items-center justify-center">
                                         @if (!string.IsNullOrEmpty(item.Product.ImageUri))
                                         {
                                             <div class="inline-block w-16 h-auto mr-4"><img src="@item.Product.ImageUri" /></div>
@@ -74,13 +73,19 @@
                             @if (DeliverySpinnerVisible != "invisible")
                             {
                                 <div class="my-2 px-4 flex justify-center text-sm md:text-base font-semibold">
+                                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="150px" Height="33px" />
+                                </div>
+                                <div class="my-2 px-4 flex justify-center text-sm md:text-base font-semibold">
                                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="125px" Height="33px" />
                                 </div>
                             }
                             else
                             {
+                                <div class="my-2 px-4 text-center text-sm md:text-base font-semibold text-slate-500">
+                                    Delivery:&nbsp; <span class="inline font-bold text-slate-500">£@shippingCosts.ToString("0.00")</span>
+                                </div>
                                 <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
-                                    Total:&nbsp; <span class="inline font-bold">£@basketState.Basket.BasketTotal.ToString("0.00")</span>
+                                    Total:&nbsp; <span class="inline font-bold">£@((basketState.Basket.BasketTotal + shippingCosts).ToString("0.00"))</span>
                                 </div>
                             }
                             <div class="mt-8 flex justify-center">
@@ -133,6 +138,8 @@
 
     private List<BasketItem> basketItems { get; set; }
 
+    private decimal shippingCosts = 0m;
+
     private string SubmitSpinnerHidden = "hidden";
     private string DeliverySpinnerVisible = "invisible";
     private bool ShowErrors = false;
@@ -147,6 +154,8 @@
         basketItems = basketState.Basket.BasketItems;
 
         AddDeliveryOptions();
+
+        await GetBasketQuote();
     }
 
     private void AddDeliveryOptions()
@@ -216,43 +225,13 @@
     private async Task SelectedDeliveryOption(DropdownItem deliveryOption)
     {
         DeliverySpinnerVisible = "visible";
-
-        foreach (var item in basketItems)
-        {
-            var productId = item.Product.Id;
-            var photoId = item.Product.PhotoId;
-            var photo = await photoService.GetPhotoByIdAsync(photoId);
-
-            var quote = 0m;
-
-            if (photo is not null)
-            {
-                if (photo.Products is not null)
-                {
-                    var product = photo.Products.FirstOrDefault(p => p.Id == productId) ?? null!;
-
-                    if (product is not null)
-                    {
-                        item.Product.MarkupPercentage = product.MarkupPercentage;
-                        quote = await GetProductQuote(item.Product, deliveryOption.OptionRef);
-                    }
-                }
-            }
-
-            // if quote received is not 0, then use it
-            if (quote != 0)
-            {
-                item.Total = quote;
-                await basketState.SaveChangesAsync(); // save to local storage
-            }
-        }
-
+        await GetBasketQuote(deliveryOption.OptionRef);
         DeliverySpinnerVisible = "invisible";
 
         selectedDeliveryOption = deliveryOption.OptionRef;
     }
 
-    private async Task<decimal> GetProductQuote(PhotoProduct product, string deliveryOption = "Standard")
+    private async Task GetBasketQuote(string deliveryOption = "Standard")
     {
         List<CreateQuoteItemDto> items = new();
         List<Dictionary<string, string>> assetList = new();
@@ -261,12 +240,15 @@
         assets.Add("printArea", "default");
         assetList.Add(assets);
 
-        items.Add(new CreateQuoteItemDto
-            {
-                Sku = product.ProdigiSku,
-                Copies = 1,
-                Assets = assetList
-            });
+        foreach (BasketItem item in basketItems)
+        {
+            items.Add(new CreateQuoteItemDto
+                {
+                    Sku = item.Product.ProdigiSku,
+                    Copies = 1,
+                    Assets = assetList
+                });
+        }
 
         CreateQuoteDto quote = new CreateQuoteDto()
             {
@@ -283,40 +265,18 @@
             var quotes = quoteResponse.Quotes;
             var quoteReturned = quotes.FirstOrDefault();
 
-            if (quoteReturned is not null)
+            if (quoteReturned is not null && quoteReturned.CostSummary is not null)
             {
-                var totalCost = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
+                decimal shippingCost = 0m;
 
-                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Items.Amount))
+                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Shipping!.Amount))
                 {
-                    totalCost = 0m;
-                    decimal decimalItemsCost = decimal.Parse(quoteReturned.CostSummary.Items.Amount);
-                    totalCost += ((decimalItemsCost * product.MarkupPercentage) / 100);
-                    //Console.WriteLine("markup %: " + product.MarkupPercentage);
-                    //Console.WriteLine("item cost: " + decimalItemsCost);
+                    shippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
+                    //Console.WriteLine("Shipping Cost: " + shippingCost.ToString());
                 }
 
-                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Shipping.Amount))
-                {
-                    decimal decimalShippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
-                    totalCost += decimalShippingCost;
-                    //Console.WriteLine("shipping cost: " + decimalShippingCost);
-                }
-
-                // add VAT after item total + shipping
-                decimal taxRate = 1.2m;
-                totalCost = (totalCost * taxRate);
-
-                return totalCost;
+                shippingCosts = shippingCost;
             }
-            else
-            {
-                return 0;
-            }
-        }
-        else 
-        {
-            return 0;
         }
     }
 }
