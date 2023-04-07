@@ -9,6 +9,7 @@
 @inject IOrderService orderService;
 @inject IQuoteService quoteService;
 @inject IProductService productService;
+@inject IPhotoService photoService;
 @inject NavigationManager navigationManager;
 
 <div class="h-auto">
@@ -148,12 +149,12 @@
     private List<DropdownItem> deliveryDropdownOptions = new();
     private string selectedDeliveryOption = "Standard";
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
+        AddDeliveryOptions();
+
         await Task.Run(()=> System.Threading.Thread.Sleep(1)); // forces the page to wait before getting the basket
         basketItems = basketState.Basket.BasketItems;
-
-        AddDeliveryOptions();
 
         await GetBasketQuote();
     }
@@ -276,6 +277,37 @@
                 }
 
                 shippingCosts = shippingCost;
+
+                // also confirm the basket item costs are still correct
+                var quoteItems = quoteReturned.Items;
+
+                foreach (BasketItem item in basketItems)
+                {
+                    var unitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).UnitCost.Amount);
+                    var taxUnitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).TaxUnitCost.Amount);
+                    //Console.WriteLine("Unit Cost: " + unitCost.ToString("0.00"));
+                    //Console.WriteLine("Tax Unit Cost: " + taxUnitCost.ToString("0.00"));
+
+                    var productId = item.Product.Id;
+                    var photoId = item.Product.PhotoId;
+                    var photo = await photoService.GetPhotoByIdAsync(photoId);
+
+                    if (photo is not null)
+                    {
+                        if (photo.Products is not null)
+                        {
+                            var product = photo.Products.FirstOrDefault(p => p.Id == productId) ?? null!;
+
+                            if (product is not null)
+                            {
+                                item.Total = ((unitCost + taxUnitCost) * product.MarkupPercentage) / 100;
+                                Console.WriteLine("Total Cost: " + item.Total.ToString("0.00"));
+
+                                await basketState.SaveChangesAsync();
+                            }
+                        }
+                    }
+                }
             }
         }
     }
