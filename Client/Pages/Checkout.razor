@@ -83,10 +83,10 @@
                             else
                             {
                                 <div class="my-2 px-4 text-center text-sm md:text-base font-semibold text-slate-500">
-                                    Delivery:&nbsp; <span class="inline font-bold text-slate-500">£@shippingCosts.ToString("0.00")</span>
+                                    Delivery:&nbsp; <span class="inline font-bold text-slate-500">£@((basketState.Basket.ShippingCost).ToString("0.00"))</span>
                                 </div>
                                 <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
-                                    Total:&nbsp; <span class="inline font-bold">£@((basketState.Basket.BasketTotal + shippingCosts).ToString("0.00"))</span>
+                                    Total:&nbsp; <span class="inline font-bold">£@((basketState.Basket.BasketTotal).ToString("0.00"))</span>
                                 </div>
                             }
                             <div class="mt-8 flex justify-center">
@@ -139,8 +139,6 @@
 
     private List<BasketItem> basketItems { get; set; }
 
-    private decimal shippingCosts = 0m;
-
     private string SubmitSpinnerHidden = "hidden";
     private string DeliverySpinnerVisible = "invisible";
     private bool ShowErrors = false;
@@ -181,8 +179,18 @@
                 i.Quantity == item.Quantity
             ));
 
-        await basketState.SaveChangesAsync(); // save to local storage
         basketState.BasketItemCount--;
+
+        if (basketState.BasketItemCount > 0)
+        {
+            await GetBasketQuote(selectedDeliveryOption);
+        }
+        else
+        {
+            basketState.Basket.ShippingCost = 0;
+        }
+
+        await basketState.SaveChangesAsync(); // save to local storage
     }
 
     private async Task PlaceOrder()
@@ -276,7 +284,7 @@
                     //Console.WriteLine("Shipping Cost: " + shippingCost.ToString());
                 }
 
-                shippingCosts = shippingCost;
+                basketState.Basket.ShippingCost = shippingCost;
 
                 // also confirm the basket item costs are still correct
                 var quoteItems = quoteReturned.Items;
