@@ -40,13 +40,29 @@ public class PaymentService : IPaymentService
                 }
             },
             Quantity = item.Quantity
-        })); 
+        }));
 
         var options = new SessionCreateOptions
         {
             ShippingAddressCollection = new SessionShippingAddressCollectionOptions
             {
-                AllowedCountries = new List<string>() { "GB", "US" }
+                AllowedCountries = new List<string>() { "GB" }
+            },
+            ShippingOptions = new List<SessionShippingOptionOptions>
+            {
+                new SessionShippingOptionOptions
+                {
+                    ShippingRateData = new SessionShippingOptionShippingRateDataOptions
+                    {
+                        Type = "fixed_amount",
+                        FixedAmount = new SessionShippingOptionShippingRateDataFixedAmountOptions
+                        {
+                            Amount = (long?)(orderBasketDto.ShippingCost * 100),
+                            Currency = "gbp",
+                        },
+                        DisplayName = orderBasketDto.ShippingMethod + " Delivery"
+                    },
+                },
             },
             PaymentMethodTypes = new List<string>
             {

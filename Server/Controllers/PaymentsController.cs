@@ -14,35 +14,26 @@ public class PaymentsController : BaseApiController
     private readonly IPaymentService _paymentService;
     private readonly IOrderService _orderService;
     private readonly IQuoteService _quoteService;
+    private readonly IPhotoRepository _photoRepository;
 
-    public PaymentsController(ILogger<PaymentsController> logger, IConfiguration config, IPaymentService paymentService, IOrderService orderService, IQuoteService quoteService)
+    public PaymentsController(ILogger<PaymentsController> logger, IConfiguration config, IPaymentService paymentService, IOrderService orderService, IQuoteService quoteService, IPhotoRepository photoRepository)
     {
         _logger = logger;
         _config = config;
         _paymentService = paymentService;
         _orderService = orderService;
         _quoteService = quoteService;
+        _photoRepository = photoRepository;
     }
 
     [HttpPost("session")]
     public async Task<IActionResult> CreateCheckoutSession(OrderBasketDto orderBasketDto)
     {
-        // check the price of each basket item
-        foreach (var item in orderBasketDto.BasketItems)
-        {
-            var quote = await GetItemQuote(item, orderBasketDto.ShippingMethod);
-
-            if (quote != item.Total)
-            {
-                _logger.LogWarning("Basket item price differed from quoted price. Basket: {basket} - Quoted: {quote}", item.Total, quote);
-            }
-
-            // if quote received is not 0, then use it
-            if (quote != 0) item.Total = quote;
-        }
+        // check that the basket is still consistent with a quote from Prodigi
+        OrderBasketDto updatedBasket = await GetBasketQuote(orderBasketDto);
 
         // then supply it to the payment service
-        var session = await _paymentService.CreateCheckoutSession(orderBasketDto);
+        var session = await _paymentService.CreateCheckoutSession(updatedBasket);
         var url = session.Url;
 
         return Ok(url);
@@ -178,7 +169,7 @@ public class PaymentsController : BaseApiController
         }
     }
 
-    private async Task<decimal> GetItemQuote(BasketItem basketItem, string shippingMethod)
+    private async Task<OrderBasketDto> GetBasketQuote(OrderBasketDto orderBasketDto)
     {
         List<CreateQuoteItemDto> items = new();
         List<Dictionary<string, string>> assetList = new();
@@ -188,16 +179,19 @@ public class PaymentsController : BaseApiController
         };
         assetList.Add(assets);
 
-        items.Add(new CreateQuoteItemDto
+        foreach (BasketItem item in orderBasketDto.BasketItems)
         {
-            Sku = basketItem.Product.ProdigiSku,
-            Copies = 1,
-            Assets = assetList
-        });
+            items.Add(new CreateQuoteItemDto
+            {
+                Sku = item.Product.ProdigiSku,
+                Copies = 1,
+                Assets = assetList
+            });
+        }
 
         CreateQuoteDto quote = new CreateQuoteDto()
         {
-            ShippingMethod = shippingMethod,
+            ShippingMethod = orderBasketDto.ShippingMethod,
             DestinationCountryCode = "GB",
             CurrencyCode = "GBP",
             Items = items
@@ -212,25 +206,55 @@ public class PaymentsController : BaseApiController
             var quotes = quoteResponse.Quotes;
             var quoteReturned = quotes.FirstOrDefault();
 
-            if (quoteReturned is not null)
+            if (quoteReturned is not null && quoteReturned.CostSummary is not null)
             {
-                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.TotalCost.Amount))
+                decimal shippingCost = 0m;
+
+                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Shipping!.Amount))
                 {
-                    decimal totalCost = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
-                    return totalCost;
+                    shippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
                 }
 
-                return 0;
+                orderBasketDto.ShippingCost = shippingCost;
+
+                // also confirm the basket item costs are still correct
+                var quoteItems = quoteReturned.Items;
+
+                foreach (BasketItem item in orderBasketDto.BasketItems)
+                {
+                    var unitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).UnitCost.Amount);
+                    var taxUnitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).TaxUnitCost.Amount);
+
+                    var productId = item.Product.Id;
+                    var photoId = item.Product.PhotoId;
+                    var photo = await _photoRepository.GetSingleAsync(p => p.Id == photoId);
+
+                    if (photo is not null)
+                    {
+                        if (photo.Products is not null)
+                        {
+                            var product = photo.Products.FirstOrDefault(p => p.Id == productId) ?? null!;
+
+                            if (product is not null)
+                            {
+                                var quoteItemTotal = ((unitCost + taxUnitCost) * product.MarkupPercentage) / 100;
+
+                                if (quoteItemTotal != item.Total)
+                                {
+                                    _logger.LogWarning("Basket item price differed from quoted price. Basket: {basket} - Quoted: {quote}", item.Total, quote);
+                                }
+
+                                item.Total = quoteItemTotal;
+                            }
+                        }
+                    }
+                }
             }
-            else
-            {
-                return 0;
-            }
+
+            return orderBasketDto;
         }
-        else
-        {
-            _logger.LogWarning("Prodigi --> Quote NOT received");
-            return 0;
-        }
+
+        _logger.LogWarning("Prodigi --> Quote NOT received");
+        return null!;
     }
 }
