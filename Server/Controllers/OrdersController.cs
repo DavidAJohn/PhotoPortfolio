@@ -17,7 +17,7 @@ public class OrdersController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> CreateOrder(OrderBasketDto orderBasketDto)
     {
-        var orderId = await _orderService.CreatOrder(orderBasketDto.BasketItems, orderBasketDto.ShippingMethod);
+        var orderId = await _orderService.CreatOrder(orderBasketDto);
 
         if (!string.IsNullOrWhiteSpace(orderId))
         {

@@ -200,7 +200,8 @@
         OrderBasketDto orderBasketDto = new OrderBasketDto()
         {
             BasketItems = basketItems,
-            ShippingMethod = selectedDeliveryOption
+            ShippingMethod = selectedDeliveryOption,
+            ShippingCost = basketState.Basket.ShippingCost
         };
 
         // save initial order to db with items and shipping method

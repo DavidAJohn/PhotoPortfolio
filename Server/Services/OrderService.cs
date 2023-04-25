@@ -20,20 +20,28 @@ public class OrderService : IOrderService
         _config = config;
     }
 
-    public async Task<string> CreatOrder(List<BasketItem> lineItems, string shippingMethod)
+    public async Task<string> CreatOrder(OrderBasketDto orderBasketDto)
     {
-        decimal totalCost = 0;
+        var lineItems = orderBasketDto.BasketItems;
+        var shippingMethod = orderBasketDto.ShippingMethod;
+        var shippingCost = orderBasketDto.ShippingCost;
 
-        foreach(var item in lineItems)
+        decimal itemsCost = 0;
+
+        foreach (var item in lineItems)
         {
-            totalCost += item.Total;
+            itemsCost += item.Total;
         }
+
+        decimal totalCost = itemsCost + shippingCost;
 
         var order = new Order()
         {
             Items = lineItems,
             ShippingMethod = string.IsNullOrWhiteSpace(shippingMethod) ? "" : shippingMethod,
             OrderCreated = BsonDateTime.Create(DateTime.UtcNow),
+            ItemsCost = (BsonDecimal128)itemsCost,
+            ShippingCost = (BsonDecimal128)shippingCost,
             TotalCost = (BsonDecimal128)totalCost
         };
 
@@ -76,6 +84,8 @@ public class OrderService : IOrderService
                 OrderCreated = existingOrder.OrderCreated,
                 PaymentCompleted = BsonDateTime.Create(DateTime.UtcNow),
                 Items = existingOrder.Items,
+                ItemsCost = existingOrder.ItemsCost,
+                ShippingCost = existingOrder.ShippingCost,
                 TotalCost = existingOrder.TotalCost,
                 Address = address,
                 ShippingMethod = existingOrder.ShippingMethod,

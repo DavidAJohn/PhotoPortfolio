@@ -6,7 +6,7 @@ namespace PhotoPortfolio.Server.Contracts;
 
 public interface IOrderService
 {
-    Task<string> CreatOrder(List<BasketItem> lineItems, string shippingMethod);
+    Task<string> CreatOrder(OrderBasketDto orderBasketDto);
 
     Task<bool> UpdateOrder(
         string orderId,
