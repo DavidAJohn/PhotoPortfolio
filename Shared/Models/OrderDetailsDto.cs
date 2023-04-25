@@ -11,6 +11,7 @@ public class OrderDetailsDto : BaseEntity
     public string EmailAddress { get; set; }
     public DateTime OrderDate { get; set; }
     public List<BasketItem> Items { get; set; }
+    public decimal ShippingCost { get; set; }
     public decimal TotalCost { get; set; }
     public Address Address { get; set; }
     public string ShippingMethod { get; set; }

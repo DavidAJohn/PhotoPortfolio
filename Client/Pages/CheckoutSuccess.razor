@@ -47,8 +47,11 @@
                                 <div class="ml-4 font-bold">=&nbsp; £@item.Total</div>
                             </div>
                         }
+                        <div class="my-2 px-4 text-center text-sm md:text-base font-semibold text-slate-500">
+                            Delivery:&nbsp; <span class="inline font-bold text-slate-500">£@order.ShippingCost.ToString("0.00")</span>
+                        </div>
                         <div class="my-2 px-4 text-center text-sm md:text-base font-semibold">
-                            Total:&nbsp; <span class="inline font-bold">£@order.TotalCost</span>
+                            Total:&nbsp; <span class="inline font-bold">£@order.TotalCost.ToString("0.00")</span>
                         </div>
                     }
                 </div>
@@ -113,6 +116,7 @@
         basketState.Basket.BasketItems.Clear();
         await basketState.SaveChangesAsync(); // update local storage
         basketState.BasketItemCount = 0;
+        basketState.Basket.ShippingCost = 0;
     }
 
     private async Task GetOrderDetails()
