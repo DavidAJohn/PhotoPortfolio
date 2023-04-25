@@ -144,6 +144,9 @@
     [CascadingParameter]
     public BasketState basketState { get; set; }
 
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
     private Photo photo = null!;
     private string errorMessage = "";
 
@@ -288,8 +291,17 @@
 
                     decimal salesTaxMultiplier = ((100 / ((itemsCost + shippingCost) / salesTaxCost)) / 100) + 1;
                     //Console.WriteLine("Sales Tax Multiplier: " + salesTaxRate.ToString("0.00"));
-                    
-                    var totalCost = (((itemsCost * salesTaxMultiplier) * product.MarkupPercentage) / 100);
+
+                    int markupPercentage = product.MarkupPercentage;
+                    var authUser = await GetAuthUser();
+
+                    if (authUser != "")
+                    {
+                        //Console.WriteLine($"User '{authUser}' is authenticated - no markup % applied");
+                        markupPercentage = 100;
+                    }
+
+                    var totalCost = (((itemsCost * salesTaxMultiplier) * markupPercentage) / 100);
 
                     quoteReceived = true;
                     quoteError = "";
@@ -347,5 +359,26 @@
         }
 
         return false;
+    }
+
+    private async Task<string> GetAuthUser()
+    {
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user is not null)
+            {
+                if (user.Identity is not null && user.Identity.IsAuthenticated)
+                {
+                    return user.Identity.Name ?? "";
+                }
+
+                return "";
+            }
+        }
+
+        return "";
     }
 }
