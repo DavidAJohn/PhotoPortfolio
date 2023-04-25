@@ -282,7 +282,6 @@
                 if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Shipping!.Amount))
                 {
                     shippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
-                    //Console.WriteLine("Shipping Cost: " + shippingCost.ToString());
                 }
 
                 basketState.Basket.ShippingCost = shippingCost;
@@ -294,8 +293,6 @@
                 {
                     var unitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).UnitCost.Amount);
                     var taxUnitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).TaxUnitCost.Amount);
-                    //Console.WriteLine("Unit Cost: " + unitCost.ToString("0.00"));
-                    //Console.WriteLine("Tax Unit Cost: " + taxUnitCost.ToString("0.00"));
 
                     var productId = item.Product.Id;
                     var photoId = item.Product.PhotoId;
