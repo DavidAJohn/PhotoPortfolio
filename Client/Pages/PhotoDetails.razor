@@ -292,14 +292,7 @@
                     decimal salesTaxMultiplier = ((100 / ((itemsCost + shippingCost) / salesTaxCost)) / 100) + 1;
                     //Console.WriteLine("Sales Tax Multiplier: " + salesTaxRate.ToString("0.00"));
 
-                    int markupPercentage = product.MarkupPercentage;
-                    var authUser = await GetAuthUser();
-
-                    if (authUser != "")
-                    {
-                        //Console.WriteLine($"User '{authUser}' is authenticated - no markup % applied");
-                        markupPercentage = 100;
-                    }
+                    int markupPercentage = await GetMarkupPercentage(product);
 
                     var totalCost = (((itemsCost * salesTaxMultiplier) * markupPercentage) / 100);
 
@@ -361,8 +354,10 @@
         return false;
     }
 
-    private async Task<string> GetAuthUser()
+    private async Task<int> GetMarkupPercentage(PhotoProduct product)
     {
+        int markupPercentage = product.MarkupPercentage;
+
         if (authenticationState is not null)
         {
             var authState = await authenticationState;
@@ -372,13 +367,15 @@
             {
                 if (user.Identity is not null && user.Identity.IsAuthenticated)
                 {
-                    return user.Identity.Name ?? "";
+                    // Console.WriteLine($"User '{authUser}' is authenticated - no markup % applied");
+                    // This application uses Azure AD with one admin user, but additionally perhaps a role could be checked
+                    markupPercentage = 100;
                 }
 
-                return "";
+                return markupPercentage;
             }
         }
 
-        return "";
+        return markupPercentage;
     }
 }
