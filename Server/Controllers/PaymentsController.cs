@@ -32,6 +32,15 @@ public class PaymentsController : BaseApiController
         // check that the basket is still consistent with a quote from Prodigi
         OrderBasketDto updatedBasket = await GetBasketQuote(orderBasketDto);
 
+        // update the order in the database, in case values have been changed
+        var updateCostsResponse = await _orderService.UpdateOrderCosts(updatedBasket);
+
+        if (updateCostsResponse == false)
+        {
+            _logger.LogError("Problem updating order costs in OrderId : {orderId}", orderBasketDto.OrderId);
+            return BadRequest();
+        }
+
         // then supply it to the payment service
         var session = await _paymentService.CreateCheckoutSession(updatedBasket);
         var url = session.Url;
@@ -241,7 +250,7 @@ public class PaymentsController : BaseApiController
 
                                 if (quoteItemTotal != item.Total)
                                 {
-                                    _logger.LogWarning("Basket item price differed from quoted price. Basket: {basket} - Quoted: {quote}", item.Total, quote);
+                                    _logger.LogWarning("Basket item price differed from quoted price. OrderId: {orderId} -> Basket Price: {basket} - Quoted Price: {quote}", orderBasketDto.OrderId, item.Total, quoteItemTotal);
                                 }
 
                                 item.Total = quoteItemTotal;

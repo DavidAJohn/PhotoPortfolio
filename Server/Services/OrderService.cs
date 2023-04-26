@@ -104,6 +104,37 @@ public class OrderService : IOrderService
         return false;
     }
 
+    public async Task<bool> UpdateOrderCosts(OrderBasketDto orderBasketDto)
+    {
+        var existingOrder = await _orderRepository.GetSingleAsync(o => o.Id == orderBasketDto.OrderId);
+
+        if (existingOrder != null)
+        {
+            decimal itemsCost = orderBasketDto.BasketItems.Sum(x => x.Total);
+            decimal totalCost = itemsCost + orderBasketDto.ShippingCost;
+
+            var order = new Order()
+            {
+                Id = existingOrder.Id,
+                OrderCreated = existingOrder.OrderCreated,
+                Items = orderBasketDto.BasketItems,
+                ItemsCost = (BsonDecimal128)itemsCost,
+                ShippingCost = (BsonDecimal128)orderBasketDto.ShippingCost,
+                TotalCost = (BsonDecimal128)totalCost,
+                ShippingMethod = orderBasketDto.ShippingMethod,
+                Status = existingOrder.Status
+            };
+
+            var response = await _orderRepository.UpdateAsync(order);
+
+            if (response != null) return true;
+
+            return false;
+        };
+
+        return false;
+    }
+
     public async Task<OrderDetailsDto> GetOrderDetailsFromId(string orderId)
     {
         var order = await _orderRepository.GetSingleAsync(o => o.Id == orderId);

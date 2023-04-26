@@ -16,6 +16,8 @@ public interface IOrderService
         string paymentIntentId
     );
 
+    Task<bool> UpdateOrderCosts(OrderBasketDto orderBasketDto);
+
     Task<OrderDetailsDto> GetOrderDetailsFromId(string orderId);
     Task<List<OrderDetailsDto>> GetOrderDetails(OrderSpecificationParams? orderParams = null!);
     Task<bool> ShouldApproveOrder(string orderId);
