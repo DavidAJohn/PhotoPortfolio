@@ -137,6 +137,9 @@
     [CascadingParameter]
     public BasketState basketState { get; set; }
 
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
     private List<BasketItem> basketItems { get; set; }
 
     private string SubmitSpinnerHidden = "hidden";
@@ -306,8 +309,8 @@
 
                             if (product is not null)
                             {
-                                item.Total = ((unitCost + taxUnitCost) * product.MarkupPercentage) / 100;
-                                Console.WriteLine("Total Cost: " + item.Total.ToString("0.00"));
+                                int markupPercentage = await GetMarkupPercentage(product);
+                                item.Total = ((unitCost + taxUnitCost) * markupPercentage) / 100;
 
                                 await basketState.SaveChangesAsync();
                             }
@@ -316,5 +319,28 @@
                 }
             }
         }
+    }
+
+    private async Task<int> GetMarkupPercentage(PhotoProduct product)
+    {
+        int markupPercentage = product.MarkupPercentage;
+
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user is not null)
+            {
+                if (user.Identity is not null && user.Identity.IsAuthenticated)
+                {
+                    markupPercentage = 100;
+                }
+
+                return markupPercentage;
+            }
+        }
+
+        return markupPercentage;
     }
 }
