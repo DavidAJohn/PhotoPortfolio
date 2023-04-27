@@ -54,6 +54,9 @@
                     }
                 </div>
                 <div class="my-2 px-4 text-right text-sm font-semibold">
+                    Delivery:&nbsp; <span class="inline font-bold">£@((basketState.Basket.ShippingCost).ToString("0.00"))</span>
+                </div>
+                <div class="my-2 px-4 text-right text-sm font-semibold text-slate-800">
                     Total:&nbsp; £@basketState.Basket.BasketTotal.ToString("0.00")
                 </div>
                 <div class="my-2 px-4 text-right">
