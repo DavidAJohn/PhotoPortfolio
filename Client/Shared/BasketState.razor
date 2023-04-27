@@ -37,6 +37,8 @@
             {
                 // Expired. Create a new Basket.
                 Basket = new Basket();
+                await localStorage.SetItemAsync("PhotoPortfolio_Basket", Basket);
+                await InvokeAsync(StateHasChanged);
             }
         }
 
