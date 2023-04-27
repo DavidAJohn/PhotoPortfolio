@@ -24,7 +24,7 @@ public class AdminService : IAdminService
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var galleries = await client.GetFromJsonAsync<List<Gallery>>("galleries");
+            var galleries = await client.GetFromJsonAsync<List<Gallery>>("admin/galleries");
 
             if (galleries is null) return null!;
 
@@ -41,7 +41,7 @@ public class AdminService : IAdminService
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var gallery = await client.GetFromJsonAsync<Gallery>($"galleries/{galleryId}");
+            var gallery = await client.GetFromJsonAsync<Gallery>($"admin/galleries/{galleryId}");
 
             if (gallery is null) return null!;
 
@@ -64,7 +64,7 @@ public class AdminService : IAdminService
             HttpContent galleryJson = new StringContent(JsonSerializer.Serialize(gallery));
             galleryJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpResponseMessage response = await client.PutAsync($"galleries/{gallery.Id}", galleryJson);
+            HttpResponseMessage response = await client.PutAsync($"admin/galleries/{gallery.Id}", galleryJson);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
             {
@@ -88,7 +88,7 @@ public class AdminService : IAdminService
             HttpContent galleryJson = new StringContent(JsonSerializer.Serialize(gallery));
             galleryJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpResponseMessage response = await client.PostAsync($"galleries", galleryJson);
+            HttpResponseMessage response = await client.PostAsync($"admin/galleries", galleryJson);
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
@@ -112,7 +112,7 @@ public class AdminService : IAdminService
             HttpContent photoJson = new StringContent(JsonSerializer.Serialize(photo));
             photoJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpResponseMessage response = await client.PostAsync($"photos", photoJson);
+            HttpResponseMessage response = await client.PostAsync($"admin/photos", photoJson);
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
@@ -136,7 +136,7 @@ public class AdminService : IAdminService
             HttpContent photoJson = new StringContent(JsonSerializer.Serialize(photo));
             photoJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpResponseMessage response = await client.PutAsync($"photos/{photo.Id}", photoJson);
+            HttpResponseMessage response = await client.PutAsync($"admin/photos/{photo.Id}", photoJson);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
             {
@@ -156,7 +156,7 @@ public class AdminService : IAdminService
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var response = await client.PostAsync("uploads", content);
+            var response = await client.PostAsync("admin/uploads", content);
 
             var newUploadResults = await response.Content.ReadFromJsonAsync<List<UploadResult>>();
 
@@ -178,7 +178,7 @@ public class AdminService : IAdminService
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var products = await client.GetFromJsonAsync<List<Product>>("products");
+            var products = await client.GetFromJsonAsync<List<Product>>("admin/products");
 
             if (products is null) return null!;
 
@@ -195,7 +195,7 @@ public class AdminService : IAdminService
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var product = await client.GetFromJsonAsync<Product>($"products/{productId}");
+            var product = await client.GetFromJsonAsync<Product>($"admin/products/{productId}");
 
             if (product is null) return null!;
 
@@ -216,7 +216,7 @@ public class AdminService : IAdminService
             HttpContent productJson = new StringContent(JsonSerializer.Serialize(product));
             productJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpResponseMessage response = await client.PostAsync("products", productJson);
+            HttpResponseMessage response = await client.PostAsync("admin/products", productJson);
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
@@ -244,7 +244,7 @@ public class AdminService : IAdminService
             HttpContent productJson = new StringContent(JsonSerializer.Serialize(product));
             productJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpResponseMessage response = await client.PutAsync("products", productJson);
+            HttpResponseMessage response = await client.PutAsync("admin/products", productJson);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
             {
@@ -264,7 +264,7 @@ public class AdminService : IAdminService
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var prefs = await client.GetFromJsonAsync<Preferences>("preferences");
+            var prefs = await client.GetFromJsonAsync<Preferences>("admin/preferences");
 
             if (prefs is null) return null!;
 
@@ -285,7 +285,7 @@ public class AdminService : IAdminService
             HttpContent prefsJson = new StringContent(JsonSerializer.Serialize(prefs));
             prefsJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            HttpResponseMessage response = await client.PutAsync("preferences", prefsJson);
+            HttpResponseMessage response = await client.PutAsync("admin/preferences", prefsJson);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
             {
@@ -332,11 +332,11 @@ public class AdminService : IAdminService
 
                 queryStringParams.Add("inLastNumberOfDays", orderParams.InLastNumberOfDays.ToString());
 
-                request = new HttpRequestMessage(HttpMethod.Get, QueryHelpers.AddQueryString("orders", queryStringParams));
+                request = new HttpRequestMessage(HttpMethod.Get, QueryHelpers.AddQueryString("admin/orders", queryStringParams));
             }
             else
             {
-                request = new HttpRequestMessage(HttpMethod.Get, "orders");
+                request = new HttpRequestMessage(HttpMethod.Get, "admin/orders");
             }
 
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");

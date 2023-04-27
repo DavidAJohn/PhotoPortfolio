@@ -27,9 +27,9 @@ builder.Services.AddHttpClient("Prodigi.PrintAPI", client => client.BaseAddress 
     .AddPolicyHandler(GetRetryPolicy())
     .AddPolicyHandler(GetCircuitBreakerPolicy());
 
-// Supply HttpClient instances that include access tokens when making requests to the Server project's admin controller
+// Supply HttpClient instances that include access tokens when making requests to the Server project
 builder.Services.AddHttpClient("PhotoPortfolio.ServerAPI.Secure", client =>
-    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress + "api/admin/"))
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress + "api/"))
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
