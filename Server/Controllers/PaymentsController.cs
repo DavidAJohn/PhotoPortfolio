@@ -271,11 +271,25 @@ public class PaymentsController : BaseApiController
     private int GetMarkupPercentage(PhotoProduct product)
     {
         int markupPercentage = product.MarkupPercentage;
+        var adminUserName = _config["AdminUserName"];
 
         if (User?.Identity is not null && User.Identity.IsAuthenticated)
         {
-            Console.WriteLine($"User: {User.Identity.Name}");
-            markupPercentage = 100;
+            if (!string.IsNullOrWhiteSpace(adminUserName))
+            {
+                if (adminUserName != User.Identity.Name)
+                {
+                    markupPercentage = product.MarkupPercentage;
+                }
+                else
+                {
+                    markupPercentage = 100;
+                }
+            }
+            else
+            {
+                markupPercentage = 100;
+            }
         }
 
         return markupPercentage;
