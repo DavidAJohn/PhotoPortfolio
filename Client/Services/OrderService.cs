@@ -43,11 +43,11 @@ public class OrderService : IOrderService
         }
     }
 
-    public async Task<string> CreateCheckoutSession(OrderBasketDto orderBasketDto)
+    public async Task<string> CreateCheckoutSession(OrderBasketDto orderBasketDto, bool userIsAdmin)
     {
         try
         {
-            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI");
+            var client = _httpClient.CreateClient(userIsAdmin ? "PhotoPortfolio.ServerAPI.Secure" : "PhotoPortfolio.ServerAPI");
 
             HttpContent basketJson = new StringContent(JsonSerializer.Serialize(orderBasketDto));
             basketJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");

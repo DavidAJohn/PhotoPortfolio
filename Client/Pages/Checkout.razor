@@ -214,7 +214,8 @@
         {
             orderBasketDto.OrderId = orderId;
 
-            var checkoutUrl = await orderService.CreateCheckoutSession(orderBasketDto);
+            var isUserAuthenticated = await IsUserAuthenticated();
+            var checkoutUrl = await orderService.CreateCheckoutSession(orderBasketDto, isUserAuthenticated);
 
             if (!string.IsNullOrEmpty(checkoutUrl))
             {
@@ -342,5 +343,23 @@
         }
 
         return markupPercentage;
+    }
+
+    private async Task<bool> IsUserAuthenticated()
+    {
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user?.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
     }
 }

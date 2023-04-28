@@ -40,7 +40,7 @@ public class PaymentsController : BaseApiController
             _logger.LogError("Problem updating order costs in OrderId : {orderId}", orderBasketDto.OrderId);
             return BadRequest();
         }
-
+        
         // then supply it to the payment service
         var session = await _paymentService.CreateCheckoutSession(updatedBasket);
         var url = session.Url;
@@ -246,7 +246,8 @@ public class PaymentsController : BaseApiController
 
                             if (product is not null)
                             {
-                                var quoteItemTotal = ((unitCost + taxUnitCost) * product.MarkupPercentage) / 100;
+                                var markupPercentage = GetMarkupPercentage(product);
+                                var quoteItemTotal = ((unitCost + taxUnitCost) * markupPercentage) / 100;
 
                                 if (quoteItemTotal != item.Total)
                                 {
@@ -265,5 +266,18 @@ public class PaymentsController : BaseApiController
 
         _logger.LogWarning("Prodigi --> Quote NOT received");
         return null!;
+    }
+
+    private int GetMarkupPercentage(PhotoProduct product)
+    {
+        int markupPercentage = product.MarkupPercentage;
+
+        if (User?.Identity is not null && User.Identity.IsAuthenticated)
+        {
+            Console.WriteLine($"User: {User.Identity.Name}");
+            markupPercentage = 100;
+        }
+
+        return markupPercentage;
     }
 }
