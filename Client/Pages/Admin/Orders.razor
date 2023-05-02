@@ -140,7 +140,7 @@ else
                                                 </div>
                                             </div>
                                         }
-                                        <div class="mb-4 font-semibold">Shipping Method:&nbsp;<span class="font-medium">@order.ShippingMethod</span></div>
+                                        <div class="mb-4 font-semibold">Shipping Method:&nbsp;<span class="font-medium">@order.ShippingMethod Delivery (Cost: £@order.ShippingCost.ToString("0.00"))</span></div>
                                         <div class="font-semibold text-sm md:text-base flex items-center">
                                             @if (!string.IsNullOrEmpty(item.Product.ImageUri))
                                             {
