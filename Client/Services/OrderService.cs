@@ -37,9 +37,9 @@ public class OrderService : IOrderService
 
             return null!;
         }
-        catch (HttpRequestException ex)
+        catch
         {
-            throw new HttpRequestException(ex.Message);
+            return null!;
         }
     }
 
@@ -64,9 +64,9 @@ public class OrderService : IOrderService
 
             return null!;
         }
-        catch (HttpRequestException ex)
+        catch
         {
-            throw new HttpRequestException(ex.Message);
+            return null!;
         }
     }
 
@@ -88,9 +88,9 @@ public class OrderService : IOrderService
 
             return null!;
         }
-        catch (HttpRequestException ex)
+        catch
         {
-            throw new HttpRequestException(ex.Message);
+            return null!;
         }
     }
 
@@ -105,9 +105,9 @@ public class OrderService : IOrderService
 
             return order;
         }
-        catch (HttpRequestException ex)
+        catch
         {
-            throw new HttpRequestException(ex.Message);
+            return null!;
         }
     }
 
@@ -130,9 +130,9 @@ public class OrderService : IOrderService
 
             return false;
         }
-        catch (HttpRequestException ex)
+        catch
         {
-            throw new HttpRequestException(ex.Message);
+            return false;
         }
     }
 }
