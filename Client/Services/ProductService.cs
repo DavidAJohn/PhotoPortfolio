@@ -24,9 +24,9 @@ namespace PhotoPortfolio.Client.Services
 
                 return products;
             }
-            catch (HttpRequestException ex)
-            {
-                throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+            catch 
+            { 
+                return null!; 
             }
         }
     }

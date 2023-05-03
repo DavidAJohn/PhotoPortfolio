@@ -52,9 +52,9 @@ public class QuoteService : IQuoteService
 
             return null!;
         }
-        catch (HttpRequestException ex)
+        catch
         {
-            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+            return null!;
         }
     }
 }

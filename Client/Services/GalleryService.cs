@@ -24,9 +24,9 @@ public class GalleryService : IGalleryService
 
             return galleries;
         }
-        catch (HttpRequestException ex)
+        catch
         {
-            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+            return null!;
         }
     }
 
@@ -41,9 +41,9 @@ public class GalleryService : IGalleryService
 
             return gallery;
         }
-        catch (HttpRequestException ex)
+        catch
         {
-            throw new HttpRequestException(ex.Message);
+            return null!;
         }
     }
 }

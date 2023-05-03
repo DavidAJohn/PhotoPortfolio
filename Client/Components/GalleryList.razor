@@ -61,7 +61,15 @@ else
         try
         {
             galleries = await galleryService.GetGalleriesAsync();
-            errorMessage = "";
+
+            if (galleries is not null)
+            {
+                errorMessage = "";
+            }
+            else
+            {
+                errorMessage = "Could not retrieve list of galleries";
+            }
         }
         catch (Exception ex)
         {
