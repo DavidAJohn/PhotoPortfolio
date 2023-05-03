@@ -43,6 +43,8 @@ public class PaymentsController : BaseApiController
         
         // then supply it to the payment service
         var session = await _paymentService.CreateCheckoutSession(updatedBasket);
+
+        if (session == null) return BadRequest();
         var url = session.Url;
 
         return Ok(url);
