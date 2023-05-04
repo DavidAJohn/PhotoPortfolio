@@ -12,12 +12,14 @@ public class OrderService : IOrderService
     private readonly IOrderRepository _orderRepository;
     private readonly IPreferencesRepository _preferencesRepository;
     private readonly IConfiguration _config;
+    private readonly ILogger<OrderService> _logger;
 
-    public OrderService(IOrderRepository orderRepository, IPreferencesRepository preferencesRepository, IConfiguration config)
+    public OrderService(IOrderRepository orderRepository, IPreferencesRepository preferencesRepository, IConfiguration config, ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
         _preferencesRepository = preferencesRepository;
         _config = config;
+        _logger = logger;
     }
 
     public async Task<string> CreatOrder(OrderBasketDto orderBasketDto)
@@ -35,22 +37,30 @@ public class OrderService : IOrderService
 
         decimal totalCost = itemsCost + shippingCost;
 
-        var order = new Order()
+        try
         {
-            Items = lineItems,
-            ShippingMethod = string.IsNullOrWhiteSpace(shippingMethod) ? "" : shippingMethod,
-            OrderCreated = BsonDateTime.Create(DateTime.UtcNow),
-            ItemsCost = (BsonDecimal128)itemsCost,
-            ShippingCost = (BsonDecimal128)shippingCost,
-            TotalCost = (BsonDecimal128)totalCost
-        };
+            var order = new Order()
+            {
+                Items = lineItems,
+                ShippingMethod = string.IsNullOrWhiteSpace(shippingMethod) ? "" : shippingMethod,
+                OrderCreated = BsonDateTime.Create(DateTime.UtcNow),
+                ItemsCost = (BsonDecimal128)itemsCost,
+                ShippingCost = (BsonDecimal128)shippingCost,
+                TotalCost = (BsonDecimal128)totalCost
+            };
 
-        // save to db
-        var newOrder = await _orderRepository.AddAsync(order);
+            // save to db
+            var newOrder = await _orderRepository.AddAsync(order);
 
-        if (newOrder is null) return "";
+            if (newOrder is null) return "";
 
-        return newOrder.Id;
+            return newOrder.Id;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error when creating Order: {message}", ex.Message);
+            return "";
+        }
     }
 
     public async Task<bool> UpdateOrder(
@@ -61,102 +71,127 @@ public class OrderService : IOrderService
         string paymentIntentId
         )
     {
-        var address = new Prodigi.Address()
+        try
         {
-            Line1 = shippingDetails.Address.Line1,
-            Line2 =  string.IsNullOrWhiteSpace(shippingDetails.Address.Line2) ? "" : shippingDetails.Address.Line2,
-            PostalOrZipCode = shippingDetails.Address.PostalCode,
-            CountryCode = shippingDetails.Address.Country,
-            TownOrCity = shippingDetails.Address.City,
-            StateOrCounty = string.IsNullOrWhiteSpace(shippingDetails.Address.State) ? "" : shippingDetails.Address.State
-        };
-
-        // get existing order details
-        var existingOrder = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
-
-        if (existingOrder != null)
-        {
-            var order = new Order()
+            var address = new Prodigi.Address()
             {
-                Id = orderId,
-                Name = customer.Name,
-                EmailAddress = customer.EmailAddress,
-                OrderCreated = existingOrder.OrderCreated,
-                PaymentCompleted = BsonDateTime.Create(DateTime.UtcNow),
-                Items = existingOrder.Items,
-                ItemsCost = existingOrder.ItemsCost,
-                ShippingCost = existingOrder.ShippingCost,
-                TotalCost = existingOrder.TotalCost,
-                Address = address,
-                ShippingMethod = existingOrder.ShippingMethod,
-                StripePaymentIntentId = paymentIntentId,
-                Status = OrderStatus.AwaitingApproval
+                Line1 = shippingDetails.Address.Line1,
+                Line2 = string.IsNullOrWhiteSpace(shippingDetails.Address.Line2) ? "" : shippingDetails.Address.Line2,
+                PostalOrZipCode = shippingDetails.Address.PostalCode,
+                CountryCode = shippingDetails.Address.Country,
+                TownOrCity = shippingDetails.Address.City,
+                StateOrCounty = string.IsNullOrWhiteSpace(shippingDetails.Address.State) ? "" : shippingDetails.Address.State
             };
 
-            // update order with new details sent from Stripe
-            var response = await _orderRepository.UpdateAsync(order);
+            // get existing order details
+            var existingOrder = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
 
-            if (response != null) return true;
+            if (existingOrder != null)
+            {
+                var order = new Order()
+                {
+                    Id = orderId,
+                    Name = customer.Name,
+                    EmailAddress = customer.EmailAddress,
+                    OrderCreated = existingOrder.OrderCreated,
+                    PaymentCompleted = BsonDateTime.Create(DateTime.UtcNow),
+                    Items = existingOrder.Items,
+                    ItemsCost = existingOrder.ItemsCost,
+                    ShippingCost = existingOrder.ShippingCost,
+                    TotalCost = existingOrder.TotalCost,
+                    Address = address,
+                    ShippingMethod = existingOrder.ShippingMethod,
+                    StripePaymentIntentId = paymentIntentId,
+                    Status = OrderStatus.AwaitingApproval
+                };
 
+                // update order with new details sent from Stripe
+                var response = await _orderRepository.UpdateAsync(order);
+
+                if (response != null) return true;
+
+                return false;
+            };
+
+            _logger.LogWarning("Error when updating Order - unable to find existing order: {orderId}", orderId);
             return false;
-        };
-
-        return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error when updating Order Id ({orderId}): {message}", orderId, ex.Message);
+            return false;
+        }
     }
 
     public async Task<bool> UpdateOrderCosts(OrderBasketDto orderBasketDto)
     {
-        var existingOrder = await _orderRepository.GetSingleAsync(o => o.Id == orderBasketDto.OrderId);
-
-        if (existingOrder != null)
+        try
         {
-            decimal itemsCost = orderBasketDto.BasketItems.Sum(x => x.Total);
-            decimal totalCost = itemsCost + orderBasketDto.ShippingCost;
+            var existingOrder = await _orderRepository.GetSingleAsync(o => o.Id == orderBasketDto.OrderId);
 
-            var order = new Order()
+            if (existingOrder != null)
             {
-                Id = existingOrder.Id,
-                OrderCreated = existingOrder.OrderCreated,
-                Items = orderBasketDto.BasketItems,
-                ItemsCost = (BsonDecimal128)itemsCost,
-                ShippingCost = (BsonDecimal128)orderBasketDto.ShippingCost,
-                TotalCost = (BsonDecimal128)totalCost,
-                ShippingMethod = orderBasketDto.ShippingMethod,
-                Status = existingOrder.Status
+                decimal itemsCost = orderBasketDto.BasketItems.Sum(x => x.Total);
+                decimal totalCost = itemsCost + orderBasketDto.ShippingCost;
+
+                var order = new Order()
+                {
+                    Id = existingOrder.Id,
+                    OrderCreated = existingOrder.OrderCreated,
+                    Items = orderBasketDto.BasketItems,
+                    ItemsCost = (BsonDecimal128)itemsCost,
+                    ShippingCost = (BsonDecimal128)orderBasketDto.ShippingCost,
+                    TotalCost = (BsonDecimal128)totalCost,
+                    ShippingMethod = orderBasketDto.ShippingMethod,
+                    Status = existingOrder.Status
+                };
+
+                var response = await _orderRepository.UpdateAsync(order);
+
+                if (response != null) return true;
+
+                return false;
             };
 
-            var response = await _orderRepository.UpdateAsync(order);
-
-            if (response != null) return true;
-
             return false;
-        };
-
-        return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error when updating Order costs, Id ({orderId}): {message}", orderBasketDto.OrderId, ex.Message);
+            return false;
+        }
     }
 
     public async Task<OrderDetailsDto> GetOrderDetailsFromId(string orderId)
     {
-        var order = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
-
-        if (order is null) return null!;
-
-        var orderDetails = new OrderDetailsDto()
+        try
         {
-            Id = order.Id,
-            Name = order.Name,
-            EmailAddress = order.EmailAddress,
-            OrderDate = order.PaymentCompleted!.ToLocalTime(),
-            Items = order.Items,
-            ShippingCost = order.ShippingCost.ToDecimal(),
-            TotalCost = order.TotalCost.ToDecimal(),
-            Address = order.Address,
-            ShippingMethod = order.ShippingMethod,
-            StripePaymentIntentId = order.StripePaymentIntentId,
-            Status = order.Status.ToString()
-        };
+            var order = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
 
-        return orderDetails;
+            if (order is null) return null!;
+
+            var orderDetails = new OrderDetailsDto()
+            {
+                Id = order.Id,
+                Name = order.Name,
+                EmailAddress = order.EmailAddress,
+                OrderDate = order.PaymentCompleted!.ToLocalTime(),
+                Items = order.Items,
+                ShippingCost = order.ShippingCost.ToDecimal(),
+                TotalCost = order.TotalCost.ToDecimal(),
+                Address = order.Address,
+                ShippingMethod = order.ShippingMethod,
+                StripePaymentIntentId = order.StripePaymentIntentId,
+                Status = order.Status.ToString()
+            };
+
+            return orderDetails;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error getting Order details, Id ({orderId}): {message}", orderId, ex.Message);
+            return null!;
+        }
     }
 
     public async Task<List<OrderDetailsDto>> GetOrderDetails(OrderSpecificationParams? orderParams)
