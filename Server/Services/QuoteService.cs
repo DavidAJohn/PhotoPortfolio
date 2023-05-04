@@ -9,11 +9,13 @@ public class QuoteService : IQuoteService
 {
     private readonly IHttpClientFactory _httpClient;
     private readonly IConfiguration _config;
+    private readonly ILogger<QuoteService> _logger;
 
-    public QuoteService(IHttpClientFactory httpClient, IConfiguration config)
+    public QuoteService(IHttpClientFactory httpClient, IConfiguration config, ILogger<QuoteService> logger)
     {
         _httpClient = httpClient;
         _config = config;
+        _logger = logger;
     }
 
     public async Task<QuoteResponse> GetQuote(CreateQuoteDto quote)
@@ -38,10 +40,9 @@ public class QuoteService : IQuoteService
 
                 if (quoteResponse != null)
                 {
-                    Console.WriteLine("Prodigi -> API response outcome was: " + quoteResponse.Outcome);
-
                     if (quoteResponse.Outcome.ToLower() != "created")
                     {
+                        _logger.LogWarning("Prodigi warning -> Print API response outcome was: {response}", quoteResponse.Outcome);
                         return null!;
                     }
 
@@ -56,9 +57,10 @@ public class QuoteService : IQuoteService
 
             return null!;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
-            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+            _logger.LogError("Error when requesting a quote from Prodigi Print API: {message}", ex.Message);
+            return null!;
         }
     }
 }
