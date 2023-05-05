@@ -310,7 +310,15 @@ else
         try
         {
             orders = await adminService.GetOrdersAsync(orderParams);
-            errorMessage = "";
+
+            if (orders is null)
+            {
+                errorMessage = "Could not retrieve list of orders";
+            }
+            else
+            {
+                errorMessage = "";
+            }
         }
         catch (Exception ex)
         {

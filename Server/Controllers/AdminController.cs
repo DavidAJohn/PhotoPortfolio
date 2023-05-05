@@ -469,16 +469,24 @@ public class AdminController : BaseApiController
     //
 
     [HttpGet("orders")]
-    public async Task<List<OrderDetailsDto>> GetOrders([FromQuery] OrderSpecificationParams orderParams)
+    public async Task<ActionResult<List<OrderDetailsDto>>> GetOrders([FromQuery] OrderSpecificationParams orderParams)
     {
         var emptyParams = orderParams.GetType().GetProperties().All(prop => prop.GetValue(orderParams) == null);
 
+        var orders = new List<OrderDetailsDto>();
+
         if (emptyParams) // if all of the orderParams properties are null
         {
-            return await _orderService.GetOrderDetails();
+            orders = await _orderService.GetOrderDetails();
+        }
+        else
+        {
+            orders = await _orderService.GetOrderDetails(orderParams);
         }
 
-        return await _orderService.GetOrderDetails(orderParams);
+        if (orders.Any()) return Ok(orders);
+
+        return NotFound();
     }
 
 
