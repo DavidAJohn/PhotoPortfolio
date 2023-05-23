@@ -249,7 +249,8 @@ public class PaymentsController : BaseApiController
                             if (product is not null)
                             {
                                 var markupPercentage = GetMarkupPercentage(product);
-                                var quoteItemTotal = ((unitCost + taxUnitCost) * markupPercentage) / 100;
+                                decimal markupMultiplier = ((decimal)markupPercentage / 100) + 1;
+                                var quoteItemTotal = (unitCost + taxUnitCost) * markupMultiplier;
 
                                 if (quoteItemTotal != item.Total)
                                 {
@@ -285,12 +286,12 @@ public class PaymentsController : BaseApiController
                 }
                 else
                 {
-                    markupPercentage = 100;
+                    markupPercentage = 0;
                 }
             }
             else
             {
-                markupPercentage = 100;
+                markupPercentage = 0;
             }
         }
 

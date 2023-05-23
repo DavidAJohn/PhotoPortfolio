@@ -311,7 +311,8 @@
                             if (product is not null)
                             {
                                 int markupPercentage = await GetMarkupPercentage(product);
-                                item.Total = ((unitCost + taxUnitCost) * markupPercentage) / 100;
+                                decimal markupMultiplier = ((decimal)markupPercentage / 100) + 1;
+                                item.Total = (unitCost + taxUnitCost) * markupMultiplier;
 
                                 await basketState.SaveChangesAsync();
                             }
@@ -335,7 +336,7 @@
             {
                 if (user.Identity is not null && user.Identity.IsAuthenticated)
                 {
-                    markupPercentage = 100;
+                    markupPercentage = 0;
                 }
 
                 return markupPercentage;

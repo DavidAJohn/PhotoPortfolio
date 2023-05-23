@@ -290,11 +290,24 @@
                     }
 
                     decimal salesTaxMultiplier = ((100 / ((itemsCost + shippingCost) / salesTaxCost)) / 100) + 1;
-                    //Console.WriteLine("Sales Tax Multiplier: " + salesTaxRate.ToString("0.00"));
+                    //Console.WriteLine("Sales Tax Multiplier: " + salesTaxMultiplier.ToString("0.00"));
 
                     int markupPercentage = await GetMarkupPercentage(product);
+                    //Console.WriteLine($"Markup Percentage: {markupPercentage}%");
+                    decimal totalCost = 0m;
 
-                    var totalCost = (((itemsCost * salesTaxMultiplier) * markupPercentage) / 100);
+                    if (markupPercentage == 0) 
+                    {
+                        totalCost = (itemsCost * salesTaxMultiplier);
+                    }
+                    else
+                    {
+                        decimal markupMultiplier = ((decimal)markupPercentage / 100) + 1;
+                        //Console.WriteLine($"Markup Multiplier: {markupMultiplier}");
+                        totalCost = (itemsCost * salesTaxMultiplier) * markupMultiplier;
+                    }
+
+                    //Console.WriteLine("Total Cost: " + totalCost.ToString("0.00"));
 
                     quoteReceived = true;
                     quoteError = "";
@@ -369,7 +382,7 @@
                 {
                     // Console.WriteLine($"User '{authUser}' is authenticated - no markup % applied");
                     // This application uses Azure AD with one admin user, but additionally perhaps a role could be checked
-                    markupPercentage = 100;
+                    markupPercentage = 0;
                 }
 
                 return markupPercentage;
