@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
-using PhotoPortfolio.Client.Contracts;
+﻿using PhotoPortfolio.Client.Contracts;
 using PhotoPortfolio.Shared.Entities;
 using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolio.Shared.Models;
