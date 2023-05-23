@@ -30,6 +30,10 @@ else if (photo == null)
 else
 {
     <div class="m-4 md:m-8 ">
+        <div class="pb-4">
+            <Breadcrumb BreadcrumbCrumbs="@BreadcrumbCrumbs" />
+        </div>
+
         <div class="text-3xl mb-8">Edit Photo</div>
     </div>
     <div class="my-16 flex flex-row">
@@ -201,9 +205,16 @@ else
     private string EditProductFormId = "editProductFormId";
     private bool addFormIsValid => selectedProduct.Id != null ? true : false;
 
+    private List<BreadcrumbCrumb> BreadcrumbCrumbs = new();
+
     protected override async Task OnInitializedAsync()
     {
         await GetPhotoById();
+    }
+
+    protected override void OnInitialized()
+    {
+        BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 1, Name = "Galleries", Uri = "/admin/galleries", Enabled = true });
     }
 
     private async Task GetPhotoById()
@@ -217,6 +228,8 @@ else
                 if (photo is not null)
                 {
                     errorMessage = "";
+                    BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 2, Name = "Edit Gallery", Uri = $"/admin/galleries/edit/{photo.GalleryId}", Enabled = true });
+                    BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 3, Name = photo.Title ?? photo.FileName, Uri = "", Enabled = false });
                 }
                 else
                 {

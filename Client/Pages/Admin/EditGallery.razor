@@ -29,6 +29,10 @@ else if (gallery == null)
 else
 {
     <div class="m-4 md:m-8 ">
+        <div class="pb-4">
+            <Breadcrumb BreadcrumbCrumbs="@BreadcrumbCrumbs" />
+        </div>
+
         <div class="text-3xl">Edit Gallery</div>
 
         <div class="w-full flex justify-between">
@@ -141,9 +145,16 @@ else
 
     private string displayAs = "Standard Grid";
 
+    private List<BreadcrumbCrumb> BreadcrumbCrumbs = new();
+
     protected override async Task OnInitializedAsync()
     {
         await GetGalleryDetails();
+    }
+
+    protected override void OnInitialized()
+    {
+        BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 1, Name = "Galleries", Uri = "/admin/galleries", Enabled = true });
     }
 
     private async Task GetGalleryDetails()
@@ -162,6 +173,7 @@ else
                 {
                     model = gallery;
                     errorMessage = "";
+                    BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 2, Name = gallery.Name + " Gallery", Uri = "", Enabled = false });
                 }
             }
             catch (Exception ex)

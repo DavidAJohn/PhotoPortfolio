@@ -29,7 +29,11 @@ else if (product == null)
 else
 {
     <div class="m-4 md:m-8">
-        <div class="text-3xl mb-8">Update Product</div>
+        <div class="pb-4">
+            <Breadcrumb BreadcrumbCrumbs="@BreadcrumbCrumbs" />
+        </div>
+
+        <div class="text-3xl mb-8">Update Product - @product.ProdigiSku</div>
 
         <div class="w-full lg:w-1/2">
             <div class="text-base mb-4">Update the product details below:</div>
@@ -85,9 +89,16 @@ else
     private string errorMessage = "";
     private Product model = new();
 
+    private List<BreadcrumbCrumb> BreadcrumbCrumbs = new();
+
     protected override async Task OnInitializedAsync()
     {
         await GetProductById();
+    }
+
+    protected override void OnInitialized()
+    {
+        BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 1, Name = "Products", Uri = "/admin/products", Enabled = true });
     }
 
     private async Task GetProductById()
@@ -102,6 +113,7 @@ else
                 {
                     model = product;
                     errorMessage = "";
+                    BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 2, Name = product.ProdigiSku, Uri = "", Enabled = false });
                 }
                 else
                 {

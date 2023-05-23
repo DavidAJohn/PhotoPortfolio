@@ -1,0 +1,70 @@
+﻿@using PhotoPortfolio.Shared.Models;
+
+<div class="flex flex-row justify-center items-center">
+    <div class="bg-white my-6 px-6">
+        @if (BreadcrumbCrumbs is not null && BreadcrumbCrumbs.Count > 0)
+        {
+            <ol class="list-reset flex flex-row space-x-2 align-top">
+                @if (firstItem is not null)
+                {
+                    @if (firstItem.Enabled)
+                    {
+                        <li>
+                            <NavLink href="@firstItem.Uri" class="text-slate-600 text-base hover:text-slate-800 hover:underline underline-offset-4" id="breadcrumb-link-enabled">
+                                @firstItem.Name
+                            </NavLink>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="text-slate-400 text-base" id="breadcrumb-link-disabled">@firstItem.Name</li>
+                    }
+
+                    @if (BreadcrumbCrumbs.Count > 1)
+                    {
+                        foreach (BreadcrumbCrumb breadcrumb in BreadcrumbCrumbs)
+                        {
+                            if (breadcrumb.Id != firstItem.Id)
+                            {
+                                <li>
+                                    <span class="text-slate-600">
+                                        <svg class="w-5 h-5 mt-[2px]" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </span>
+                                </li>
+                                if (breadcrumb.Enabled)
+                                {
+                                    <li>
+                                        <NavLink href="@breadcrumb.Uri" class="text-slate-600 text-base hover:text-slate-800 hover:underline" id="breadcrumb-link-enabled">
+                                            @breadcrumb.Name
+                                        </NavLink>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="text-slate-400 text-base" id="breadcrumb-link-disabled">@breadcrumb.Name</li>
+                                }
+                            }
+                        }
+                    }
+                }
+            </ol>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<BreadcrumbCrumb> BreadcrumbCrumbs { get; set; }
+
+    BreadcrumbCrumb firstItem { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (BreadcrumbCrumbs is not null)
+        {
+            firstItem = BreadcrumbCrumbs.Find(x => x.Id == BreadcrumbCrumbs.Min(b => b.Id));
+        }
+    }
+}
