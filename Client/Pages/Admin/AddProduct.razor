@@ -25,6 +25,10 @@
 else
 {
     <div class="m-4 md:m-8">
+        <div class="pb-4">
+            <Breadcrumb BreadcrumbCrumbs="@BreadcrumbCrumbs" />
+        </div>
+
         <div class="text-3xl mb-8">Add New Product</div>
 
         <div class="w-full lg:w-1/2">
@@ -69,6 +73,14 @@ else
     private string productId = "";
     private Product product = null!;
     private Product model = new();
+
+    private List<BreadcrumbCrumb> BreadcrumbCrumbs = new();
+
+    protected override void OnInitialized()
+    {
+        BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 1, Name = "Products", Uri = "/admin/products", Enabled = true });
+        BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 2, Name = "Add New Product", Uri = "", Enabled = false });
+    }
 
     private async Task CreateProduct()
     {
