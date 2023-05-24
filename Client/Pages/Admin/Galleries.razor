@@ -125,6 +125,25 @@ else
         try
         {
             galleries = await adminService.GetAllGalleriesAsync();
+
+            if (galleries is not null)
+            {
+                foreach (Gallery g in galleries)
+                {
+                    if (g.Photos.Count == 0)
+                    {
+                        Console.WriteLine($"Gallery '{g.Name}' does not contain Photos - retrieving...");
+                        var gallery = await adminService.GetGalleryByIdAsync(g.Id);
+                        g.Photos = gallery.Photos;
+
+                        if(g.Photos.Count > 0)
+                        {
+                            Console.WriteLine($"Photos retrieved for gallery '{g.Name}'");
+                        }
+                    }
+                }
+            }
+
             errorMessage = "";
         }
         catch (Exception ex)
