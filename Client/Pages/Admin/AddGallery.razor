@@ -15,6 +15,10 @@
 <PageTitle>Photo Portfolio : Admin : Add Gallery</PageTitle>
 
 <div class="m-4 md:m-8 ">
+    <div class="pb-4">
+        <Breadcrumb BreadcrumbCrumbs="@BreadcrumbCrumbs" />
+    </div>
+
     <div class="text-3xl">Add Gallery</div>
 
     <div class="mt-8 w-1/2">
@@ -42,6 +46,14 @@
 @code {
     CreateGalleryDto model = new();
     private bool galleryCreated = false;
+
+    private List<BreadcrumbCrumb> BreadcrumbCrumbs = new();
+
+    protected override void OnInitialized()
+    {
+        BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 1, Name = "Galleries", Uri = "/admin/galleries", Enabled = true });
+        BreadcrumbCrumbs.Add(new BreadcrumbCrumb { Id = 2, Name = "Add New Gallery", Uri = "", Enabled = false });
+    }
 
     private async Task OnValidSubmit()
     {
