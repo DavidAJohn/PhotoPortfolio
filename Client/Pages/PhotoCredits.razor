@@ -1,5 +1,10 @@
 ﻿@page "/credits"
 
+@using PhotoPortfolio.Client.Contracts;
+@using PhotoPortfolio.Shared.Models;
+
+@inject ICreditService creditService
+
 <div class="container xl:min-h-screen mt-24 mx-auto sm:px-4 md:px-8 lg:px-48">
     <div class="mx-8">
         <div class="text-2xl text-slate-600 font-semibold mb-12">
@@ -12,31 +17,78 @@
                 <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Color="Color.Primary" Class="-mt-4" />
             </a>
         </div>
-        <div class="text-lg text-slate-500 mt-8 mb-12">
-            Each image used is shown below along with a link to its creator's Unsplash profile:
-        </div>
+        @if (credits is not null)
+        {
+            @if (errorMessage != "")
+            {
+                <div class="text-lg text-slate-500 mt-8 mb-12">
+                    @errorMessage
+                </div>
+            }
+            else
+            {
+                <div class="text-lg text-slate-500 mt-8 mb-12">
+                    Each image used is shown below along with a link to its creator's Unsplash profile:
+                </div>
 
-        <div class="text-slate-500 mt-4">
-            <div class="text-right" role="none">
-                <div class="font-semibold text-base mb-2 flex items-center justify-start">
-                    <div class="inline-block w-36 h-auto mr-8">
-                        <a href="https://unsplash.com/photos/K2s_YE031CA" class="underline">
-                            <img src="https://photoportfolioimgs.blob.core.windows.net/repo/mark-harpur-K2s_YE031CA-unsplash.jpg" />
-                        </a>
-                    </div> 
-                    <div class="inline-block flex-shrink-0">
-                        <div class="mb-0">
-                            Photo by <a href="https://unsplash.com/@@luckybeanz" class="underline">Mark Harpur</a> 
-                            on <a href="https://unsplash.com/photos/K2s_YE031CA" class="underline">Unsplash</a>
+                @foreach (PhotoCredit credit in credits)
+                {
+                    <div class="text-slate-500 mt-4">
+                        <div class="text-right" role="none">
+                            <div class="font-semibold text-base mb-2 flex items-center justify-start">
+                                <div class="inline-block w-36 h-auto mr-8">
+                                    <a href="@credit.UnsplashImageUri" class="underline" target="_blank">
+                                        <img src="@credit.PhotoPortfolioImageUri" />
+                                    </a>
+                                </div>
+                                <div class="inline-block flex-shrink-0">
+                                    <div class="mb-0">
+                                        Photo by <a href="@credit.CreatorUnsplashProfileUri" class="underline" target="_blank">@credit.CreatorName</a>
+                                        on <a href="@credit.UnsplashImageUri" class="underline" target="_blank">Unsplash</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                }
+            }
+        }
 
         <div class="text-base font-semibold mt-12 mb-16 text-slate-500">
             NOTE: The images used throughout this website have been downloaded from Unsplash and stored in the developer's own Azure Storage container.
-            If you intend to use this repository as a basis for your own development, please either download these images yourself and store them separately, or use your own set of images.
+            If you intend to use this application as a basis for your own development, please either download these images yourself and store them separately, or use your own set of images.
         </div>
     </div>
 </div>
+
+@code {
+    private List<PhotoCredit> credits = null!;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetPhotoCredits();
+    }
+
+    private async Task GetPhotoCredits()
+    {
+        try
+        {
+            credits = await creditService.GetPhotoCredits();
+
+            if (credits is not null)
+            {
+                errorMessage = "";
+            }
+            else
+            {
+                errorMessage = "Unfortunately, a list of photo credits could not be displayed.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            errorMessage = "Unfortunately, a list of photo credits could not be displayed.";
+        }
+    }
+}
