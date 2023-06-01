@@ -4,5 +4,5 @@ namespace PhotoPortfolio.Client.Contracts;
 
 public interface IQuoteService
 {
-    Task<QuoteResponse> GetQuote(CreateQuoteDto quote);
+    Task<QuoteResponse> GetQuote(string sku, List<BasketItem> basketItems = null!, string deliveryOption = "Standard");
 }

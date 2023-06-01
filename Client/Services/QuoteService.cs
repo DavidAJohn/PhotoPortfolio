@@ -14,10 +14,17 @@ public class QuoteService : IQuoteService
         _httpClient = httpClient;
     }
 
-    public async Task<QuoteResponse> GetQuote(CreateQuoteDto quote)
+    public async Task<QuoteResponse> GetQuote(string? sku, List<BasketItem> basketItems = null!, string deliveryOption = "Standard")
     {
+        if (sku is null && basketItems is null)
+        {             
+            return null!;
+        }
+
         try
         {
+            CreateQuoteDto quote = CreateQuote(sku, basketItems, deliveryOption);
+
             var client = _httpClient.CreateClient("Prodigi.PrintAPI");
 
             HttpContent quoteJson = new StringContent(JsonSerializer.Serialize(quote));
@@ -56,5 +63,48 @@ public class QuoteService : IQuoteService
         {
             return null!;
         }
+    }
+
+    private static CreateQuoteDto CreateQuote(string? sku, List<BasketItem> basketItems = null!, string deliveryOption = "Standard")
+    {
+        List<CreateQuoteItemDto> items = new();
+        List<Dictionary<string, string>> assetList = new();
+        Dictionary<string, string> assets = new()
+        {
+            { "printArea", "default" }
+        };
+        assetList.Add(assets);
+
+        if (basketItems is not null)
+        {
+            foreach (var item in basketItems)
+            {
+                items.Add(new CreateQuoteItemDto
+                {
+                    Sku = item.Product.ProdigiSku,
+                    Copies = item.Quantity,
+                    Assets = assetList
+                });
+            }
+        }
+        else
+        {
+            items.Add(new CreateQuoteItemDto
+            {
+                Sku = sku,
+                Copies = 1,
+                Assets = assetList
+            });
+        }
+
+        CreateQuoteDto quote = new()
+        {
+            ShippingMethod = deliveryOption,
+            DestinationCountryCode = "GB",
+            CurrencyCode = "GBP",
+            Items = items
+        };
+
+        return quote;
     }
 }

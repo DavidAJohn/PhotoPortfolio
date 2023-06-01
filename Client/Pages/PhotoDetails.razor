@@ -234,29 +234,7 @@
 
     private async Task GetProductQuote(PhotoProduct product, string deliveryOption = "Standard")
     {
-        List<CreateQuoteItemDto> items = new();
-        List<Dictionary<string, string>> assetList = new();
-        Dictionary<string, string> assets = new();
-
-        assets.Add("printArea", "default");
-        assetList.Add(assets);
-
-        items.Add(new CreateQuoteItemDto
-            {
-                Sku = product.ProdigiSku,
-                Copies = 1,
-                Assets = assetList
-            });
-
-        CreateQuoteDto quote = new CreateQuoteDto()
-            {
-                ShippingMethod = deliveryOption,
-                DestinationCountryCode = "GB",
-                CurrencyCode = "GBP",
-                Items = items
-            };
-
-        var quoteResponse = await quoteService.GetQuote(quote);
+        var quoteResponse = await quoteService.GetQuote(product.ProdigiSku, null!, deliveryOption);
 
         if (quoteResponse is not null)
         {
