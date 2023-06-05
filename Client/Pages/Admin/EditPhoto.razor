@@ -10,6 +10,7 @@
 @inject IAdminService adminService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject IQuoteService quoteService
 
 @attribute [Authorize]
 
@@ -169,8 +170,10 @@ else
                 <div class="p-2">
                     <MudPaper Class="mx-2 my-2">
                         <MudText>@editedProduct.ProdigiDescription</MudText>
-                        <MudText>@editedProduct.CustomDescription</MudText>
+                        <MudText Class="mb-4">@editedProduct.CustomDescription</MudText>
                         <MudTextField Label="Markup Percentage (%)" @bind-Value="editedMarkupPercentage" />
+                        <MudText Class="mt-4">Wholesale Price: £@wholesalePrice.ToString("0.00")</MudText>
+                        <MudText Class="mt-4">Price To Customer (exc. delivery): £@(((((decimal)editedMarkupPercentage / 100) + 1) * wholesalePrice).ToString("0.00"))</MudText>
                     </MudPaper>
                 </div>
             </DialogContent>
@@ -204,6 +207,7 @@ else
     private string AddProductFormId = "addProductFormId";
     private string EditProductFormId = "editProductFormId";
     private bool addFormIsValid => selectedProduct.Id != null ? true : false;
+    decimal wholesalePrice = 0.0m;
 
     private List<BreadcrumbCrumb> BreadcrumbCrumbs = new();
 
@@ -302,6 +306,8 @@ else
 
         editedProduct = product;
         editedMarkupPercentage = product.MarkupPercentage;
+
+        await GetProductQuote(product);
     }
 
     void Close()
@@ -394,6 +400,29 @@ else
         else
         {
             Snackbar.Add("Sorry, there was a problem editing this product", Severity.Error);
+        }
+    }
+
+    private async Task GetProductQuote(PhotoProduct product, string deliveryOption = "Standard")
+    {
+        var quoteResponse = await quoteService.GetQuote(product.ProdigiSku);
+
+        if (quoteResponse is not null)
+        {
+            var quotes = quoteResponse.Quotes;
+            var quoteReturned = quotes.FirstOrDefault();
+
+            if (quoteReturned is not null && quoteReturned.CostSummary is not null)
+            {
+                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.TotalCost!.Amount))
+                {
+                    wholesalePrice = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
+                }
+            }
+        }
+        else
+        {
+            errorMessage = "Sorry, there was a problem getting a quote for this product";
         }
     }
 }
