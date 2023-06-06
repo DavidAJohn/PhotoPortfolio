@@ -172,7 +172,14 @@ else
                         <MudText>@editedProduct.ProdigiDescription</MudText>
                         <MudText Class="mb-4">@editedProduct.CustomDescription</MudText>
                         <MudTextField Label="Markup Percentage (%)" @bind-Value="editedMarkupPercentage" />
-                        <MudText Class="mt-4">Wholesale Price: £@wholesalePrice.ToString("0.00")</MudText>
+                        @if (wholesalePrice == 0.0m)
+                        {
+                            <MudSkeleton Class="mt-4" SkeletonType="SkeletonType.Rectangle" Width="200px" Height="33px" />
+                        }
+                        else
+                        {
+                            <MudText Class="mt-4">Wholesale Price: £@wholesalePrice.ToString("0.00")</MudText>
+                        }
                         <MudText Class="mt-4">Price To Customer (exc. delivery): £@(((((decimal)editedMarkupPercentage / 100) + 1) * wholesalePrice).ToString("0.00"))</MudText>
                     </MudPaper>
                 </div>
@@ -389,7 +396,7 @@ else
         {
             productToUpdate.Id = null!; // photo update does not work if Id == "" - it must be null
         }
-        
+
         var photoUpdated = await adminService.UpdatePhotoAsync(photo);
 
         if (photoUpdated)
@@ -405,6 +412,8 @@ else
 
     private async Task GetProductQuote(PhotoProduct product, string deliveryOption = "Standard")
     {
+        wholesalePrice = 0.0m;
+
         var quoteResponse = await quoteService.GetQuote(product.ProdigiSku);
 
         if (quoteResponse is not null)
