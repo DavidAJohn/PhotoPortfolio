@@ -11,6 +11,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IQuoteService quoteService
+@inject IProductService productService
 
 @attribute [Authorize]
 
@@ -141,6 +142,7 @@ else
                                 @selectedProduct.ProdigiSku
                             </div>
                         }
+                        <MudText Class="mb-4">@model.ProdigiDescription</MudText>
                         <MudTextField Label="Description" @bind-Value="model.CustomDescription" For="@(() => model.CustomDescription)" />
                         <MudTextField Label="Further Details" Class="mt-3" @bind-Value="model.FurtherDetails" For="@(() => model.FurtherDetails)" />
                         <MudTextField Label="Markup %" Class="mt-3" @bind-Value="model.MarkupPercentage" For="@(() => model.MarkupPercentage)" />
@@ -169,7 +171,7 @@ else
             <DialogContent>
                 <div class="p-2">
                     <MudPaper Class="mx-2 my-2">
-                        <MudText>@editedProduct.ProdigiDescription</MudText>
+                        <MudText Class="mb-4">@editedProduct.ProdigiDescription</MudText>
                         <MudText Class="mb-4">@editedProduct.CustomDescription</MudText>
                         <MudTextField Label="Markup Percentage (%)" @bind-Value="editedMarkupPercentage" />
                         @if (wholesalePrice == 0.0m)
@@ -314,6 +316,7 @@ else
         editedProduct = product;
         editedMarkupPercentage = product.MarkupPercentage;
 
+        await GetProductDetails(product.ProdigiSku);
         await GetProductQuote(product);
     }
 
@@ -432,6 +435,21 @@ else
         else
         {
             errorMessage = "Sorry, there was a problem getting a quote for this product";
+        }
+    }
+
+    private async Task GetProductDetails(string sku)
+    {
+        var productDetails = await productService.GetProductDetailsAsync(sku);
+
+        if (productDetails is not null)
+        {
+            //Console.WriteLine("Prodigi description:" + productDetails.Description);
+            editedProduct.ProdigiDescription = productDetails.Description;
+        }
+        else
+        {
+            errorMessage = "Sorry, there was a problem getting details for this product";
         }
     }
 }
