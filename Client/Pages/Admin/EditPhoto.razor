@@ -4,7 +4,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
-@using PhotoPortfolio.Shared.Models;
+@using PhotoPortfolio.Shared.Models
+@using ProdigiProducts = PhotoPortfolio.Shared.Models.Prodigi.Products
+@using ProdigiQuotes = PhotoPortfolio.Shared.Models.Prodigi.Quotes
 
 @inject IPhotoService photoService
 @inject IAdminService adminService
@@ -316,8 +318,22 @@ else
         editedProduct = product;
         editedMarkupPercentage = product.MarkupPercentage;
 
-        await GetProductDetails(product.ProdigiSku);
-        await GetProductQuote(product);
+        var productDetails = await GetProductDetails(product.ProdigiSku);
+
+        if (productDetails is not null)
+        {
+            editedProduct.ProdigiDescription = productDetails.Description;
+        }
+
+        var productQuote = await GetProductQuote(product);
+
+        if (productQuote is not null && productQuote.CostSummary is not null)
+        {
+            if (!string.IsNullOrWhiteSpace(productQuote.CostSummary.TotalCost!.Amount))
+            {
+                wholesalePrice = decimal.Parse(productQuote.CostSummary.TotalCost.Amount);
+            }
+        }
     }
 
     void Close()
@@ -413,7 +429,7 @@ else
         }
     }
 
-    private async Task GetProductQuote(PhotoProduct product, string deliveryOption = "Standard")
+    private async Task<ProdigiQuotes.Quote> GetProductQuote(PhotoProduct product, string deliveryOption = "Standard")
     {
         wholesalePrice = 0.0m;
 
@@ -424,32 +440,29 @@ else
             var quotes = quoteResponse.Quotes;
             var quoteReturned = quotes.FirstOrDefault();
 
-            if (quoteReturned is not null && quoteReturned.CostSummary is not null)
+            if (quoteReturned is not null) return quoteReturned;
+            else
             {
-                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.TotalCost!.Amount))
-                {
-                    wholesalePrice = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
-                }
+                errorMessage = "Sorry, there was a problem getting a quote for this product";
+                return null!;
             }
         }
         else
         {
             errorMessage = "Sorry, there was a problem getting a quote for this product";
+            return null!;
         }
     }
 
-    private async Task GetProductDetails(string sku)
+    private async Task<ProdigiProducts.ProductDetails> GetProductDetails(string sku)
     {
         var productDetails = await productService.GetProductDetailsAsync(sku);
 
-        if (productDetails is not null)
-        {
-            //Console.WriteLine("Prodigi description:" + productDetails.Description);
-            editedProduct.ProdigiDescription = productDetails.Description;
-        }
+        if (productDetails is not null) return productDetails;
         else
         {
             errorMessage = "Sorry, there was a problem getting details for this product";
+            return null!;
         }
     }
 }
