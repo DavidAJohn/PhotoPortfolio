@@ -140,14 +140,26 @@ else
                         <Dropdown DropdownTitle="Select a Product:" DropdownItems="dropdownOptions" SelectedOption="SelectedOption" />
                         @if (selectedProduct is not null)
                         {
-                            <div class="mb-4 text-sm lg:text-base text-slate-800 font-semibold">
+                            <div class="my-4 text-sm lg:text-base text-slate-800 font-semibold">
                                 @selectedProduct.ProdigiSku
                             </div>
                         }
                         <MudText Class="mb-4">@model.ProdigiDescription</MudText>
-                        <MudTextField Label="Description" @bind-Value="model.CustomDescription" For="@(() => model.CustomDescription)" />
+                        <MudTextField Label="Custom Description" @bind-Value="model.CustomDescription" For="@(() => model.CustomDescription)" />
                         <MudTextField Label="Further Details" Class="mt-3" @bind-Value="model.FurtherDetails" For="@(() => model.FurtherDetails)" />
                         <MudTextField Label="Markup %" Class="mt-3" @bind-Value="model.MarkupPercentage" For="@(() => model.MarkupPercentage)" />
+                        @if (selectedProduct.Id is not null)
+                        {
+                            if (addWholesalePrice != 0.0m)
+                            {
+                                <MudText Class="mt-4">Wholesale Price: £@addWholesalePrice.ToString("0.00")</MudText>
+                            }
+                            else
+                            {
+                                <MudSkeleton Class="mt-4" SkeletonType="SkeletonType.Rectangle" Width="200px" Height="33px" />
+                            }
+                            <MudText Class="mt-4">Price To Customer (exc. delivery): £@(((((decimal)model.MarkupPercentage / 100) + 1) * addWholesalePrice).ToString("0.00"))</MudText>
+                        }
                     </EditForm>
                     }
                     else
@@ -219,6 +231,7 @@ else
     private string EditProductFormId = "editProductFormId";
     private bool addFormIsValid => selectedProduct.Id != null ? true : false;
     decimal wholesalePrice = 0.0m;
+    decimal addWholesalePrice = 0.0m;
 
     private List<BreadcrumbCrumb> BreadcrumbCrumbs = new();
 
@@ -342,10 +355,29 @@ else
         editDialogVisible = false;
     }
 
-    private void SelectedOption(DropdownItem selectedOption)
+    private async void SelectedOption(DropdownItem selectedOption)
     {
         string sku = selectedOption.OptionRef;
         selectedProduct = products.FirstOrDefault(p => p.ProdigiSku == sku) ?? null!;
+
+        model.ProdigiDescription = selectedProduct.ProdigiDescription;
+        model.DefaultMarkupPercentage = selectedProduct.DefaultMarkupPercentage;
+
+        var quoteResponse = await quoteService.GetQuote(selectedProduct.ProdigiSku);
+
+        if (quoteResponse is not null)
+        {
+            var quotes = quoteResponse.Quotes;
+            var quoteReturned = quotes.FirstOrDefault();
+
+            if (quoteReturned is not null && quoteReturned.CostSummary is not null)
+            {
+                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.TotalCost!.Amount))
+                {
+                    addWholesalePrice = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
+                }
+            }
+        }
     }
 
     private async Task OnValidSubmit()
