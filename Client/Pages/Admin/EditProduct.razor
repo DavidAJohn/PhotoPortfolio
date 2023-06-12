@@ -5,10 +5,13 @@
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
 @using PhotoPortfolio.Shared.Models;
+@using ProdigiProducts = PhotoPortfolio.Shared.Models.Prodigi.Products
 
 @inject IAdminService adminService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject IQuoteService quoteService
+@inject IProductService productService
 
 @attribute [Authorize]
 
@@ -45,8 +48,23 @@ else
                         <MudItem xs="16" sm="9">
                             <MudCard>
                                 <MudCardContent>
-                                    <MudTextField Label="Sku" @bind-Value="model.ProdigiSku" For="@(() => model.ProdigiSku)" />
-                                    <MudTextField Label="Description" Class="mt-3" @bind-Value="model.ProdigiDescription" For="@(() => model.ProdigiDescription)" />
+                                    <MudTextField Label="Sku" @bind-Value="model.ProdigiSku" For="@(() => model.ProdigiSku)" Disabled />
+                                    <MudTextField Label="Description" Class="mt-3" @bind-Value="model.ProdigiDescription" For="@(() => model.ProdigiDescription)" Disabled />
+                                    <MudTextField Label="Default Markup %" Class="mt-3" @bind-Value="model.DefaultMarkupPercentage" For="@(() => model.DefaultMarkupPercentage)" />
+                                    <MudButton OnClick="@(() => GetQuote(model.ProdigiSku))" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" Class="mr-auto my-4">Get Quote</MudButton>
+                                    @if (quoteRequested)
+                                    {
+                                        <MudSkeleton Class="mt-4" SkeletonType="SkeletonType.Rectangle" Width="200px" Height="33px" />
+                                        <MudSkeleton Class="mt-4" SkeletonType="SkeletonType.Rectangle" Width="300px" Height="33px" />
+                                    }
+                                    else
+                                    {
+                                        if (wholesalePrice > 0.0m)
+                                        {
+                                            <MudText Class="mt-4">Wholesale Price: £@wholesalePrice.ToString("0.00")</MudText>
+                                            <MudText Class="mt-4">Price To Customer (exc. delivery): £@(((((decimal)model.DefaultMarkupPercentage / 100) + 1) * wholesalePrice).ToString("0.00"))</MudText>
+                                        }
+                                    }
                                 </MudCardContent>
                                 <MudCardContent>
                                     @if (model.ProdigiImageAssetUris != null && model.ProdigiImageAssetUris.Count > 0)
@@ -88,6 +106,8 @@ else
     Product product = new();
     private string errorMessage = "";
     private Product model = new();
+    private bool quoteRequested = false;
+    decimal wholesalePrice = 0.0m;
 
     private List<BreadcrumbCrumb> BreadcrumbCrumbs = new();
 
@@ -194,6 +214,51 @@ else
                     Snackbar.Add("The image could NOT be deleted", Severity.Error);
                 }
             }
+        }
+    }
+
+    private async Task GetQuote(string sku)
+    {
+        quoteRequested = true;
+
+        var productDetails = await GetProductDetails(sku);
+
+        if (productDetails is not null)
+        {
+            model.ProdigiDescription = productDetails.Description;
+        }
+
+        var quoteResponse = await quoteService.GetQuote(sku);
+
+        if (quoteResponse is not null)
+        {
+            var quotes = quoteResponse.Quotes;
+            var quoteReturned = quotes.FirstOrDefault();
+
+            if (quoteReturned is not null && quoteReturned.CostSummary is not null)
+            {
+                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.TotalCost!.Amount))
+                {
+                    wholesalePrice = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
+                    quoteRequested = false;
+                }
+            }
+        }
+        else
+        {
+            errorMessage = "Sorry, there was a problem getting a quote for this product";
+        }
+    }
+
+    private async Task<ProdigiProducts.ProductDetails> GetProductDetails(string sku)
+    {
+        var productDetails = await productService.GetProductDetailsAsync(sku);
+
+        if (productDetails is not null) return productDetails;
+        else
+        {
+            errorMessage = "Sorry, there was a problem getting details for this product";
+            return null!;
         }
     }
 }
