@@ -8,10 +8,12 @@ namespace PhotoPortfolio.Client.Services;
 public class QuoteService : IQuoteService
 {
     private readonly IHttpClientFactory _httpClient;
+    private readonly IProductService _productService;
 
-    public QuoteService(IHttpClientFactory httpClient)
+    public QuoteService(IHttpClientFactory httpClient, IProductService productService)
     {
         _httpClient = httpClient;
+        _productService = productService;
     }
 
     public async Task<QuoteResponse> GetQuote(string? sku, List<BasketItem> basketItems = null!, string deliveryOption = "Standard")
@@ -23,7 +25,7 @@ public class QuoteService : IQuoteService
 
         try
         {
-            CreateQuoteDto quote = CreateQuote(sku, basketItems, deliveryOption);
+            CreateQuoteDto quote = await CreateQuote(sku, basketItems, deliveryOption);
 
             var client = _httpClient.CreateClient("Prodigi.PrintAPI");
 
@@ -65,7 +67,7 @@ public class QuoteService : IQuoteService
         }
     }
 
-    private static CreateQuoteDto CreateQuote(string? sku, List<BasketItem> basketItems = null!, string deliveryOption = "Standard")
+    private async Task<CreateQuoteDto> CreateQuote(string? sku, List<BasketItem> basketItems = null!, string deliveryOption = "Standard")
     {
         List<CreateQuoteItemDto> items = new();
         List<Dictionary<string, string>> assetList = new();
@@ -89,10 +91,25 @@ public class QuoteService : IQuoteService
         }
         else
         {
+            var product = await _productService.GetProductDetailsAsync(sku);
+            var attributes = product.Attributes;
+
+            // for each item in attributes, remove all but the first array value
+            Dictionary<string, string> simplifiedAttributes = new();
+
+            if (attributes != null)
+            {
+                foreach (var attribute in attributes)
+                {
+                    simplifiedAttributes.Add(attribute.Key, attribute.Value[0]);
+                }
+            }
+            
             items.Add(new CreateQuoteItemDto
             {
                 Sku = sku,
                 Copies = 1,
+                Attributes = simplifiedAttributes,
                 Assets = assetList
             });
         }

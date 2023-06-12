@@ -5,8 +5,11 @@
 @using PhotoPortfolio.Client.Contracts
 @using PhotoPortfolio.Shared.Entities
 @using PhotoPortfolio.Shared.Models;
+@using PhotoPortfolio.Shared.Models.Prodigi.Products;
 
 @inject IAdminService adminService
+@inject IQuoteService quoteService
+@inject IProductService productService
 @inject NavigationManager navigationManager
 @inject ISnackbar Snackbar
 
@@ -36,25 +39,41 @@ else
             <div class="text-base mb-4">There are several steps that need to be taken:</div>
             <div class="text-base mb-4">1. Visit <a href="https://www.prodigi.com/products/" target="_blank" class="text-blue-700 underline">https://www.prodigi.com/products/</a> to find a product to add</div>
             <div class="text-base mb-4">2. Download any images of the product you want to display to customers</div>
-            <div class="text-base mb-4">3. Add the product details below:</div>
+            <div class="text-base mb-8">3. Add the product details below:</div>
 
-            <div class="text-base mb-4">
-                <EditForm Model="@model" OnValidSubmit="CreateProduct">
-                    <DataAnnotationsValidator />
-                    <MudGrid>
-                        <MudItem xs="16" sm="9">
-                            <MudCard>
-                                <MudCardContent>
-                                    <MudTextField Label="Sku" @bind-Value="model.ProdigiSku" For="@(() => model.ProdigiSku)" />
-                                    <MudTextField Label="Description" Class="mt-3" @bind-Value="model.ProdigiDescription" For="@(() => model.ProdigiDescription)" />
-                                </MudCardContent>
-                                <MudCardActions>
-                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mr-auto" Disabled="@(product != null)">Save</MudButton>
-                                </MudCardActions>
-                            </MudCard>
-                        </MudItem>
-                    </MudGrid>
-                </EditForm>
+            <div class="bg-gray-200 w-full lg:w-1/2 rounded-sm text-center h-full px-1.5 py-4 lg:px-8">
+                <div class="flex justify-start px-2.5 lg:px-4 py-2">
+                    <EditForm Model="@model" OnValidSubmit="CreateProduct">
+                        <DataAnnotationsValidator />
+                        <div class="mb-2 w-full text-left">
+                            <label class="text-sm font-semibold mb-1 ml-0">Sku</label>
+                            <InputText id="sku" class="px-2 py-1 text-sm rounded-sm focus:border-blue-700 border-3 outline-none w-full" @bind-Value="model.ProdigiSku" />
+                            <ValidationMessage For="@(() => model.ProdigiSku)" />
+                        </div>
+                        <div class="mb-2 w-full text-left">
+                            <label class="text-sm font-semibold mb-1 ml-0">Description</label>
+                            <InputText id="description" class="px-2 py-1 text-sm rounded-sm focus:border-blue-700 border-3 outline-none w-full" @bind-Value="model.ProdigiDescription" />
+                            <ValidationMessage For="@(() => model.ProdigiDescription)" />
+                        </div>
+                        <div class="mb-2 w-full text-left">
+                            <label class="text-sm font-semibold mb-1 ml-0">Default Markup Percentage</label>
+                            <InputNumber id="markup_percentage" class="px-2 py-1 text-sm rounded-sm focus:border-blue-700 border-3 outline-none w-full" @bind-Value="model.DefaultMarkupPercentage" />
+                            <ValidationMessage For="@(() => model.DefaultMarkupPercentage)" />
+                        </div>
+                        <div class="mb-2 w-full text-left">
+                            <label class="text-sm font-semibold mb-1 ml-0">Cost to You</label>
+                            <label class="text-sm font-semibold mb-1 ml-0">£@wholesalePrice.ToString("0.00")</label>
+                        </div>
+                        <div class="mt-8 w:2/3 flex justify-between">
+                            <button type="button" onclick="@(() => GetQuote(model.ProdigiSku))" class="inline-flex items-center justify-center px-2 py-1 text-sm font-medium leading-6 text-white whitespace-no-wrap bg-green-600 border border-green-700 rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                Get Quote
+                            </button>
+                            <button type="submit" class="inline-flex items-center justify-center px-2 py-1 text-sm font-medium leading-6 text-white whitespace-no-wrap bg-blue-600 border border-blue-700 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Save
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
             </div>
 
             @if (product is not null)
@@ -73,6 +92,7 @@ else
     private string productId = "";
     private Product product = null!;
     private Product model = new();
+    decimal wholesalePrice = 0.0m;
 
     private List<BreadcrumbCrumb> BreadcrumbCrumbs = new();
 
@@ -108,6 +128,48 @@ else
         else
         {
             Console.WriteLine("Image assets could NOT be added to the product");
+        }
+    }
+
+    private async Task GetQuote(string sku)
+    {
+        var productDetails = await GetProductDetails(sku);
+
+        if (productDetails is not null)
+        {
+            model.ProdigiDescription = productDetails.Description;
+        }
+
+        var quoteResponse = await quoteService.GetQuote(sku);
+
+        if (quoteResponse is not null)
+        {
+            var quotes = quoteResponse.Quotes;
+            var quoteReturned = quotes.FirstOrDefault();
+
+            if (quoteReturned is not null && quoteReturned.CostSummary is not null)
+            {
+                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.TotalCost!.Amount))
+                {
+                    wholesalePrice = decimal.Parse(quoteReturned.CostSummary.TotalCost.Amount);
+                }
+            }
+        }
+            else
+        {
+            errorMessage = "Sorry, there was a problem getting a quote for this product";
+        }
+    }
+
+    private async Task<ProductDetails> GetProductDetails(string sku)
+    {
+        var productDetails = await productService.GetProductDetailsAsync(sku);
+
+        if (productDetails is not null) return productDetails;
+        else
+        {
+            errorMessage = "Sorry, there was a problem getting details for this product";
+            return null!;
         }
     }
 }
