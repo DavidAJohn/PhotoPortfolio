@@ -61,9 +61,16 @@ else
                             <ValidationMessage For="@(() => model.DefaultMarkupPercentage)" />
                         </div>
                         <div class="mb-2 w-full text-left">
-                            <label class="text-sm font-semibold mb-1 ml-0">Cost to You</label>
+                            <label class="text-sm font-semibold mb-1 ml-0 mr-1">Cost to You:</label>
                             <label class="text-sm font-semibold mb-1 ml-0">£@wholesalePrice.ToString("0.00")</label>
                         </div>
+                        @if (wholesalePrice > 0 && model.DefaultMarkupPercentage > 0)
+                        {
+                            <div class="mb-2 w-full text-left">
+                                <label class="text-sm font-semibold mb-1 ml-0 mr-1">Cost to Customer (exc. delivery):</label>
+                                <label class="text-sm font-semibold mb-1 ml-0">£@(((((decimal)model.DefaultMarkupPercentage / 100) + 1) * wholesalePrice).ToString("0.00"))</label>
+                            </div>
+                        }
                         <div class="mt-8 w:2/3 flex justify-between">
                             <button type="button" onclick="@(() => GetQuote(model.ProdigiSku))" class="inline-flex items-center justify-center px-2 py-1 text-sm font-medium leading-6 text-white whitespace-no-wrap bg-green-600 border border-green-700 rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Get Quote
