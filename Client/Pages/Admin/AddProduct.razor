@@ -32,7 +32,7 @@ else
             <Breadcrumb BreadcrumbCrumbs="@BreadcrumbCrumbs" />
         </div>
 
-        <div class="text-3xl mb-8">Add New Product</div>
+        <div class="text-xl lg:text-3xl mb-8">Add New Product</div>
 
         <div class="w-full lg:w-1/2">
             <div class="text-base mb-4">Adding a product makes it available to be associated with a photo or gallery.</div>
@@ -41,7 +41,7 @@ else
             <div class="text-base mb-4">2. Download any images of the product you want to display to customers</div>
             <div class="text-base mb-8">3. Add the product details below:</div>
 
-            <div class="bg-gray-200 w-full lg:w-1/2 rounded-sm text-center h-full px-1.5 py-4 lg:px-8">
+            <div class="bg-gray-200 w-full lg:w-2/3 rounded-sm text-center h-full px-1.5 py-4 lg:px-8">
                 <div class="flex justify-start px-2.5 lg:px-4 py-2">
                     <EditForm Model="@model" OnValidSubmit="CreateProduct">
                         <DataAnnotationsValidator />
