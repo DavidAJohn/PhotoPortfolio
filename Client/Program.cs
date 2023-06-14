@@ -1,5 +1,6 @@
 using Blazored.LocalStorage;
 using Blazored.Modal;
+using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -52,6 +53,7 @@ builder.Services.AddScoped<ICreditService, CreditService>();
 
 builder.Services.AddBlazoredModal();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredSessionStorage();
 
 builder.Services.AddMudServices(config =>
 {
