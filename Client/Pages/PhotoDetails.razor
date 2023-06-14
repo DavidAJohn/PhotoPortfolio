@@ -4,6 +4,7 @@
 @using PhotoPortfolio.Shared.Entities
 @using PhotoPortfolio.Shared.Models
 @using PhotoPortfolio.Shared.Models.Prodigi.Quotes
+@using Humanizer
 
 @inject IPhotoService photoService
 @inject IProductService productService
@@ -58,7 +59,25 @@
                             <div class="text-base lg:text-lg font-semibold mt-4 italic" id="product-title">
                                 @product.CustomDescription
                             </div>
-
+                            <!-- Product options -->
+                            @if (productOptions.Count > 0)
+                            {
+                                foreach (var option in productOptions)
+                                {
+                                    <div class="flex flex-row items-center justify-start mt-2">
+                                        <div class="mr-4 text-lg font-semibold">
+                                            @option.Key.Humanize(LetterCasing.Title) :
+                                        </div>
+                                        <div class="">
+                                            <Dropdown DropdownItems=@(CreateDropdownItemList(option.Value))
+                                                      DropdownWidth="Dropdown.DropdownWidthOptions.Small"
+                                                      DropdownOutline=true
+                                                      SelectedOption="SelectedProductOption"
+                                                      @ref="selectedDropdown" />
+                                        </div>
+                                    </div>
+                                }
+                            }
                             <!-- Pricing -->
                             @if (awaitingQuote)
                             {
@@ -154,6 +173,7 @@
 
     private List<PhotoProduct> products = new();
     private PhotoProduct product { get; set; }
+    private Dictionary<string, string[]> productOptions = new();
 
     private string initialInstructionsText = "Choose an option above to see further details, including prices.";
 
@@ -163,6 +183,8 @@
     private bool quoteReceived = false;
     private string quoteError = "";
     private bool awaitingQuote = false;
+
+    private Dropdown selectedDropdown;
 
     protected override async Task OnInitializedAsync()
     {
@@ -228,6 +250,24 @@
             {
                 awaitingQuote = false;
                 initialInstructionsText = "Sorry, details for this product could not be found";
+            }
+        }
+
+        productOptions.Clear();
+
+        var productDetails = await productService.GetProductDetailsAsync(sku);
+        if (productDetails.Attributes is not null)
+        {
+            // create list of productOptions where the productDetails.Attributes value is an array of length > 1
+            if (productDetails.Attributes != null)
+            {
+                foreach (var attribute in productDetails.Attributes)
+                {
+                    if (attribute.Value.Length > 1)
+                    {
+                        productOptions.Add(attribute.Key, attribute.Value);
+                    }
+                }
             }
         }
     }
@@ -368,5 +408,30 @@
         }
 
         return markupPercentage;
+    }
+
+    private static List<DropdownItem> CreateDropdownItemList(string[] options)
+    {
+        var dropdownItems = new List<DropdownItem>();
+
+        foreach (var option in options)
+        {
+            var dropdownItem = new DropdownItem
+            {
+                OptionName = option.Humanize(LetterCasing.Title),
+                OptionRef = option,
+            };
+
+            dropdownItems.Add(dropdownItem);
+        }
+
+        return dropdownItems;
+    }
+
+    private async Task SelectedProductOption(DropdownItem selectedOption)
+    {
+        var option = selectedOption.OptionName;
+        selectedDropdown.DropdownTitle = option;
+        selectedDropdown.SelectedItemRef = selectedOption.OptionRef;
     }
 }
