@@ -1,0 +1,100 @@
+﻿@using PhotoPortfolio.Shared.Models;
+@if (DropdownItems is not null)
+{
+    <div class="relative inline-block text-left @DropdownOutlineStyles" id="dropdown-container">
+        <div>
+            <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 p-1 bg-white text-base font-semibold text-gray-600 focus:outline-none"
+                    id="dropdown-button"
+            @onclick="ToggleDropdown">
+                Select
+                <!-- Heroicon name: solid/chevron-down -->
+                <svg class="-mr-1 ml-2 h-6 w-4 @(collapseDropdown ? "block" : "hidden")" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+                <!-- Heroicon name: solid/chevron-up -->
+                <svg class="-mr-1 ml-2 h-6 w-4 @(collapseDropdown ? "hidden" : "block")" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+
+        @if (DropdownItems != null)
+        {
+            <div class="origin-top-left absolute left-0 @widthClass rounded-sm shadow-lg border border-gray-300 bg-white focus:outline-none @DropdownTransformClass" role="menu" tabindex="-1" id="dropdown-menu">
+                <div class="divide-y divide-gray-300" role="none">
+                    @foreach (DropdownItem item in DropdownItems)
+                    {
+                        <div class="dropdown-item text-gray-700 block py-2 px-2 @(widthClass == "w-64" ? "text-sm" : "text-base") hover:cursor-pointer hover:bg-gray-300"
+                             id="menu-item-@(@item.Id)"
+                             @onclick="() => OnSelectedOption(item)"
+                             role="menuitem"
+                             tabindex="-1">
+                            @item.OptionName
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string DropdownLabel { get; set; } = "";
+
+    [Parameter]
+    public DropdownWidthOptions DropdownWidth { get; set; } = DropdownWidthOptions.Large;
+
+    [Parameter]
+    public bool DropdownOutline { get; set; } = true;
+
+    [Parameter]
+    public List<DropdownItem> DropdownItems { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<ProductOptionSelected> SelectedProductOption { get; set; }
+
+    private bool collapseDropdown = true;
+
+    private string DropdownTransformClass => collapseDropdown
+        ? "transform opacity-0 scale-100 transition ease-out duration-100 z-0 hidden"
+        : "transform opacity-100 scale-95 transition ease-in duration-100 z-10 block";
+
+    private string widthClass => DropdownWidth switch
+    {
+        DropdownWidthOptions.Small => "w-64",
+        DropdownWidthOptions.Medium => "w-72",
+        DropdownWidthOptions.Large => "w-128",
+        _ => "w-128"
+    };
+
+    private string DropdownOutlineStyles => DropdownOutline
+        ? "outline outline-1 outline-slate-200 outline-offset-2 rounded-sm"
+        : " ";
+
+    private void ToggleDropdown()
+    {
+        collapseDropdown = !collapseDropdown;
+    }
+
+    private async Task OnSelectedOption(DropdownItem item)
+    {
+        collapseDropdown = true;
+
+        var productOptionSelected = new ProductOptionSelected
+            {
+                OptionLabel = DropdownLabel,
+                OptionRef = item.OptionRef,
+                OptionName = item.OptionName,
+            };
+
+        await SelectedProductOption.InvokeAsync(productOptionSelected);
+    }
+
+    public enum DropdownWidthOptions
+    {
+        Small,
+        Medium,
+        Large
+    }
+}
