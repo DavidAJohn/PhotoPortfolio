@@ -352,7 +352,7 @@
 
     private async Task AddItemToBasket()
     {
-        var productOptions = await sessionStorage.GetItemAsync<List<ProductOptionSelected>>("product_options");
+        var productOptions = await GetProductOptionsFromSession();
 
         // remove product options from session storage
         await sessionStorage.RemoveItemAsync("product_options");
@@ -440,7 +440,7 @@
 
     private async Task SelectedProductOption(ProductOptionSelected selectedOption)
     {
-        var productOptions = await sessionStorage.GetItemAsync<List<ProductOptionSelected>>("product_options");
+        var productOptions = await GetProductOptionsFromSession();
 
         if (productOptions is null)
         {
@@ -457,5 +457,10 @@
         productOptions.Add(selectedOption);
 
         await sessionStorage.SetItemAsync("product_options", productOptions);
+    }
+
+    private async Task<List<ProductOptionSelected>> GetProductOptionsFromSession()
+    {
+        return await sessionStorage.GetItemAsync<List<ProductOptionSelected>>("product_options");
     }
 }
