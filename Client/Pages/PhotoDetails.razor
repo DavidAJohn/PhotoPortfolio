@@ -10,6 +10,7 @@
 @inject IProductService productService
 @inject IQuoteService quoteService
 @inject ISnackbar snackbar
+@inject ISessionStorageService sessionStorage
 
 <HeroImage ImageUri="https://photoportfolioimgs.blob.core.windows.net/repo/bank-phrom-Tzm3Oyu_6sk-unsplash.jpg"
            ImageAlign="bottom"
@@ -69,11 +70,12 @@
                                             @option.Key.Humanize(LetterCasing.Title) :
                                         </div>
                                         <div class="">
-                                            <Dropdown DropdownItems=@(CreateDropdownItemList(option.Value))
-                                                      DropdownWidth="Dropdown.DropdownWidthOptions.Small"
-                                                      DropdownOutline=true
-                                                      SelectedOption="SelectedProductOption"
-                                                      @ref="selectedDropdown" />
+                                            <ProductOptionDropdown 
+                                                DropdownLabel=@option.Key
+                                                DropdownItems=@(CreateDropdownItemList(option.Value))
+                                                DropdownWidth="ProductOptionDropdown.DropdownWidthOptions.Small"
+                                                DropdownOutline=true
+                                                SelectedProductOption="SelectedProductOption" />
                                         </div>
                                     </div>
                                 }
@@ -189,6 +191,7 @@
     protected override async Task OnInitializedAsync()
     {
         await GetPhotoById();
+        await sessionStorage.RemoveItemAsync("product_options");
     }
 
     private async Task GetPhotoById()
@@ -349,6 +352,11 @@
 
     private async Task AddItemToBasket()
     {
+        var productOptions = await sessionStorage.GetItemAsync<List<ProductOptionSelected>>("product_options");
+
+        // remove product options from session storage
+        await sessionStorage.RemoveItemAsync("product_options");
+
         var productToAdd = new ProductBasketItemDto(product)
             {
                 Id = product.Id,
@@ -359,7 +367,8 @@
                 MockupImageUri = product.MockupImageUri,
                 PhotoId = photo.Id,
                 ImageUri = photo.Uri,
-                ImageTitle = photo.Title
+                ImageTitle = photo.Title,
+                Options = productOptions
             };
 
         var tempPrice = productPrice.Remove(0,1);
@@ -369,6 +378,7 @@
         basketState.Basket.BasketItems.Add(item);
         await basketState.SaveChangesAsync(); // save to local storage
         basketState.BasketItemCount++;
+
         snackbar.Add("A new item has been added to your basket", Severity.Success);
     }
 
@@ -428,10 +438,24 @@
         return dropdownItems;
     }
 
-    private async Task SelectedProductOption(DropdownItem selectedOption)
+    private async Task SelectedProductOption(ProductOptionSelected selectedOption)
     {
-        var option = selectedOption.OptionName;
-        selectedDropdown.DropdownTitle = option;
-        selectedDropdown.SelectedItemRef = selectedOption.OptionRef;
+        var productOptions = await sessionStorage.GetItemAsync<List<ProductOptionSelected>>("product_options");
+
+        if (productOptions is null)
+        {
+            productOptions = new List<ProductOptionSelected>();
+        }
+
+        var existingOption = productOptions.FirstOrDefault(x => x.OptionLabel == selectedOption.OptionLabel);
+
+        if (existingOption is not null)
+        {
+            productOptions.Remove(existingOption);
+        }
+
+        productOptions.Add(selectedOption);
+
+        await sessionStorage.SetItemAsync("product_options", productOptions);
     }
 }
