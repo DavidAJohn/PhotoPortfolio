@@ -15,4 +15,5 @@ public class ProductBasketItemDto : PhotoProduct
     public string PhotoId { get; set; } = string.Empty;
     public string ImageUri { get; set; } = string.Empty;
     public string ImageTitle { get; set; } = string.Empty;
+    public List<ProductOptionSelected>? Options { get; set; } = null!;
 }
