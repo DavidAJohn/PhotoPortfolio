@@ -75,7 +75,8 @@
                                                 DropdownItems=@(CreateDropdownItemList(option.Value))
                                                 DropdownWidth="ProductOptionDropdown.DropdownWidthOptions.Small"
                                                 DropdownOutline=true
-                                                SelectedProductOption="SelectedProductOption" />
+                                                SelectedProductOption="SelectedProductOption"
+                                                @ref="selectedDropdown" />
                                         </div>
                                     </div>
                                 }
@@ -186,7 +187,7 @@
     private string quoteError = "";
     private bool awaitingQuote = false;
 
-    private Dropdown selectedDropdown;
+    private ProductOptionDropdown selectedDropdown;
 
     protected override async Task OnInitializedAsync()
     {
@@ -456,6 +457,7 @@
 
         productOptions.Add(selectedOption);
 
+        selectedDropdown.DropdownTitle = selectedOption.OptionName;
         await sessionStorage.SetItemAsync("product_options", productOptions);
     }
 

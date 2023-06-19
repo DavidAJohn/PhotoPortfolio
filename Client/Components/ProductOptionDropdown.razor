@@ -3,10 +3,11 @@
 {
     <div class="relative inline-block text-left @DropdownOutlineStyles" id="dropdown-container">
         <div>
-            <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 p-1 bg-white text-base font-semibold text-gray-600 focus:outline-none"
-                    id="dropdown-button"
-            @onclick="ToggleDropdown">
-                Select
+            <button type="button" 
+                class="inline-flex justify-center w-full rounded-md border border-gray-300 p-1 bg-white text-base font-semibold text-gray-600 focus:outline-none"
+                id="dropdown-button"
+                @onclick="ToggleDropdown">
+                    @DropdownTitle
                 <!-- Heroicon name: solid/chevron-down -->
                 <svg class="-mr-1 ml-2 h-6 w-4 @(collapseDropdown ? "block" : "hidden")" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -41,6 +42,9 @@
 @code {
     [Parameter]
     public string DropdownLabel { get; set; } = "";
+
+    [Parameter]
+    public string DropdownTitle { get; set; } = "Select";
 
     [Parameter]
     public DropdownWidthOptions DropdownWidth { get; set; } = DropdownWidthOptions.Large;
