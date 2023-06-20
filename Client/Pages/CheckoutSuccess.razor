@@ -1,5 +1,6 @@
 ﻿@page "/checkout/success/"
 
+@using Humanizer;
 @using PhotoPortfolio.Client.Contracts;
 @using PhotoPortfolio.Shared.Models;
 
@@ -43,6 +44,13 @@
                                 <div class="inline-block flex-shrink-0">
                                     <div class="mb-0">@item.Product.ImageTitle</div>
                                     <div class="font-medium text-sm">@item.Product.CustomDescription</div>
+                                    @if (item.Product.Options != null)
+                                    {
+                                        foreach (var option in item.Product.Options)
+                                        {
+                                            <div class="font-medium text-xs">@option.OptionLabel.Humanize(LetterCasing.Title) : @option.OptionName</div>
+                                        }
+                                    }
                                 </div>
                                 <div class="ml-4 font-bold">=&nbsp; £@item.Total</div>
                             </div>
