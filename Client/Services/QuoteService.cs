@@ -81,10 +81,21 @@ public class QuoteService : IQuoteService
         {
             foreach (var item in basketItems)
             {
+                Dictionary<string, string>? attributes = new() {};
+
+                if (item.Product.Options is not null)
+                {
+                    foreach (var attribute in item.Product.Options)
+                    {
+                        attributes.Add(attribute.OptionLabel, attribute.OptionRef);
+                    }
+                }
+                
                 items.Add(new CreateQuoteItemDto
                 {
                     Sku = item.Product.ProdigiSku,
                     Copies = item.Quantity,
+                    Attributes = attributes,
                     Assets = assetList
                 });
             }
