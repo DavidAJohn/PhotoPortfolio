@@ -125,13 +125,27 @@ public class QuoteService : IQuoteService
             });
         }
 
-        CreateQuoteDto quote = new()
+        CreateQuoteDto quote;
+
+        if (deliveryOption == "")
         {
-            ShippingMethod = deliveryOption,
-            DestinationCountryCode = "GB",
-            CurrencyCode = "GBP",
-            Items = items
-        };
+            quote = new()
+            {
+                DestinationCountryCode = "GB",
+                CurrencyCode = "GBP",
+                Items = items
+            };
+        }
+        else
+        {
+            quote = new()
+            {
+                ShippingMethod = deliveryOption,
+                DestinationCountryCode = "GB",
+                CurrencyCode = "GBP",
+                Items = items
+            };
+        }
 
         return quote;
     }
