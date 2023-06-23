@@ -1,10 +1,12 @@
 ﻿@page "/gallery"
 
 @using PhotoPortfolio.Shared.Models
+@using static PhotoPortfolio.Client.Components.HeroImage;
 
 <HeroImage ImageUri="https://photoportfolioimgs.blob.core.windows.net/repo/mark-harpur-K2s_YE031CA-unsplash.jpg"
            HeadlineText="Gallery"
            SubTitleText="View photographs around a theme"
+           ImageHeight="HeroImageHeight.Large"
            TextDarkMode=false />
 
 <div class="mt-8">

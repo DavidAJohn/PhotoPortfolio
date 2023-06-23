@@ -1,4 +1,4 @@
-﻿<div class="w-full h-[32rem] overflow-hidden relative" id="hero-image">
+﻿<div class="w-full @ImageHeightClass overflow-hidden relative" id="hero-image">
     <div class="absolute inset-0 w-full h-full object-fill object-center bg-gray-400 bg-opacity-30 bg-cover @ImageVerticalAlign bg-blend-multiply" style="background-image: url( @ImageUri );" id="hero-bg"></div>
     <span class="absolute text-2xl md:text-3xl lg:text-5xl font-medium @TextColour top-10 left-10 z-10" id="hero-headline">@HeadlineText</span>
     <span class="absolute text-base md:text-lg lg:text-2xl @TextColour top-24 left-10 z-10" id="hero-subtitle">@SubTitleText</span>
@@ -18,14 +18,28 @@
     public string SubTitleText { get; set; } = string.Empty;
 
     [Parameter]
+    public HeroImageHeight ImageHeight { get; set; } = HeroImageHeight.Medium;
+
+    [Parameter]
     public bool TextDarkMode { get; set; } = false;
 
     private string? TextColour => TextDarkMode ? "text-slate-900" : "text-white";
 
     private string? ImageVerticalAlign = "bg-center";
 
+    private string ImageHeightClass = "h-64";
+
     protected override void OnInitialized()
     {
+        ImageHeightClass = ImageHeight switch
+        {
+            HeroImageHeight.Small => "h-32",
+            HeroImageHeight.Medium => "h-64",
+            HeroImageHeight.Large => "h-128",
+            HeroImageHeight.ExtraLarge => "h-144",
+            _ => "h-64"
+        };
+
         ImageVerticalAlign = ImageAlign.ToLowerInvariant() switch
         {
             "center" => "bg-center",
@@ -33,5 +47,13 @@
             "top" => "bg-top",
             _ => "bg-center",
         };
+    }
+
+    public enum HeroImageHeight
+    {
+        Small,
+        Medium,
+        Large,
+        ExtraLarge
     }
 }

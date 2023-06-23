@@ -5,6 +5,7 @@
 @using PhotoPortfolio.Shared.Models
 @using PhotoPortfolio.Shared.Models.Prodigi.Quotes
 @using Humanizer
+@using static PhotoPortfolio.Client.Components.HeroImage;
 
 @inject IPhotoService photoService
 @inject IProductService productService
@@ -16,6 +17,7 @@
            ImageAlign="bottom"
            HeadlineText="Prints"
            SubTitleText="Purchase prints, wallart, canvas, etc."
+           ImageHeight="HeroImageHeight.Medium"
            TextDarkMode=false />
 
 <div class="md:container">
