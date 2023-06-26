@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using PhotoPortfolio.Client.Shared;
 using PhotoPortfolio.Shared.Models;
+using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
 
 namespace PhotoPortfolio.Client.Pages;
 
@@ -15,6 +16,9 @@ public partial class Checkout
 
     private List<BasketItem> basketItems { get; set; }
 
+    private List<Quote> quotes { get; set; }
+    private bool multipleDeliveryOptions = false;
+
     private string SubmitSpinnerHidden = "hidden";
     private string DeliverySpinnerVisible = "invisible";
     private bool ShowErrors = false;
@@ -25,18 +29,40 @@ public partial class Checkout
 
     protected override async Task OnInitializedAsync()
     {
-        AddDeliveryOptions();
-
         await Task.Run(() => Thread.Sleep(1)); // forces the page to wait before getting the basket
         basketItems = basketState.Basket.BasketItems;
 
-        await GetBasketQuote();
+        await GetBasketQuotes();
     }
 
-    private void AddDeliveryOptions()
+    private async Task GetBasketQuotes(string deliveryOption = "")
+    {
+        var quoteResponse = await quoteService.GetQuote(null!, basketItems, deliveryOption);
+
+        if (quoteResponse is not null && quoteResponse.Outcome.ToLowerInvariant() == "created")
+        {
+            quotes = quoteResponse.Quotes;
+
+            CheckForMultipleDeliveryOptions();
+
+            if (multipleDeliveryOptions)
+            {
+                var deliveryOptions = GetDeliveryOptions();
+                AddDeliveryOptions(deliveryOptions);
+            }
+
+            var quote = GetDeliveryOption("Standard");
+
+            if (quote != null)
+            {
+                basketState.Basket.ShippingCost = decimal.Parse(quote.CostSummary!.Shipping!.Amount);
+            }
+        }
+    }
+
+    private void AddDeliveryOptions(List<string> deliveryOptions)
     {
         deliveryDropdownOptions.Clear();
-        string[] deliveryOptions = { "Standard", "Budget", "Express" };
 
         foreach (var option in deliveryOptions)
         {
@@ -112,19 +138,26 @@ public partial class Checkout
     private async Task SelectedDeliveryOption(DropdownItem deliveryOption)
     {
         DeliverySpinnerVisible = "visible";
-        await GetBasketQuote(deliveryOption.OptionRef);
+
+        var quote = GetDeliveryOption(deliveryOption.OptionRef);
+
+        if (quote != null)
+        {
+            basketState.Basket.ShippingCost = decimal.Parse(quote.CostSummary!.Shipping!.Amount);
+        }
+
         DeliverySpinnerVisible = "invisible";
 
         selectedDeliveryOption = deliveryOption.OptionRef;
     }
 
-    private async Task GetBasketQuote(string deliveryOption = "Standard")
+    private async Task GetBasketQuote(string deliveryOption = "")
     {
         var quoteResponse = await quoteService.GetQuote(null!, basketItems, deliveryOption);
 
         if (quoteResponse is not null)
         {
-            var quotes = quoteResponse.Quotes;
+            quotes = quoteResponse.Quotes;
             var quoteReturned = quotes.FirstOrDefault();
 
             if (quoteReturned is not null && quoteReturned.CostSummary is not null)
@@ -210,5 +243,63 @@ public partial class Checkout
         }
 
         return false;
+    }
+
+    // iterate through quotes checking if the shipments carrier and shipments cost amount are the same
+    // if they are not the same then set multipleDeliveryOptions to true
+    private void CheckForMultipleDeliveryOptions()
+    {
+        if (quotes is not null && quotes.Count > 1)
+        {
+            var firstQuote = quotes.FirstOrDefault();
+
+            if (firstQuote is not null)
+            {
+                var firstCarrier = firstQuote.Shipments.FirstOrDefault().Carrier;
+                var firstShipmentCost = firstQuote.Shipments.FirstOrDefault().Cost.Amount;
+
+                foreach (var quote in quotes)
+                {
+                    if (quote.Shipments.FirstOrDefault().Carrier.Service != firstCarrier.Service 
+                        || quote.Shipments.FirstOrDefault().Cost.Amount != firstShipmentCost)
+                    {
+                        multipleDeliveryOptions = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private List<string> GetDeliveryOptions()
+    {
+        List<string> deliveryOptions = new();
+
+        if (quotes is not null)
+        {
+            foreach (var quote in quotes)
+            {
+                deliveryOptions.Add(quote.ShipmentMethod);
+            }
+        }
+
+        return deliveryOptions;
+    }
+
+    // get a specific delivery method from quotes
+    private Quote GetDeliveryOption(string deliveryMethod)
+    {
+        if (quotes is not null)
+        {
+            foreach (var quote in quotes)
+            {
+                if (quote.ShipmentMethod == deliveryMethod)
+                {
+                    return quote;
+                }
+            }
+        }
+
+        return null!;
     }
 }

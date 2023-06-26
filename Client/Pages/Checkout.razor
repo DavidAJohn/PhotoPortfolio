@@ -61,9 +61,18 @@
                             </div>
                             <div class="text-sm lg:text-base font-bold flex items-center justify-center mt-4 mb-8 text-slate-500" id="product-price">
                                 <div class="mr-2">Shipping Method:</div>
-                                <div>
-                                    <Dropdown DropdownTitle="@($"{selectedDeliveryOption} Delivery")" DropdownWidth="Dropdown.DropdownWidthOptions.Medium" DropdownItems="deliveryDropdownOptions" SelectedOption="SelectedDeliveryOption" />
-                                </div>
+                                @if (multipleDeliveryOptions)
+                                {
+                                    <div>
+                                        <Dropdown DropdownTitle="@($"{selectedDeliveryOption} Delivery")" DropdownWidth="Dropdown.DropdownWidthOptions.Medium" DropdownItems="deliveryDropdownOptions" SelectedOption="SelectedDeliveryOption" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-base font-semibold">
+                                        @(quotes.FirstOrDefault().Shipments.FirstOrDefault().Carrier.Service)  
+                                    </div>
+                                }
                                 <div class="ml-4">
                                     <svg version="1.1" id="delivery-spinner" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
                                         class="h-5 w-5 @DeliverySpinnerVisible" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">
