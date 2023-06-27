@@ -85,7 +85,7 @@ public partial class Checkout
 
         if (basketState.BasketItemCount > 0)
         {
-            await GetBasketQuote(selectedDeliveryOption);
+            await GetBasketQuotes(selectedDeliveryOption);
         }
         else
         {
@@ -143,7 +143,7 @@ public partial class Checkout
 
         if (quote != null)
         {
-            basketState.Basket.ShippingCost = decimal.Parse(quote.CostSummary!.Shipping!.Amount);
+            await UpdateBasketCosts(quote);
         }
 
         DeliverySpinnerVisible = "invisible";
@@ -151,52 +151,44 @@ public partial class Checkout
         selectedDeliveryOption = deliveryOption.OptionRef;
     }
 
-    private async Task GetBasketQuote(string deliveryOption = "")
+    private async Task UpdateBasketCosts(Quote quote)
     {
-        var quoteResponse = await quoteService.GetQuote(null!, basketItems, deliveryOption);
-
-        if (quoteResponse is not null)
+        if (quote is not null && quote.CostSummary is not null)
         {
-            quotes = quoteResponse.Quotes;
-            var quoteReturned = quotes.FirstOrDefault();
+            decimal shippingCost = 0m;
 
-            if (quoteReturned is not null && quoteReturned.CostSummary is not null)
+            if (!string.IsNullOrWhiteSpace(quote.CostSummary.Shipping!.Amount))
             {
-                decimal shippingCost = 0m;
+                shippingCost = decimal.Parse(quote.CostSummary.Shipping.Amount);
+            }
 
-                if (!string.IsNullOrWhiteSpace(quoteReturned.CostSummary.Shipping!.Amount))
+            basketState.Basket.ShippingCost = shippingCost;
+
+            // also confirm the basket item costs are still correct
+            var quoteItems = quote.Items;
+
+            foreach (BasketItem item in basketItems)
+            {
+                var unitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).UnitCost.Amount);
+                var taxUnitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).TaxUnitCost.Amount);
+
+                var productId = item.Product.Id;
+                var photoId = item.Product.PhotoId;
+                var photo = await photoService.GetPhotoByIdAsync(photoId);
+
+                if (photo is not null)
                 {
-                    shippingCost = decimal.Parse(quoteReturned.CostSummary.Shipping.Amount);
-                }
-
-                basketState.Basket.ShippingCost = shippingCost;
-
-                // also confirm the basket item costs are still correct
-                var quoteItems = quoteReturned.Items;
-
-                foreach (BasketItem item in basketItems)
-                {
-                    var unitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).UnitCost.Amount);
-                    var taxUnitCost = decimal.Parse(quoteItems.FirstOrDefault(i => i.Sku == item.Product.ProdigiSku).TaxUnitCost.Amount);
-
-                    var productId = item.Product.Id;
-                    var photoId = item.Product.PhotoId;
-                    var photo = await photoService.GetPhotoByIdAsync(photoId);
-
-                    if (photo is not null)
+                    if (photo.Products is not null)
                     {
-                        if (photo.Products is not null)
+                        var product = photo.Products.FirstOrDefault(p => p.Id == productId) ?? null!;
+
+                        if (product is not null)
                         {
-                            var product = photo.Products.FirstOrDefault(p => p.Id == productId) ?? null!;
+                            int markupPercentage = await GetMarkupPercentage(product);
+                            decimal markupMultiplier = ((decimal)markupPercentage / 100) + 1;
+                            item.Total = (unitCost + taxUnitCost) * markupMultiplier;
 
-                            if (product is not null)
-                            {
-                                int markupPercentage = await GetMarkupPercentage(product);
-                                decimal markupMultiplier = ((decimal)markupPercentage / 100) + 1;
-                                item.Total = (unitCost + taxUnitCost) * markupMultiplier;
-
-                                await basketState.SaveChangesAsync();
-                            }
+                            await basketState.SaveChangesAsync();
                         }
                     }
                 }
