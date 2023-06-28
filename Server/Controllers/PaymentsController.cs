@@ -192,10 +192,21 @@ public class PaymentsController : BaseApiController
 
         foreach (BasketItem item in orderBasketDto.BasketItems)
         {
+            Dictionary<string, string>? attributes = new() { };
+
+            if (item.Product.Options is not null)
+            {
+                foreach (var attribute in item.Product.Options)
+                {
+                    attributes.Add(attribute.OptionLabel, attribute.OptionRef);
+                }
+            }
+
             items.Add(new CreateQuoteItemDto
             {
                 Sku = item.Product.ProdigiSku,
                 Copies = 1,
+                Attributes = attributes,
                 Assets = assetList
             });
         }
