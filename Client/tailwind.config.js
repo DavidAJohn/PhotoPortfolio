@@ -5,7 +5,8 @@ module.exports = {
         "./Pages/**/*.razor",
         "./Shared/*.razor",
         "./Components/*.razor",
-        "./App.razor"
+        "./App.razor",
+        "./wwwroot/index.html"
     ],
     theme: {
         container: {
