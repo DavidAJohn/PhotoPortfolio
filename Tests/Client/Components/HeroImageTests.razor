@@ -128,4 +128,38 @@
             @<div class:regex="bg-top" style:ignore="" id:ignore=""></div>
         );
     }
+
+    [Fact]
+    public void HeroImage_Displayed_When_No_ImageHeight_Supplied()
+    {
+        var cut = Render(@<HeroImage ImageUri="" HeadlineText="Test Headline" />);
+
+        var markup = cut.Markup;
+
+        Assert.NotEqual("", markup);
+    }
+
+    [Fact]
+    public void HeroImage_Includes_Height_Class_When_ImageHeight_Supplied()
+    {
+        var cut = Render(@<HeroImage ImageUri="" HeadlineText="Test Headline" ImageHeight="HeroImage.HeroImageHeight.Medium" />);
+
+        var element = cut.Find("#hero-image");
+
+        element.MarkupMatches(
+            @<div class:regex="w-full h-[1-9]{2,3} overflow-hidden relative" id="hero-image" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void HeroImage_Includes_Height_Class_When_ImageHeight_NOT_Supplied()
+    {
+        var cut = Render(@<HeroImage ImageUri="" HeadlineText="Test Headline" />);
+
+        var element = cut.Find("#hero-image");
+
+        element.MarkupMatches(
+            @<div class:regex="w-full h-[1-9]{2,3} overflow-hidden relative" id="hero-image" diff:ignoreChildren></div>
+        );
+    }
 }
