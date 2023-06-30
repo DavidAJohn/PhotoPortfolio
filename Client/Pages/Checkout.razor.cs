@@ -20,7 +20,7 @@ public partial class Checkout
     private bool multipleDeliveryOptions = false;
 
     private string SubmitSpinnerHidden = "hidden";
-    private string DeliverySpinnerVisible = "invisible";
+    private bool DeliveryOptionUpdating = false;
     private bool ShowErrors = false;
     private string ErrorMessage = "";
 
@@ -137,7 +137,7 @@ public partial class Checkout
 
     private async Task SelectedDeliveryOption(DropdownItem deliveryOption)
     {
-        DeliverySpinnerVisible = "visible";
+        DeliveryOptionUpdating = true;
 
         var quote = GetDeliveryOption(deliveryOption.OptionRef);
 
@@ -146,7 +146,7 @@ public partial class Checkout
             await UpdateBasketCosts(quote);
         }
 
-        DeliverySpinnerVisible = "invisible";
+        DeliveryOptionUpdating = false;
 
         selectedDeliveryOption = deliveryOption.OptionRef;
     }
