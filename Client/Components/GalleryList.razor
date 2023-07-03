@@ -5,7 +5,7 @@
 
 @if (errorMessage != "")
 {
-    <div class="mx-2 animate-pulse">
+    <div class="mx-auto w-3/4 md:w-1/2 text-center animate-pulse">
         <div class="alert-box" role="alert">
             <span class="block sm:inline">@errorMessage</span>
         </div>
@@ -13,7 +13,9 @@
 }
 else if (galleries == null)
 {
-    <text>Loading galleries...</text>
+    <div class="sm:py-4 md:py-8 flex justify-center">
+        <LoadingProgress Visible="@(galleries == null)" />
+    </div>
 }
 else
 {
