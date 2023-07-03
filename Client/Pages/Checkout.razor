@@ -15,6 +15,12 @@
 
 <div class="h-auto">
     <div class="px-2 lg:container lg:max-w-6xl md:mt-8 mb-32 lg:mb-64">
+        @if (RetrievingQuotes)
+        {
+            <div class="sm:py-4 md:py-8 flex justify-center">
+                <LoadingProgress Visible="@(RetrievingQuotes)" />
+            </div>
+        }
         @if (basketItems != null)
         {
             @if (basketItems.Count > 0)

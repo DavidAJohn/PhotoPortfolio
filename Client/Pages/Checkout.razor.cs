@@ -21,6 +21,8 @@ public partial class Checkout
 
     private string SubmitSpinnerHidden = "hidden";
     private bool DeliveryOptionUpdating = false;
+    private bool RetrievingQuotes = false;
+
     private bool ShowErrors = false;
     private string ErrorMessage = "";
 
@@ -29,10 +31,13 @@ public partial class Checkout
 
     protected override async Task OnInitializedAsync()
     {
+        RetrievingQuotes = true;
+
         await Task.Run(() => Thread.Sleep(1)); // forces the page to wait before getting the basket
         basketItems = basketState.Basket.BasketItems;
 
         await GetBasketQuotes();
+        RetrievingQuotes = false;
     }
 
     private async Task GetBasketQuotes(string deliveryOption = "")
