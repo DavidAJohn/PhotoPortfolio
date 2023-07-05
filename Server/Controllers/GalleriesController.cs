@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PhotoPortfolio.Shared.Entities;
 
 namespace PhotoPortfolio.Server.Controllers;
 
@@ -13,9 +12,16 @@ public class GalleriesController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<List<Gallery>> GetPublicGalleries()
+    public async Task<IActionResult> GetPublicGalleries()
     {
-        return await _repository.GetPublicGalleries();
+        var galleries = await _repository.GetPublicGalleries();
+
+        if (galleries == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(galleries);
     }
 
     [HttpGet("{id:length(24)}")]
