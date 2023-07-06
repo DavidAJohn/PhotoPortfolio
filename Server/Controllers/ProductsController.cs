@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PhotoPortfolio.Shared.Entities;
 
 namespace PhotoPortfolio.Server.Controllers;
 
@@ -13,8 +12,12 @@ public class ProductsController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<List<Product>> GetProducts()
+    public async Task<IActionResult> GetProducts()
     {
-        return await _repository.GetAllAsync();
+        var products = await _repository.GetAllAsync();
+        
+        if (products == null) return NotFound();
+
+        return Ok(products);
     }
 }
