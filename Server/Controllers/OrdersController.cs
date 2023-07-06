@@ -5,10 +5,10 @@ namespace PhotoPortfolio.Server.Controllers;
 
 public class OrdersController : BaseApiController
 {
-    private readonly ILogger<AdminController> _logger;
+    private readonly ILogger<OrdersController> _logger;
     private readonly IOrderService _orderService;
 
-    public OrdersController(ILogger<AdminController> logger, IOrderService orderService)
+    public OrdersController(ILogger<OrdersController> logger, IOrderService orderService)
     {
         _logger = logger;
         _orderService = orderService;
