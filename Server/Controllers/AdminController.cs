@@ -47,9 +47,13 @@ public class AdminController : BaseApiController
     //
 
     [HttpGet("galleries")]
-    public async Task<List<Gallery>> GetAllGalleries()
+    public async Task<IActionResult> GetAllGalleries()
     {
-        return await _galleryRepository.GetAllAsync();
+        var galleries = await _galleryRepository.GetAllAsync();
+
+        if (galleries is null) return NotFound();
+
+        return Ok(galleries);
     }
 
     [HttpGet("galleries/{id:length(24)}")]
@@ -341,24 +345,38 @@ public class AdminController : BaseApiController
     //
 
     [HttpGet("photos")]
-    public async Task<List<Photo>> GetPhotos([FromQuery] PhotoSpecificationParams photoParams)
+    public async Task<IActionResult> GetPhotos([FromQuery] PhotoSpecificationParams photoParams)
     {
         var emptyParams = photoParams.GetType().GetProperties().All(prop => prop.GetValue(photoParams) == null);
 
+        var photos = new List<Photo>();
+
         if (emptyParams) // if all of the photoParams properties are null
         {
-            return await _photoRepository.GetAllAsync();
+            photos = await _photoRepository.GetAllAsync();
+        }
+        else
+        {
+            photos = await _photoRepository.GetFilteredPhotosAsync(photoParams);
         }
 
-        var photos = await _photoRepository.GetFilteredPhotosAsync(photoParams);
+        if (photos is null)
+        {
+            return NotFound();
+        }
 
-        return photos;
+        return Ok(photos);
     }
 
     [HttpPost("photos")]
     public async Task<IActionResult> AddPhoto(Photo photo)
     {
-        await _photoRepository.AddAsync(photo);
+        var added = await _photoRepository.AddAsync(photo);
+
+        if (added is null)
+        {
+            return BadRequest();
+        }
 
         return CreatedAtAction(nameof(GetPhotos), new { id = photo.Id }, photo);
     }
@@ -399,9 +417,16 @@ public class AdminController : BaseApiController
     //
 
     [HttpGet("products")]
-    public async Task<List<Product>> GetAllProducts()
+    public async Task<IActionResult> GetAllProducts()
     {
-        return await _productRepository.GetAllAsync();
+        var products = await _productRepository.GetAllAsync();
+        
+        if (products is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(products);
     }
 
     [HttpGet("products/{id:length(24)}")]
@@ -420,7 +445,12 @@ public class AdminController : BaseApiController
     [HttpPost("products")]
     public async Task<IActionResult> AddProduct(Product product)
     {
-        await _productRepository.AddAsync(product);
+        var added = await _productRepository.AddAsync(product);
+
+        if (added is null)
+        {
+            return BadRequest();
+        }
 
         return CreatedAtAction(nameof(GetAllProducts), new { id = product.Id }, product);
     }
@@ -444,10 +474,17 @@ public class AdminController : BaseApiController
     //
 
     [HttpGet("preferences")]
-    public async Task<Preferences> GetSitePreferences()
+    public async Task<IActionResult> GetSitePreferences()
     {
         var sitePrefsId = _config["SitePreferencesId"];
-        return await _preferencesRepository.GetSingleAsync(p => p.Id == sitePrefsId);
+        var prefs = await _preferencesRepository.GetSingleAsync(p => p.Id == sitePrefsId);
+
+        if (prefs is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(prefs);
     }
 
     [HttpPut("preferences")]
