@@ -511,22 +511,11 @@ public class AdminController : BaseApiController
     //
 
     [HttpGet("orders")]
-    public async Task<ActionResult<List<OrderDetailsDto>>> GetOrders([FromQuery] OrderSpecificationParams orderParams)
+    public async Task<IActionResult> GetOrders([FromQuery] OrderSpecificationParams orderParams)
     {
-        var emptyParams = orderParams.GetType().GetProperties().All(prop => prop.GetValue(orderParams) == null);
+        var orders = await _orderService.GetOrderDetails(orderParams);
 
-        var orders = new List<OrderDetailsDto>();
-
-        if (emptyParams) // if all of the orderParams properties are null
-        {
-            orders = await _orderService.GetOrderDetails();
-        }
-        else
-        {
-            orders = await _orderService.GetOrderDetails(orderParams);
-        }
-
-        if (orders.Any()) return Ok(orders);
+        if (orders is not null && orders.Count > 0) return Ok(orders);
 
         return NotFound();
     }
