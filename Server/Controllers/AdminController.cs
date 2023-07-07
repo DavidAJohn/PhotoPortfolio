@@ -72,7 +72,12 @@ public class AdminController : BaseApiController
     [HttpPost("galleries")]
     public async Task<IActionResult> AddGallery(Gallery gallery)
     {
-        await _galleryRepository.AddAsync(gallery);
+        var added = await _galleryRepository.AddAsync(gallery);
+
+        if (added is null)
+        {
+            return BadRequest();
+        }
 
         return CreatedAtAction(nameof(GetAllGalleries), new { id = gallery.Id }, gallery);
     }
