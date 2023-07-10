@@ -1,8 +1,8 @@
-﻿using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
+﻿using PhotoPortfolio.Shared.Models;
 
 namespace PhotoPortfolio.Server.Contracts;
 
 public interface IQuoteService
 {
-    Task<QuoteResponse> GetQuote(CreateQuoteDto quote);
+    Task<OrderBasketDto> GetBasketQuote(OrderBasketDto orderBasketDto, bool userIsAdmin);
 }
