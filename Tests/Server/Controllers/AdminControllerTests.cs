@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -11,8 +12,10 @@ using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolio.Shared.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace PhotoPortfolio.Tests.Server.Controllers;
@@ -21,16 +24,17 @@ public class AdminControllerTests : BaseApiController
 {
     private readonly AdminController _sut;
     private readonly ILogger<AdminController> _logger = Substitute.For<ILogger<AdminController>>();
-    private readonly IConfiguration _configuration = Substitute.For<IConfiguration>();
     private readonly IOrderService _orderService = Substitute.For<IOrderService>();
     private readonly IPhotoRepository _photoRepository = Substitute.For<IPhotoRepository>();
     private readonly IGalleryRepository _galleryRepository = Substitute.For<IGalleryRepository>();
     private readonly IProductRepository _productRepository = Substitute.For<IProductRepository>();
     private readonly IPreferencesRepository _preferencesRepository = Substitute.For<IPreferencesRepository>();
+    private readonly IUploadService _uploadService = Substitute.For<IUploadService>();
+    private readonly IConfigurationService _configService = Substitute.For<IConfigurationService>();
 
     public AdminControllerTests()
     {
-        _sut = new AdminController(_galleryRepository, _photoRepository, _productRepository, _preferencesRepository, _orderService, _configuration, _logger);
+        _sut = new AdminController(_galleryRepository, _photoRepository, _productRepository, _preferencesRepository, _orderService, _logger, _uploadService, _configService);
     }
 
     // GALLERIES
@@ -269,6 +273,177 @@ public class AdminControllerTests : BaseApiController
 
         // Assert
         result.StatusCode.Should().Be(404);
+    }
+
+    // UPLOADS
+    //
+
+    [Fact]
+    public async Task UploadFiles_ShouldReturnCreatedResultAndListOfUploadResults_WhenFilesUploadedSuccessfully()
+    {
+        // Arrange
+        var inMemoryConfig = new Dictionary<string, string?> {
+            {"AzureUpload:AzureStorageConnectionString", "AzureStorageConnectionString"},
+            {"AzureUpload:AzureContainerUri", "AzureContainerUri"},
+            {"AzureUpload:AzureStorageContainerName", "AzureStorageContainerName"}
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemoryConfig)
+            .Build();
+
+        _configService.GetConfiguration().Returns(configuration);
+
+        var files = Substitute.For<List<IFormFile>>();
+        files.Add(new FormFile(new MemoryStream(Encoding.UTF8.GetBytes("This is a test file")), 0, 100, "Test", "test.jpg"));
+
+        var uploadResults = new List<UploadResult>()
+        {
+            new UploadResult()
+            {
+                Uploaded = true,
+                ErrorCode = 0,
+                FileName= "test.jpg",
+                StoredFileName = "test_vxcvx.jpg",
+                AzureUri = "https://test.blob.core.windows.net/test/test_vxcvx.jpg",
+                Title = "Test",
+                Subject = "Test",
+                ErrorMessages = new List<string>(),
+                Metadata = new PhotoMetadata()
+            }
+        };
+
+        _uploadService.UploadFiles(Arg.Any<List<IFormFile>>()).ReturnsForAnyArgs(uploadResults);
+
+        // Act
+        var result = (CreatedResult)await _sut.UploadFiles(files);
+
+        // Assert
+        result.StatusCode.Should().Be(201);
+        result.Value.Should().BeOfType<List<UploadResult>>();
+
+        var results = result.Value as List<UploadResult>;
+        results.Should().NotBeNull();
+        results!.Count.Should().Be(1);
+        results.First().Uploaded.Should().BeTrue();
+        results.First().FileName.Should().Be("test.jpg");
+    }
+
+    [Fact]
+    public async Task UploadFiles_ShouldReturnListOfUploadResults_WhenAzureConnectionStringIsNull()
+    {
+        // Arrange
+        var inMemoryConfig = new Dictionary<string, string?> {
+            {"AzureUpload:AzureStorageContainerName", "AzureStorageContainerName"},
+            {"AzureUpload:AzureContainerUri", "AzureContainerUri"}
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemoryConfig)
+            .Build();
+
+        _configService.GetConfiguration().Returns(configuration);
+
+        var files = new List<IFormFile>()
+        {
+            new FormFile(new MemoryStream(Encoding.UTF8.GetBytes("This is a test file")), 0, 0, "Data", "test.txt")
+        };
+
+        var uploadResults = new List<UploadResult>()
+        {
+            new UploadResult()
+            {
+                Uploaded = true,
+                ErrorCode = 0,
+            }
+        };
+
+        _uploadService.UploadFiles(files).Returns(uploadResults);
+
+        // Act
+        var result = (BadRequestObjectResult)await _sut.UploadFiles(files);
+
+        // Assert
+        result.StatusCode.Should().Be(400);
+
+    }
+
+    [Fact]
+    public async Task UploadFiles_ShouldReturnListOfUploadResults_WhenAzureContainerNameIsNull()
+    {
+        // Arrange
+        var inMemoryConfig = new Dictionary<string, string?> {
+            {"AzureUpload:AzureStorageConnectionString", "AzureStorageConnectionString"},
+            {"AzureUpload:AzureContainerUri", "AzureContainerUri"}
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemoryConfig)
+            .Build();
+
+        _configService.GetConfiguration().Returns(configuration);
+
+        var files = new List<IFormFile>()
+        {
+            new FormFile(new MemoryStream(Encoding.UTF8.GetBytes("This is a test file")), 0, 0, "Data", "test.txt")
+        };
+
+        var uploadResults = new List<UploadResult>()
+        {
+            new UploadResult()
+            {
+                Uploaded = true,
+                ErrorCode = 0,
+            }
+        };
+
+        _uploadService.UploadFiles(files).Returns(uploadResults);
+
+        // Act
+        var result = (BadRequestObjectResult)await _sut.UploadFiles(files);
+
+        // Assert
+        result.StatusCode.Should().Be(400);
+
+    }
+
+    [Fact]
+    public async Task UploadFiles_ShouldReturnListOfUploadResults_WhenAzureContainerUriIsNull()
+    {
+        // Arrange
+        var inMemoryConfig = new Dictionary<string, string?> {
+            {"AzureUpload:AzureStorageConnectionString", "AzureStorageConnectionString"},
+            {"AzureUpload:AzureStorageContainerName", "AzureStorageContainerName"}
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemoryConfig)
+            .Build();
+
+        _configService.GetConfiguration().Returns(configuration);
+
+        var files = new List<IFormFile>()
+        {
+            new FormFile(new MemoryStream(Encoding.UTF8.GetBytes("This is a test file")), 0, 0, "Data", "test.txt")
+        };
+
+        var uploadResults = new List<UploadResult>()
+        {
+            new UploadResult()
+            {
+                Uploaded = true,
+                ErrorCode = 0,
+            }
+        };
+
+        _uploadService.UploadFiles(files).Returns(uploadResults);
+
+        // Act
+        var result = (BadRequestObjectResult)await _sut.UploadFiles(files);
+
+        // Assert
+        result.StatusCode.Should().Be(400);
+
     }
 
     // PHOTOS
@@ -586,6 +761,18 @@ public class AdminControllerTests : BaseApiController
     public async Task GetSitePreferences_ShouldReturnSitePreferences_WhenSitePreferencesExist()
     {
         // Arrange
+        var sitePrefsId = Guid.NewGuid().ToString();
+
+        var inMemoryConfig = new Dictionary<string, string?> {
+            { "SitePreferencesId", sitePrefsId }
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemoryConfig)
+            .Build();
+
+        _configService.GetConfiguration().Returns(configuration);
+
         _preferencesRepository.GetSingleAsync(Arg.Any<Expression<Func<Preferences, bool>>>())
                               .Returns(new Preferences());
 
@@ -601,6 +788,18 @@ public class AdminControllerTests : BaseApiController
     public async Task GetSitePreferences_ShouldReturnNotFound_WhenSitePreferencesDoNotExist()
     {
         // Arrange
+        var sitePrefsId = Guid.NewGuid().ToString();
+
+        var inMemoryConfig = new Dictionary<string, string?> {
+            { "SitePreferencesId", sitePrefsId }
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemoryConfig)
+            .Build();
+
+        _configService.GetConfiguration().Returns(configuration);
+
         _preferencesRepository.GetSingleAsync(Arg.Any<Expression<Func<Preferences, bool>>>())
                               .ReturnsNull();
 
