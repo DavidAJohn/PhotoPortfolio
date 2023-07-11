@@ -49,6 +49,7 @@ try
     builder.Services.AddScoped<IQuoteService, QuoteService>();
     builder.Services.AddScoped<IPreferencesRepository, PreferencesRepository>();
     builder.Services.AddScoped<ICreditService, CreditService>();
+    builder.Services.AddScoped<IUploadService, UploadService>();
 
     builder.Services.AddControllers()
         .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
