@@ -13,27 +13,27 @@ public class AdminController : BaseApiController
     private readonly IProductRepository _productRepository;
     private readonly IPreferencesRepository _preferencesRepository;
     private readonly IOrderService _orderService;
-    private readonly IConfiguration _config;
     private readonly ILogger<AdminController> _logger;
     private readonly IUploadService _uploadService;
+    private readonly IConfigurationService _configService;
 
     public AdminController(IGalleryRepository galleryRepository, 
         IPhotoRepository photoRepository, 
         IProductRepository productRepository,
         IPreferencesRepository preferencesRepository,
         IOrderService orderService,
-        IConfiguration config, 
         ILogger<AdminController> logger,
-        IUploadService uploadService)
+        IUploadService uploadService,
+        IConfigurationService configService)
     {
         _galleryRepository = galleryRepository;
         _photoRepository = photoRepository;
         _productRepository = productRepository;
         _preferencesRepository = preferencesRepository;
         _orderService = orderService;
-        _config = config;
         _logger = logger;
         _uploadService = uploadService;
+        _configService = configService;
     }
 
     // GALLERIES 
@@ -113,15 +113,23 @@ public class AdminController : BaseApiController
     [HttpPost("uploads")]
     public async Task<IActionResult> UploadFiles([FromForm] IEnumerable<IFormFile> files)
     {
-        var azureConnectionString = _config["AzureUpload:AzureStorageConnectionString"];
-        var azureContainerUri = _config["AzureUpload:AzureContainerUri"];
-        var azureContainerName = _config["AzureUpload:AzureContainerName"];
+        var config = _configService.GetConfiguration();
+        var azureConnectionString = config.GetValue<string>("AzureUpload:AzureStorageConnectionString");
+        var azureContainerUri = config.GetValue<string>("AzureUpload:AzureContainerUri");
+        var azureContainerName = config.GetValue<string>("AzureUpload:AzureStorageContainerName");
 
         // check that the Azure Storage connection string is available
         if (string.IsNullOrEmpty(azureConnectionString))
         {
             _logger.LogError("Azure Storage connection string is empty or has not been set in config/env variables");
             return BadRequest("Azure Storage connection string is empty or unavailable");
+        }
+
+        // check that the Azure container uri is available
+        if (string.IsNullOrEmpty(azureContainerUri))
+        {
+            _logger.LogError("Azure container uri is empty or has not been set in config/env variables");
+            return BadRequest("Azure container uri is empty or unavailable");
         }
 
         // check that the Azure Storage container name is available
@@ -271,7 +279,8 @@ public class AdminController : BaseApiController
     [HttpGet("preferences")]
     public async Task<IActionResult> GetSitePreferences()
     {
-        var sitePrefsId = _config["SitePreferencesId"];
+        var config = _configService.GetConfiguration();
+        var sitePrefsId = config.GetValue<string>("SitePreferencesId");
         var prefs = await _preferencesRepository.GetSingleAsync(p => p.Id == sitePrefsId);
 
         if (prefs is null)
@@ -285,7 +294,8 @@ public class AdminController : BaseApiController
     [HttpPut("preferences")]
     public async Task<IActionResult> UpdateSitePrefences(Preferences prefs)
     {
-        prefs.Id = _config["SitePreferencesId"];
+        var config = _configService.GetConfiguration();
+        prefs.Id = config.GetValue<string>("SitePreferencesId");
 
         var response = await _preferencesRepository.UpdateAsync(prefs);
 

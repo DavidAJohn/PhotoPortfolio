@@ -50,6 +50,7 @@ try
     builder.Services.AddScoped<IPreferencesRepository, PreferencesRepository>();
     builder.Services.AddScoped<ICreditService, CreditService>();
     builder.Services.AddScoped<IUploadService, UploadService>();
+    builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
 
     builder.Services.AddControllers()
         .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
