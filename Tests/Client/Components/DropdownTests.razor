@@ -58,6 +58,7 @@
             @<button class:ignore="" type:ignore="" id="dropdown-button">
                 Test Title
                 <svg diff:ignore=""></svg>
+                <svg diff:ignore=""></svg>
             </button>
         );
     }
@@ -153,4 +154,51 @@
         Assert.True(eventCalled);
     }
 
+    [Fact]
+    public void Dropdown_Includes_Width_Class_When_DropdownWidth_Supplied()
+    {
+        DropdownItem item1 = CreateDropdownItem(1, "Test Name 1", "Test Ref 1");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item1);
+
+        var cut = Render(@<Dropdown DropdownTitle="Test Title" DropdownItems="DropdownItems" DropdownWidth="Dropdown.DropdownWidthOptions.Medium" />);
+        var element = cut.Find("#dropdown-menu");
+
+        element.MarkupMatches(
+            @<div class:regex="w-[1-9]{2,3}" id="dropdown-menu" role:ignore="" tabindex:ignore="" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void Dropdown_Includes_Width_Class_When_DropdownWidth_Not_Supplied()
+    {
+        DropdownItem item1 = CreateDropdownItem(1, "Test Name 1", "Test Ref 1");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item1);
+
+        var cut = Render(@<Dropdown DropdownTitle="Test Title" DropdownItems="DropdownItems" />);
+        var element = cut.Find("#dropdown-menu");
+
+        element.MarkupMatches(
+            @<div class:regex="w-[1-9]{2,3}" id="dropdown-menu" role:ignore="" tabindex:ignore="" diff:ignoreChildren></div>
+        );
+    }
+
+    [Fact]
+    public void Dropdown_Includes_Width_Class_Value_Above_10_When_DropdownWidth_Small_Supplied()
+    {
+        DropdownItem item1 = CreateDropdownItem(1, "Test Name 1", "Test Ref 1");
+
+        List<DropdownItem> DropdownItems = new List<DropdownItem>();
+        DropdownItems.Add(item1);
+
+        var cut = Render(@<Dropdown DropdownTitle="Test Title" DropdownItems="DropdownItems" DropdownWidth="Dropdown.DropdownWidthOptions.Small" />);
+        var element = cut.Find("#dropdown-menu");
+
+        element.MarkupMatches(
+            @<div class:regex="w-[1-9]{2}" id="dropdown-menu" role:ignore="" tabindex:ignore="" diff:ignoreChildren></div>
+        );
+    }
 }
