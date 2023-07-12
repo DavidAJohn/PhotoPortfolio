@@ -11,14 +11,14 @@ public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IPreferencesRepository _preferencesRepository;
-    private readonly IConfiguration _config;
+    private readonly IConfigurationService _configService;
     private readonly ILogger<OrderService> _logger;
 
-    public OrderService(IOrderRepository orderRepository, IPreferencesRepository preferencesRepository, IConfiguration config, ILogger<OrderService> logger)
+    public OrderService(IOrderRepository orderRepository, IPreferencesRepository preferencesRepository, IConfigurationService configService, ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
         _preferencesRepository = preferencesRepository;
-        _config = config;
+        _configService = configService;
         _logger = logger;
     }
 
@@ -108,9 +108,9 @@ public class OrderService : IOrderService
                 // update order with new details sent from Stripe
                 var response = await _orderRepository.UpdateAsync(order);
 
-                if (response != null) return true;
+                if (response is null) return false;
 
-                return false;
+                return true;
             };
 
             _logger.LogWarning("Error when updating Order - unable to find existing order: {orderId}", orderId);
@@ -148,9 +148,9 @@ public class OrderService : IOrderService
 
                 var response = await _orderRepository.UpdateAsync(order);
 
-                if (response != null) return true;
+                if (response is null) return false;
 
-                return false;
+                return true;
             };
 
             return false;
@@ -207,10 +207,17 @@ public class OrderService : IOrderService
             orders = await _orderRepository.GetFilteredOrdersAsync(orderParams);
         }
 
-        List<OrderDetailsDto> orderDetails = orders.ConvertAll(
-            new Converter<Order, OrderDetailsDto>(OrderToDetailsConverter));
+        if (orders is null) return null!;
 
-        return orderDetails;
+        if (orders.Count > 0)
+        {
+            List<OrderDetailsDto> orderDetails = orders.ConvertAll(
+                new Converter<Order, OrderDetailsDto>(OrderToDetailsConverter));
+
+            return orderDetails;
+        }
+
+        return null!;
     }
 
     private OrderDetailsDto OrderToDetailsConverter(Order order)
@@ -243,7 +250,8 @@ public class OrderService : IOrderService
 
     public async Task<bool> ShouldApproveOrder(string orderId)
     {
-        var sitePrefsId = _config["SitePreferencesId"];
+        var config = _configService.GetConfiguration();
+        var sitePrefsId = config.GetValue<string>("SitePreferencesId");
         if (string.IsNullOrWhiteSpace(sitePrefsId)) return false;
 
         var prefs = await _preferencesRepository.GetSingleAsync(p => p.Id == sitePrefsId);
