@@ -14,21 +14,22 @@ namespace PhotoPortfolio.Server.Services;
 public class UploadService : IUploadService
 {
     private readonly ILogger<UploadService> _logger;
-    private readonly IConfiguration _config;
+    private readonly IConfigurationService _configService;
 
-    public UploadService(ILogger<UploadService> logger, IConfiguration config)
+    public UploadService(ILogger<UploadService> logger, IConfigurationService configService)
     {
         _logger = logger;
-        _config = config;
+        _configService = configService;
     }
 
     public async Task<List<UploadResult>> UploadFiles(IEnumerable<IFormFile> files)
     {
-        var azureConnectionString = _config["AzureUpload:AzureStorageConnectionString"];
-        var azureContainerName = _config["AzureUpload:AzureContainerName"];
-        var permittedFileExtensions = _config["AzureUpload:FileUploadTypesAllowed"];
-        var fileSizeLimit = _config.GetValue<long>("AzureUpload:MaxFileUploadSize");
-        var fileNameLengthLimit = _config.GetValue<int>("AzureUpload:MaxFileNameLength");
+        var config = _configService.GetConfiguration();
+        var azureConnectionString = config.GetValue<string>("AzureUpload:AzureStorageConnectionString");
+        var azureContainerName = config.GetValue<string>("AzureUpload:AzureContainerName");
+        var permittedFileExtensions = config.GetValue<string>("AzureUpload:FileUploadTypesAllowed");
+        var fileSizeLimit = config.GetValue<long>("AzureUpload:MaxFileUploadSize");
+        var fileNameLengthLimit = config.GetValue<int>("AzureUpload:MaxFileNameLength");
 
         List<UploadResult> uploadResults = new();
 
@@ -271,7 +272,7 @@ public class UploadService : IUploadService
         if (file.FileName.Length > fileNameLengthLimit)
         {
             _logger.LogError("The name of '{fileName}' was too long at {fileNameLength} characters. The current limit is {fileNameLengthLimit} characters", file.FileName, file.FileName.Length, fileNameLengthLimit);
-            filecheckErrors.Add($"The name of '{file.FileName}' was too long: {file.FileName.Length}  characters");
+            filecheckErrors.Add($"The name of '{file.FileName}' was too long: {file.FileName.Length} characters");
         }
 
         if (filecheckErrors.Count == 0) return null!;
