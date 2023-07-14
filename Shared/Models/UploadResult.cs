@@ -8,7 +8,16 @@ public class UploadResult
     public string? AzureUri { get; set; }
     public string? Title { get; set; }
     public string? Subject { get; set; }
-    public int ErrorCode { get; set; }
+    public UploadErrorCode ErrorCode { get; set; }
     public List<string>? ErrorMessages { get; set; }
     public PhotoMetadata? Metadata { get; set; }
+}
+
+public enum UploadErrorCode
+{ 
+    Success = 0,
+    ImageProcessingError = 1,
+    BasicFileCheckError = 2,
+    AzureUploadError = 3,
+    UnexpectedError = 4
 }

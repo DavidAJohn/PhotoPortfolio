@@ -216,13 +216,12 @@ else
             {
                 Console.WriteLine(ex.Message);
 
-                uploadResults.Add(
-                    new()
-                        {
-                            FileName = file.Name,
-                            ErrorCode = 6,
-                            Uploaded = false
-                        });
+                uploadResults.Add(new()
+                    {
+                        FileName = file.Name,
+                        ErrorCode = UploadErrorCode.UnexpectedError,
+                        Uploaded = false
+                    });
             }
         }
 

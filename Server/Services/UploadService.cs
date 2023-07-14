@@ -51,7 +51,7 @@ public class UploadService : IUploadService
             {
                 uploadResult.Uploaded = false;
                 uploadResult.FileName = file.FileName;
-                uploadResult.ErrorCode = 2; // basic file checks failed
+                uploadResult.ErrorCode = UploadErrorCode.BasicFileCheckError;
                 uploadResult.ErrorMessages = basicFileChecks;
 
                 uploadResults.Add(uploadResult);
@@ -198,7 +198,7 @@ public class UploadService : IUploadService
                     uploadResult.Uploaded = true;
                     uploadResult.StoredFileName = blob.Name;
                     uploadResult.AzureUri = blob.Uri.ToString();
-                    uploadResult.ErrorCode = 0;
+                    uploadResult.ErrorCode = UploadErrorCode.Success;
 
                     uploadResult.Title = imageTitle == "" ? file.FileName : imageTitle; // use file name if title is unavailable
                     uploadResult.Subject = imageSubject;
@@ -208,6 +208,17 @@ public class UploadService : IUploadService
 
                     _logger.LogInformation("Azure Storage info and photo metadata for '{fileName}' was retrieved and added to the List of UploadResults", file.FileName);
                 }
+                catch (Azure.RequestFailedException ex)
+                {
+                    var metadata = uploadResult.Metadata;
+                    _logger.LogError("The file '{fileName}' could not be uploaded to Azure : {message}.", file.FileName, ex.Message);
+
+                    uploadResult.Uploaded = false;
+                    uploadResult.FileName = file.FileName;
+                    uploadResult.ErrorCode = UploadErrorCode.AzureUploadError;
+                    uploadResult.ErrorMessages = new List<string>() { ex.Message };
+                    uploadResults.Add(uploadResult);
+                }
                 catch (ImageProcessingException ex)
                 {
                     var metadata = uploadResult.Metadata;
@@ -215,18 +226,18 @@ public class UploadService : IUploadService
 
                     uploadResult.Uploaded = false;
                     uploadResult.FileName = file.FileName;
-                    uploadResult.ErrorCode = 1;
+                    uploadResult.ErrorCode = UploadErrorCode.ImageProcessingError;
                     uploadResult.ErrorMessages = new List<string>() { ex.Message };
                     uploadResults.Add(uploadResult);
                 }
                 catch (Exception ex)
                 {
                     var metadata = uploadResult.Metadata;
-                    _logger.LogError("The file '{fileName}' could not be uploaded to Azure, or photo metadata could not be extracted without error(s): {message}. Metadata : {@Metadata}", file.FileName, ex.Message, metadata);
+                    _logger.LogError("There was an unexpected error when attempting to process '{fileName}' : {message}.", file.FileName, ex.Message);
 
                     uploadResult.Uploaded = false;
                     uploadResult.FileName = file.FileName;
-                    uploadResult.ErrorCode = 1;
+                    uploadResult.ErrorCode = UploadErrorCode.UnexpectedError;
                     uploadResult.ErrorMessages = new List<string>() { ex.Message };
                     uploadResults.Add(uploadResult);
                 }
