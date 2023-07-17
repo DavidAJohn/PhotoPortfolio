@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Web;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
@@ -38,7 +39,9 @@ try
 
     builder.Services.ConfigureOcelotPlaceholders(builder.Configuration); // custom extension: ./Helpers/FileConfigurationExtensions
 
-    builder.Services.AddSingleton<MongoContext>();
+    builder.Services.AddSingleton(_ =>
+        new MongoContext(builder.Configuration.GetValue<string>("MongoConnection:ConnectionString"),
+                         builder.Configuration.GetValue<string>("MongoConnection:DatabaseName")));
 
     builder.Services.AddScoped<IGalleryRepository, GalleryRepository>();
     builder.Services.AddScoped<IPhotoRepository, PhotoRepository>();

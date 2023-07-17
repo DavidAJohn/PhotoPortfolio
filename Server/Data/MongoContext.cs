@@ -4,13 +4,11 @@ public class MongoContext
 {
     private readonly MongoClient _client;
     private readonly IMongoDatabase _database;
-    private readonly IConfiguration _config;
 
-    public MongoContext(IConfiguration config)
+    public MongoContext(string? connectionString, string? databaseName)
     {
-        _config = config;
-        _client = new MongoClient(_config["MongoConnection:ConnectionString"]);
-        _database = _client.GetDatabase(_config["MongoConnection:DatabaseName"]);
+        _client = new MongoClient(connectionString);
+        _database = _client.GetDatabase(databaseName);
     }
 
     public IMongoClient Client => _client;
