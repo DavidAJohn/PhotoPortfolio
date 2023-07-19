@@ -36,8 +36,34 @@ public class PhotosControllerTests : BaseApiController
             SortOrder = "asc",
         };
 
+        var photo = new Photo
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = "Test",
+            Caption = "Caption",
+            FileName = "Test.jpg",
+            Uri = "https://localhost/images/Test.jpg",
+            GalleryId = "1",
+            GallerySortOrder = 1,
+            DateAdded = DateTime.UtcNow,
+            Metadata = new PhotoMetadata
+            {
+                Tags = new List<string> { "Test" },
+                Height = 100,
+                Width = 100
+            },
+            Products = new List<PhotoProduct>
+            {
+                new PhotoProduct
+                {
+                    Id = Guid.NewGuid().ToString(),
+                }
+            }
+        };
+
+        var photos = new List<Photo> { photo };
         _repository.GetFilteredPhotosAsync(photoParams)
-                   .Returns(new List<Photo>());
+                   .Returns(photos);
 
         // Act
         var result = (OkObjectResult)await _sut.GetPhotos(photoParams);
@@ -59,8 +85,35 @@ public class PhotosControllerTests : BaseApiController
             SortOrder = null 
         };
 
+        var photo = new Photo
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = "Test",
+            Caption = "Caption",
+            FileName = "Test.jpg",
+            Uri = "https://localhost/images/Test.jpg",
+            GalleryId = "1",
+            GallerySortOrder = 1,
+            DateAdded = DateTime.UtcNow,
+            Metadata = new PhotoMetadata
+            {
+                Tags = new List<string> { "Test" },
+                Height = 100,
+                Width = 100
+            },
+            Products = new List<PhotoProduct>
+            {
+                new PhotoProduct
+                {
+                    Id = Guid.NewGuid().ToString(),
+                }
+            }
+        };
+
+        var photos = new List<Photo> { photo };
+
         _repository.GetAllAsync()
-                   .Returns(new List<Photo>());
+                   .Returns(photos);
 
         // Act
         var result = (OkObjectResult)await _sut.GetPhotos(photoParams);

@@ -29,7 +29,7 @@ public class PhotosController : BaseApiController
             photos = await _repository.GetFilteredPhotosAsync(photoParams);
         }
 
-        if (photos is null)
+        if (photos is null || photos.Count == 0)
         {
             return NotFound();
         }
