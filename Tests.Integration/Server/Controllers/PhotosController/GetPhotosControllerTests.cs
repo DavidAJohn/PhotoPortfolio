@@ -75,7 +75,48 @@ public class GetPhotosControllerTests : IClassFixture<PhotoApiFactory>
         };
 
         // Act
-        var url = QueryHelpers.AddQueryString("photos", "GalleryId", photoParams.GalleryId);
+        var queryStringParams = new Dictionary<string, string>
+        {
+            { "GalleryId", photoParams.GalleryId }
+        };
+        var url = QueryHelpers.AddQueryString("photos", queryStringParams);
+        var response = await _client.GetAsync(url);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<List<Photo>>();
+        result!.First().Id.Should().Be(createdPhoto.Id);
+        result!.First().Should().BeEquivalentTo(createdPhoto, options => options
+                            .ExcludingMissingMembers()
+                            .Excluding(p => p.DateAdded));
+
+        // Clean up
+        await _photoRepository.DeleteAsync(createdPhoto.Id!);
+    }
+
+    [Fact]
+    public async Task GetPhotos_ReturnsListOfPhotos_WhenPhotosExist_WithSortingParams()
+    {
+        // Arrange
+        var photo = CreatePhoto();
+        var createdPhoto = await _photoRepository.AddAsync(photo);
+
+        var photoParams = new PhotoSpecificationParams
+        {
+            GalleryId = "1",
+            Title = "Test",
+            SortBy = "Custom",
+            SortOrder = "asc",
+        };
+
+        // Act
+        var queryStringParams = new Dictionary<string, string>
+        {
+            { "sortBy", photoParams.SortBy },
+            { "sortOrder", photoParams.SortOrder }
+        };
+        var url = QueryHelpers.AddQueryString("photos", queryStringParams);
         var response = await _client.GetAsync(url);
 
         // Assert
