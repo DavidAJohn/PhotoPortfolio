@@ -36,31 +36,7 @@ public class PhotosControllerTests : BaseApiController
             SortOrder = "asc",
         };
 
-        var photo = new Photo
-        {
-            Id = Guid.NewGuid().ToString(),
-            Title = "Test",
-            Caption = "Caption",
-            FileName = "Test.jpg",
-            Uri = "https://localhost/images/Test.jpg",
-            GalleryId = "1",
-            GallerySortOrder = 1,
-            DateAdded = DateTime.UtcNow,
-            Metadata = new PhotoMetadata
-            {
-                Tags = new List<string> { "Test" },
-                Height = 100,
-                Width = 100
-            },
-            Products = new List<PhotoProduct>
-            {
-                new PhotoProduct
-                {
-                    Id = Guid.NewGuid().ToString(),
-                }
-            }
-        };
-
+        var photo = CreatePhoto();
         var photos = new List<Photo> { photo };
         _repository.GetFilteredPhotosAsync(photoParams)
                    .Returns(photos);
@@ -85,33 +61,8 @@ public class PhotosControllerTests : BaseApiController
             SortOrder = null 
         };
 
-        var photo = new Photo
-        {
-            Id = Guid.NewGuid().ToString(),
-            Title = "Test",
-            Caption = "Caption",
-            FileName = "Test.jpg",
-            Uri = "https://localhost/images/Test.jpg",
-            GalleryId = "1",
-            GallerySortOrder = 1,
-            DateAdded = DateTime.UtcNow,
-            Metadata = new PhotoMetadata
-            {
-                Tags = new List<string> { "Test" },
-                Height = 100,
-                Width = 100
-            },
-            Products = new List<PhotoProduct>
-            {
-                new PhotoProduct
-                {
-                    Id = Guid.NewGuid().ToString(),
-                }
-            }
-        };
-
+        var photo = CreatePhoto();
         var photos = new List<Photo> { photo };
-
         _repository.GetAllAsync()
                    .Returns(photos);
 
@@ -149,10 +100,40 @@ public class PhotosControllerTests : BaseApiController
     public async Task GetPhotoById_WithValidId_ReturnsPhoto()
     {
         // Arrange
+        var photo = CreatePhoto();
+
+        _repository.GetSingleAsync(Arg.Any<Expression<Func<Photo, bool>>>())
+                   .Returns(photo);
+
+        // Act
+        var result = (OkObjectResult)await _sut.GetPhotoById(photo.Id!);
+
+        // Assert
+        result.StatusCode.Should().Be(200);
+        result.Value.Should().BeOfType<Photo>();
+    }
+
+    [Fact]
+    public async Task GetPhotoById_ShouldReturnNotFound_WhenPhotoDoesNotExist()
+    {
+          // Arrange
         var id = Guid.NewGuid().ToString();
+
+        _repository.GetSingleAsync(Arg.Any<Expression<Func<Photo, bool>>>())
+                   .ReturnsNull();
+
+        // Act
+        var result = (NotFoundResult)await _sut.GetPhotoById(id);
+
+        // Assert
+        result.StatusCode.Should().Be(404);
+    }
+
+    private Photo CreatePhoto()
+    {
         var photo = new Photo
         {
-            Id = id,
+            Id = Guid.NewGuid().ToString(),
             Title = "Test",
             Caption = "Caption",
             FileName = "Test.jpg",
@@ -175,30 +156,6 @@ public class PhotosControllerTests : BaseApiController
             }
         };
 
-        _repository.GetSingleAsync(Arg.Any<Expression<Func<Photo, bool>>>())
-                   .Returns(photo);
-
-        // Act
-        var result = (OkObjectResult)await _sut.GetPhotoById(id);
-
-        // Assert
-        result.StatusCode.Should().Be(200);
-        result.Value.Should().BeOfType<Photo>();
-    }
-
-    [Fact]
-    public async Task GetPhotoById_ShouldReturnNotFound_WhenPhotoDoesNotExist()
-    {
-          // Arrange
-        var id = Guid.NewGuid().ToString();
-
-        _repository.GetSingleAsync(Arg.Any<Expression<Func<Photo, bool>>>())
-                   .ReturnsNull();
-
-        // Act
-        var result = (NotFoundResult)await _sut.GetPhotoById(id);
-
-        // Assert
-        result.StatusCode.Should().Be(404);
+        return photo;
     }
 }
