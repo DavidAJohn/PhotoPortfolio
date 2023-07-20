@@ -58,6 +58,8 @@ public class GalleryRepository : BaseRepository<Gallery>, IGalleryRepository
             .Find(g => g.Public == true && g.DisplayInGalleryList != false)
             .ToListAsync();
 
+        if (galleries.Count == 0) return null!;
+
         return galleries;
     }
 }
