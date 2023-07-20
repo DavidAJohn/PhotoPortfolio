@@ -17,8 +17,6 @@ public class PhotoApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
         new MongoDbBuilder()
             .WithImage("mongo:5")
             .WithEnvironment("MONGO_INITDB_DATABASE", TestDbName)
-            .WithExposedPort(27017)
-            .WithPortBinding(27017)
             .Build();
 
     public string ConnectionString => _dbContainer.GetConnectionString();
