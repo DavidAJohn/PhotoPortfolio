@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PhotoPortfolio.Server;
@@ -12,6 +13,7 @@ namespace PhotoPortfolio.Tests.Integration;
 public class PhotoApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
 {
     public const string TestDbName = "PhotoPortfolioTestDb";
+    public const string SitePreferencesId = "63ff656c79461a7346026485";
 
     private readonly MongoDbContainer _dbContainer =
         new MongoDbBuilder()
@@ -29,6 +31,13 @@ public class PhotoApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
             services.AddSingleton(_ =>
                     new MongoContext(_dbContainer.GetConnectionString(), TestDbName));
         });
+
+        builder.UseConfiguration(new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        { "SitePreferencesId", SitePreferencesId }
+                    })
+                    .Build());
     }
 
     public async Task InitializeAsync()
