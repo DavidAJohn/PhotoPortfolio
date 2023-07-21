@@ -12,6 +12,7 @@ public class GetGalleriesControllerTests : IClassFixture<PhotoApiFactory>
 {
     private readonly PhotoApiFactory _apiFactory;
     private readonly HttpClient _client;
+    private readonly MongoContext _mongoContext;
     private readonly IGalleryRepository _galleryRepository;
     private readonly IPhotoRepository _photoRepository;
 
@@ -22,11 +23,9 @@ public class GetGalleriesControllerTests : IClassFixture<PhotoApiFactory>
         _client.BaseAddress = new Uri("https://localhost/api/");
         _client.DefaultRequestHeaders.Add("Accept", "application/json");
 
-        _photoRepository = new PhotoRepository(
-            new MongoContext(_apiFactory.ConnectionString, PhotoApiFactory.TestDbName));
-
-        _galleryRepository = new GalleryRepository(
-            new MongoContext(_apiFactory.ConnectionString, PhotoApiFactory.TestDbName), _photoRepository);
+        _mongoContext = new MongoContext(_apiFactory.ConnectionString, PhotoApiFactory.TestDbName);
+        _photoRepository = new PhotoRepository(_mongoContext);
+        _galleryRepository = new GalleryRepository(_mongoContext, _photoRepository);
     }
 
     [Fact]
