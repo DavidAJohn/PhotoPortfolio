@@ -291,6 +291,18 @@ public class AdminController : BaseApiController
         return Ok(prefs);
     }
 
+    [HttpPost("preferences")]
+    public async Task<IActionResult> CreateSitePreferences()
+    {
+        var config = _configService.GetConfiguration();
+        var sitePrefsId = config.GetValue<string>("SitePreferencesId");
+        var prefs = await _preferencesRepository.GetSingleAsync(p => p.Id == sitePrefsId);
+
+        prefs ??= await _preferencesRepository.AddAsync(new Preferences { Id = sitePrefsId });
+
+        return Ok(prefs);
+    }
+
     [HttpPut("preferences")]
     public async Task<IActionResult> UpdateSitePrefences(Preferences prefs)
     {
