@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using PhotoPortfolio.Server.Contracts;
@@ -24,8 +25,12 @@ public class ProductsControllerTests : BaseApiController
     public async Task GetProducts_ShouldReturnProducts_WhenProductsExist()
     {
         // Arrange
+        var product = new Product
+        {
+            Id = ObjectId.GenerateNewId().ToString()
+        };
         _repository.GetAllAsync()
-                   .Returns(new List<Product>());
+                   .Returns(new List<Product> { product });
 
         // Act
         var result = (OkObjectResult)await _sut.GetProducts();

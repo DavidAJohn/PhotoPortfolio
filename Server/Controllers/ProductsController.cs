@@ -16,7 +16,7 @@ public class ProductsController : BaseApiController
     {
         var products = await _repository.GetAllAsync();
         
-        if (products == null) return NotFound();
+        if (products == null || products.Count == 0) return NotFound();
 
         return Ok(products);
     }
