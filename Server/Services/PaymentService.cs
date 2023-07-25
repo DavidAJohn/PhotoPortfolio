@@ -6,15 +6,15 @@ namespace PhotoPortfolio.Server.Services;
 
 public class PaymentService : IPaymentService
 {
-    private readonly IConfiguration _config;
     private readonly ILogger<PaymentService> _logger;
     private readonly IStripeClientFactory _stripeClientFactory;
+    private readonly IHttpContextAccessor _httpContext;
 
-    public PaymentService(IConfiguration config, ILogger<PaymentService> logger, IStripeClientFactory stripeClientFactory)
+    public PaymentService(ILogger<PaymentService> logger, IStripeClientFactory stripeClientFactory, IHttpContextAccessor httpContext)
     {
-        _config = config;
         _logger = logger;
         _stripeClientFactory = stripeClientFactory;
+        _httpContext = httpContext;
     }
 
     public async Task<Session> CreateCheckoutSession(OrderBasketDto orderBasketDto)
@@ -24,6 +24,8 @@ public class PaymentService : IPaymentService
             StripeClient stripeClient = _stripeClientFactory.Create();
             StripeConfiguration.StripeClient = stripeClient;
             
+            var baseUrl = _httpContext.HttpContext!.GetAppBaseUrl();
+
             var basketItems = orderBasketDto.BasketItems;
             var lineItems = new List<SessionLineItemOptions>();
 
@@ -75,8 +77,8 @@ public class PaymentService : IPaymentService
                 },
                 LineItems = lineItems,
                 Mode = "payment",
-                SuccessUrl = "https://localhost:7200/checkout/success?session_id={CHECKOUT_SESSION_ID}",
-                CancelUrl = "https://localhost:7200/checkout",
+                SuccessUrl = $"{baseUrl}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
+                CancelUrl = $"{baseUrl}/checkout",
                 Metadata = new Dictionary<string, string>
                 {
                     { "shipping_method", orderBasketDto.ShippingMethod },

@@ -60,6 +60,8 @@ try
 
     builder.Services.AddRazorPages();
 
+    builder.Services.AddHttpContextAccessor();
+
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())
