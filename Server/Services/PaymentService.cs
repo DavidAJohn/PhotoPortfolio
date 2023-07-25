@@ -8,19 +8,22 @@ public class PaymentService : IPaymentService
 {
     private readonly IConfiguration _config;
     private readonly ILogger<PaymentService> _logger;
+    private readonly IStripeClientFactory _stripeClientFactory;
 
-    public PaymentService(IConfiguration config, ILogger<PaymentService> logger)
+    public PaymentService(IConfiguration config, ILogger<PaymentService> logger, IStripeClientFactory stripeClientFactory)
     {
         _config = config;
         _logger = logger;
+        _stripeClientFactory = stripeClientFactory;
     }
 
     public async Task<Session> CreateCheckoutSession(OrderBasketDto orderBasketDto)
     {
         try
         {
-            StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
-
+            StripeClient stripeClient = _stripeClientFactory.Create();
+            StripeConfiguration.StripeClient = stripeClient;
+            
             var basketItems = orderBasketDto.BasketItems;
             var lineItems = new List<SessionLineItemOptions>();
 
@@ -96,7 +99,8 @@ public class PaymentService : IPaymentService
     {
         try
         {
-            StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
+            StripeClient stripeClient = _stripeClientFactory.Create();
+            StripeConfiguration.StripeClient = stripeClient;
 
             var sessionService = new SessionService();
             Session session = await sessionService.GetAsync(sessionId);
