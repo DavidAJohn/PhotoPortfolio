@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Web;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
@@ -54,6 +53,7 @@ try
     builder.Services.AddScoped<ICreditService, CreditService>();
     builder.Services.AddScoped<IUploadService, UploadService>();
     builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
+    builder.Services.AddScoped<IStripeClientFactory, StripeClientFactory>();
 
     builder.Services.AddControllers()
         .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
