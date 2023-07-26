@@ -73,14 +73,14 @@ public class OrdersControllerTests : BaseApiController
     }
 
     [Fact]
-    public async Task GetCheckoutSessionFromId_ShouldReturnOrderDetailsDto_WhenOrderIdExists()
+    public async Task GetOrderDetailsFromId_ShouldReturnOrderDetailsDto_WhenOrderIdExists()
     {
         // Arrange
         var id = Guid.NewGuid().ToString();
         _service.GetOrderDetailsFromId(id).Returns(new OrderDetailsDto());
 
         // Act
-        var result = (OkObjectResult)await _sut.GetCheckoutSessionFromId(id);
+        var result = (OkObjectResult)await _sut.GetOrderDetailsFromId(id);
 
         // Assert
         result.StatusCode.Should().Be(200);
@@ -88,14 +88,14 @@ public class OrdersControllerTests : BaseApiController
     }
 
     [Fact]
-    public async Task GetCheckoutSessionFromId_ShouldReturnNotFound_WhenOrderIdDoesNotExist()
+    public async Task GetOrderDetailsFromId_ShouldReturnNotFound_WhenOrderIdDoesNotExist()
     {
         // Arrange
         var id = Guid.NewGuid().ToString();
         _service.GetOrderDetailsFromId(id).ReturnsNull();
 
         // Act
-        var result = (NotFoundResult)await _sut.GetCheckoutSessionFromId(id);
+        var result = (NotFoundResult)await _sut.GetOrderDetailsFromId(id);
 
         // Assert
         result.StatusCode.Should().Be(404);

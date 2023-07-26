@@ -32,7 +32,7 @@ public class OrdersController : BaseApiController
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetCheckoutSessionFromId(string id)
+    public async Task<IActionResult> GetOrderDetailsFromId(string id)
     {
         var order = await _orderService.GetOrderDetailsFromId(id);
 
