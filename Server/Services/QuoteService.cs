@@ -9,14 +9,14 @@ namespace PhotoPortfolio.Server.Services;
 public class QuoteService : IQuoteService
 {
     private readonly IHttpClientFactory _httpClient;
-    private readonly IConfiguration _config;
+    private readonly IConfigurationService _configService;
     private readonly ILogger<QuoteService> _logger;
     private readonly IPhotoRepository _photoRepository;
 
-    public QuoteService(IHttpClientFactory httpClient, IConfiguration config, ILogger<QuoteService> logger, IPhotoRepository photoRepository)
+    public QuoteService(IHttpClientFactory httpClient, IConfigurationService configService, ILogger<QuoteService> logger, IPhotoRepository photoRepository)
     {
         _httpClient = httpClient;
-        _config = config;
+        _configService = configService;
         _logger = logger;
         _photoRepository = photoRepository;
     }
@@ -127,12 +127,21 @@ public class QuoteService : IQuoteService
     {
         try
         {
+            var config = _configService.GetConfiguration();
+            var prodigiApiKey = config["Prodigi:ApiKey"];
+            var prodigiApiUri = config["Prodigi:ApiUri"];
+
             var client = _httpClient.CreateClient();
 
-            HttpContent quoteJson = new StringContent(JsonSerializer.Serialize(quote));
+            JsonSerializerOptions serializerOptions = new()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            HttpContent quoteJson = new StringContent(JsonSerializer.Serialize(quote, serializerOptions));
             quoteJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            quoteJson.Headers.Add("X-API-Key", _config["Prodigi:ApiKey"]);
-            HttpResponseMessage response = await client.PostAsync(_config["Prodigi:ApiUri"] + "quotes", quoteJson);
+            quoteJson.Headers.Add("X-API-Key", prodigiApiKey);
+            HttpResponseMessage response = await client.PostAsync(prodigiApiUri + "quotes", quoteJson);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
