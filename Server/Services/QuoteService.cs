@@ -66,6 +66,17 @@ public class QuoteService : IQuoteService
         {
             _logger.LogInformation("Prodigi --> Quote received");
 
+            var issues = quoteResponse.Issues;
+
+            if (issues is not null && issues.Count > 0)
+            {
+                foreach (var issue in issues)
+                {
+                    _logger.LogWarning("Prodigi quote response: {response} -> Issue: Error Code: {code}, Description: {description} ",
+                        quoteResponse.Outcome, issue.ErrorCode, issue.Description);
+                }
+            }
+            
             var quotes = quoteResponse.Quotes;
             var quoteReturned = quotes.FirstOrDefault();
 
@@ -157,7 +168,6 @@ public class QuoteService : IQuoteService
                     if (quoteResponse.Outcome.ToLower() != "created")
                     {
                         _logger.LogWarning("Prodigi warning -> Print API response outcome was: {response}", quoteResponse.Outcome);
-                        return null!;
                     }
 
                     return quoteResponse.Outcome.ToLowerInvariant() switch
