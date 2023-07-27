@@ -17,6 +17,21 @@
     }
 
     [Fact]
+    public void LoginDisplay_Displays_Admin_Link_When_Authorised()
+    {
+        using var ctx = new TestContext();
+        var authContext = ctx.AddTestAuthorization();
+        authContext.SetAuthorized("Test User", AuthorizationState.Authorized);
+
+        var cut = ctx.RenderComponent<LoginDisplay>();
+        var element = cut.Find("#admin-link");
+
+        element.MarkupMatches
+        (@<a href="admin" class:ignore="" id="admin-link" diff:ignoreChildren></a>
+        );
+    }
+
+    [Fact]
     public void LoginDisplay_Displays_Log_Out_Button_When_Authorised()
     {
         using var ctx = new TestContext();
@@ -48,5 +63,22 @@
             Log In
         </a>
         );
+    }
+
+    [Fact]
+    public void LoginDisplay_User_Is_Taken_To_Logout_Page_When_SignOut_Button_Is_Clicked()
+    {
+        // Arrange
+        using var ctx = new TestContext();
+        var authContext = ctx.AddTestAuthorization();
+        authContext.SetAuthorized("Test User", AuthorizationState.Authorized);
+        var navManager = ctx.Services.GetRequiredService<NavigationManager>();
+
+        // Act
+        var cut = ctx.RenderComponent<LoginDisplay>();
+        cut.Find("#logout-button").Click();
+
+        // Assert
+        navManager.Uri.Should().Be($"{navManager.BaseUri}authentication/logout");
     }
 }
