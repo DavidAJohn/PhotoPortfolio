@@ -1,0 +1,56 @@
+﻿@inherits TestContext
+
+@code {
+    [Fact]
+    public void Footer_Displays_FooterTag()
+    {
+        // Arrange
+        var authContext = this.AddTestAuthorization();
+        authContext.SetAuthorized("Test User");
+        var cut = Render(@<Footer />);
+
+        // Act
+        var element = cut.Find("footer#footer");
+
+        // Assert
+        element.MarkupMatches
+        (@<footer id="footer" class:ignore="" diff:ignoreChildren></footer>
+        );
+    }
+
+    [Fact]
+    public void Footer_Includes_LoginDisplay_Component()
+    {
+        // Arrange
+        var authContext = this.AddTestAuthorization();
+        authContext.SetAuthorized("Test User");
+        var cut = Render(@<Footer />);
+
+        // Act
+        var loginDisplay = cut.FindComponents<LoginDisplay>();
+
+        // Assert
+        loginDisplay.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public void Footer_Displays_CurrentYear_Correctly()
+    {
+        // Arrange
+        var authContext = this.AddTestAuthorization();
+        authContext.SetAuthorized("Test User");
+
+        var cut = Render(@<Footer />);
+        var currentYear = DateTime.Now.Year.ToString();
+
+        // Act
+        var element = cut.Find("#footer-bottom-copyright");
+
+        // Assert
+        element.MarkupMatches
+        (@<span id="footer-bottom-copyright">
+            &copy; Copyright @currentYear - Photo Portfolio
+        </span>
+        );
+    }
+}
