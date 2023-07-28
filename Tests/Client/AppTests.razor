@@ -1,0 +1,66 @@
+﻿@using AutoFixture.Xunit2;
+@using Blazored.LocalStorage;
+@using Blazored.Modal;
+@using MudBlazor.Services;
+
+@inherits TestContext
+
+@code {
+    [Theory, AutoData]
+    public void When_Page_Url_Is_Unknown_Then_Expected_NotFound_Content_Is_Displayed(
+        string randomUri)
+    {
+        // Arrange
+        var authContext = this.AddTestAuthorization();
+        authContext.SetAuthorized("Test user", AuthorizationState.Unauthorized);
+
+        Services.AddBlazoredModal();
+        Services.AddBlazoredLocalStorage();
+        Services.AddMudServices();
+
+        JSInterop.SetupVoid("mudPopover.initialize", _ => true);
+        JSInterop.Setup<String>("localStorage.getItem", _ => true);
+
+        var navMan = Services.GetRequiredService<NavigationManager>();
+        navMan.NavigateTo($"{navMan.BaseUri}/{randomUri}");
+
+        // Act
+        var cut = Render(@<App />);
+
+        // Assert
+        var element = cut.Find("#notfound"); // should redirect to: ./Shared/Custom404.razor
+
+        element.MarkupMatches
+            (@<div class:ignore="" id="notfound" diff:ignoreChildren></div>
+            );
+    }
+
+    //[Theory (Skip = "Azure AD redirection skips RedirectToLogin and breaks this test")]
+    //[InlineData("admin")]
+    //[InlineData("admin/galleries")]
+    //public void When_User_Is_Unauthorized_And_Visiting_A_Protected_Page_Then_They_Are_Redirected_To_Login_Page(
+    //    string protectedPage)
+    //{
+    //    // Arrange
+    //    var authContext = this.AddTestAuthorization();
+    //    authContext.SetAuthorizing();
+
+    //    Services.AddBlazoredModal();
+    //    Services.AddBlazoredLocalStorage();
+    //    Services.AddMudServices();
+
+    //    JSInterop.SetupVoid("mudPopover.initialize", _ => true);
+    //    JSInterop.Setup<String>("localStorage.getItem", _ => true);
+
+    //    var navMan = Services.GetRequiredService<NavigationManager>();
+    //    navMan.NavigateTo($"{navMan.BaseUri}{protectedPage}");
+
+    //    // Act
+    //    var cut = Render(@<App />);
+
+    //    // Assert
+    //    navMan.Uri
+    //        .Should()
+    //        .Be($"{navMan.BaseUri}authentication/login?returnUrl={navMan.BaseUri}{protectedPage}");
+    //}
+}
