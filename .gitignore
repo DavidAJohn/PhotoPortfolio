@@ -457,3 +457,4 @@ $RECYCLE.BIN/
 **/wwwroot/css/tailwind.css
 .env
 .logs/*
+/Server/appsettings.Test.json
