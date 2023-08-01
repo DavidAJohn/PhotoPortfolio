@@ -19,6 +19,9 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    var config = builder.Configuration;
+    config.AddEnvironmentVariables("PhotoPortfolio_");
+
     builder.Host.UseSerilog();
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
