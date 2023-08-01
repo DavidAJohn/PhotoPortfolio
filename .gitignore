@@ -121,7 +121,7 @@ ipch/
 *.sap
 
 # Visual Studio Trace Files
-*.e2e
+#*.e2e
 
 # TFS 2012 Local Workspace
 $tf/
@@ -458,3 +458,4 @@ $RECYCLE.BIN/
 .env
 .logs/*
 /Server/appsettings.Test.json
+/.runsettings
