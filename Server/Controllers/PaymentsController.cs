@@ -9,15 +9,15 @@ namespace PhotoPortfolio.Server.Controllers;
 public class PaymentsController : BaseApiController
 {
     private readonly ILogger<PaymentsController> _logger;
-    private readonly IConfiguration _config;
+    private readonly IConfigurationService _configService;
     private readonly IPaymentService _paymentService;
     private readonly IOrderService _orderService;
     private readonly IQuoteService _quoteService;
 
-    public PaymentsController(ILogger<PaymentsController> logger, IConfiguration config, IPaymentService paymentService, IOrderService orderService, IQuoteService quoteService)
+    public PaymentsController(ILogger<PaymentsController> logger, IConfigurationService configService, IPaymentService paymentService, IOrderService orderService, IQuoteService quoteService)
     {
         _logger = logger;
-        _config = config;
+        _configService = configService;
         _paymentService = paymentService;
         _orderService = orderService;
         _quoteService = quoteService;
@@ -60,7 +60,8 @@ public class PaymentsController : BaseApiController
     [HttpPost("webhook")]
     public async Task<ActionResult> StripeWebhook()
     {
-        string WhSecret = _config["Stripe:WhSecret"];
+        var config = _configService.GetConfiguration();
+        string WhSecret = config["Stripe:WhSecret"];
 
         try
         {
@@ -179,7 +180,8 @@ public class PaymentsController : BaseApiController
 
     private bool IsUserAdmin()
     {
-        var adminUserName = _config["AdminUserName"];
+        var config = _configService.GetConfiguration();
+        var adminUserName = config["AdminUserName"];
 
         if (User?.Identity is not null && User.Identity.IsAuthenticated)
         {
