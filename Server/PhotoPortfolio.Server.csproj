@@ -30,4 +30,9 @@
     <ProjectReference Include="..\Shared\PhotoPortfolio.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="PhotoPortfolio.Tests.Integration" />
+    <InternalsVisibleTo Include="PhotoPortfolio.Tests.e2e" />
+  </ItemGroup>
+
 </Project>
