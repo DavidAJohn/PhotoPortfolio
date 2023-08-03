@@ -1,10 +1,6 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
-using NSubstitute;
-using NSubstitute.ExceptionExtensions;
-using NSubstitute.ReturnsExtensions;
 using PhotoPortfolio.Server.Contracts;
 using PhotoPortfolio.Server.Services;
 using PhotoPortfolio.Shared.Entities;

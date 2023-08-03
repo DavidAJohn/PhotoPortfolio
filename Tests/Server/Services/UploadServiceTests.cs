@@ -1,8 +1,6 @@
-﻿using FluentAssertions;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
 using PhotoPortfolio.Server.Contracts;
 using PhotoPortfolio.Server.Services;
 using PhotoPortfolio.Shared.Models;

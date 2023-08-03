@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using PhotoPortfolio.Shared.Helpers;
+﻿using PhotoPortfolio.Shared.Helpers;
 using System;
 using System.Collections.Generic;
 
