@@ -1,0 +1,29 @@
+﻿version: '3.9'
+
+services:
+
+  test-app:
+    build:
+      context: .
+      dockerfile: Server/Dockerfile
+
+    ports:
+      - "7780:443"
+      - "7779:80"
+    environment:
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=Test1234!
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/cert.pfx
+      - ASPNETCORE_Environment=Production
+      - PhotoPortfolio_MongoConnection__ConnectionString=mongodb://host.docker.internal:27017;
+      - PhotoPortfolio_MongoConnection__DatabaseName=PhotoPortfolioTestDb;
+    depends_on: 
+      - test-db
+
+  test-db:
+    image: mongo:5
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: PhotoPortfolioTestDb
+    ports:
+      - '27017:27017'
