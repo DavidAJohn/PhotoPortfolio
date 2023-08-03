@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
@@ -17,14 +16,14 @@ public class PaymentsControllerTests : BaseApiController
 {
     private readonly PaymentsController _sut;
     private readonly ILogger<PaymentsController> _logger = Substitute.For<ILogger<PaymentsController>>();
-    private readonly IConfiguration _configuration = Substitute.For<IConfiguration>();
+    private readonly IConfigurationService _configService = Substitute.For<IConfigurationService>();
     private readonly IPaymentService _paymentService = Substitute.For<IPaymentService>();
     private readonly IOrderService _orderService = Substitute.For<IOrderService>();
     private readonly IQuoteService _quoteService = Substitute.For<IQuoteService>();
 
     public PaymentsControllerTests()
     {
-        _sut = new PaymentsController(_logger, _configuration, _paymentService, _orderService, _quoteService);
+        _sut = new PaymentsController(_logger, _configService, _paymentService, _orderService, _quoteService);
     }
 
     [Fact]
