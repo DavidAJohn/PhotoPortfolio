@@ -31,6 +31,10 @@ public class PhotoApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
             .WithPortBinding(12111, true)
             .Build();
 
+    private readonly ProdigiPrintApiServer _prodigiPrintApiServer = new();
+
+    public string ProdigiPrintApiUrl => _prodigiPrintApiServer.Url;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureTestServices(services =>
@@ -55,11 +59,13 @@ public class PhotoApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
     {
         await _stripeContainer.StartAsync();
         await _dbContainer.StartAsync();
+        _prodigiPrintApiServer.Start();
     }
 
     async Task IAsyncLifetime.DisposeAsync()
     {
         await _stripeContainer.DisposeAsync();
+        _prodigiPrintApiServer.Dispose();
         await _dbContainer.DisposeAsync();
     }
 }
