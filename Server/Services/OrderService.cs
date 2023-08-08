@@ -35,8 +35,12 @@ public class OrderService : IOrderService
             itemsCost += item.Total;
         }
 
-        decimal totalCost = itemsCost + shippingCost;
+        itemsCost = decimal.Round(itemsCost, 2);
+        shippingCost = decimal.Round(shippingCost, 2);
 
+        decimal totalCost = itemsCost + shippingCost;
+        totalCost = decimal.Round(totalCost, 2);
+        
         try
         {
             var order = new Order()
@@ -134,6 +138,9 @@ public class OrderService : IOrderService
                 decimal itemsCost = orderBasketDto.BasketItems.Sum(x => x.Total);
                 decimal totalCost = itemsCost + orderBasketDto.ShippingCost;
 
+                itemsCost = decimal.Round(itemsCost, 2);
+                totalCost = decimal.Round(totalCost, 2);
+                
                 var order = new Order()
                 {
                     Id = existingOrder.Id,

@@ -155,7 +155,7 @@ else
                                                 <div class="font-medium text-sm">@item.Product.CustomDescription</div>
                                                 <div class="font-medium text-xs">Sku:&nbsp;@item.Product.ProdigiSku</div>
                                             </div>
-                                            <div class="ml-4 font-semibold">=&nbsp; £@item.Total</div>
+                                            <div class="ml-4 font-semibold">=&nbsp; £@item.Total.ToString("0.00")</div>
                                         </div>
                                         @if (order.Status == "AwaitingApproval")
                                         {
