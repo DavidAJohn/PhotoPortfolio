@@ -21,16 +21,16 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
     private readonly IPhotoRepository _photoRepository;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    private readonly IConfiguration _testConfiguration;
-
     private readonly string _photoId = ObjectId.GenerateNewId().ToString();
     private readonly string _productId = ObjectId.GenerateNewId().ToString();
+
+    private readonly string _prodigiWireMockUri;
 
     public QuoteServiceTests(PhotoApiFactory apiFactory)
     {
         _apiFactory = apiFactory;
         _client = _apiFactory.CreateClient();
-        _client.BaseAddress = new Uri("https://localhost/api/");
+        _client.BaseAddress = new Uri(_apiFactory.ProdigiPrintApiUrl + "/");
         _client.DefaultRequestHeaders.Add("Accept", "application/json");
 
         _mongoContext = new MongoContext(_apiFactory.ConnectionString, PhotoApiFactory.TestDbName);
@@ -40,9 +40,7 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
         _photoRepository = new PhotoRepository(_mongoContext);
         _httpClientFactory = _apiFactory.Services.GetRequiredService<IHttpClientFactory>();
 
-        _testConfiguration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.Test.json")
-            .Build();
+        _prodigiWireMockUri = _apiFactory.ProdigiPrintApiUrl + "/";
     }
 
     private OrderBasketDto CreateOrderBasketDto()
@@ -115,7 +113,7 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
     {
         // Arrange
         _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-000000000000";
-        _configuration["Prodigi:ApiUri"] = _testConfiguration["Prodigi:ApiUri"];
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
         var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
 
         var photo = CreatePhoto();
@@ -140,7 +138,7 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
     {
         // Arrange
         _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-000000000000";
-        _configuration["Prodigi:ApiUri"] = _testConfiguration["Prodigi:ApiUri"];
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
         var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
 
         var photo = CreatePhoto();
@@ -167,14 +165,14 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
     {
         // Arrange
         _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-000000000000";
-        _configuration["Prodigi:ApiUri"] = _testConfiguration["Prodigi:ApiUri"];
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
         var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
 
         var photo = CreatePhoto();
         var createdPhoto = await _photoRepository.AddAsync(photo);
 
         var orderBasketDto = CreateOrderBasketDto();
-        orderBasketDto.ShippingMethod = "ReturnCreatedWithIssues"; // this will return a quote with issues
+        orderBasketDto.ShippingMethod = "ReturnCreatedWithIssues"; // this will return a quote with issues from the mock
 
         // Act
         var orderBasketReturned = await quoteService.GetBasketQuote(orderBasketDto, false);
