@@ -70,4 +70,66 @@ public class IndexTests : LocalBlazorTestBase
 
         await Expect(Page.Locator("text=Your basket is currently empty")).ToBeVisibleAsync();
     }
+
+    [Test]
+    public async Task IndexPage_ClickingSpecifiedMasonryGridImageAndXButton_ShouldShowImageModalAndClose()
+    {
+        await Page.PauseAsync();
+
+        await Page.GotoAsync(RootUri.AbsoluteUri);
+
+        var imageContainer = Page.Locator("div#masonry-grid-container > div:nth-child(8)"); // container div must be clicked to show modal
+        await imageContainer.ClickAsync();
+
+        var modal = Page.Locator("div.blazored-modal-container");
+        await Expect(modal).ToBeVisibleAsync();
+
+        var dialog = Page.GetByRole(AriaRole.Dialog);
+        var closeButton = dialog.GetByLabel("close"); // targets the 'x' button
+        await Expect(closeButton).ToBeVisibleAsync();
+        await closeButton.ClickAsync();
+    }
+
+    [Test]
+    public async Task IndexPage_ClickingSpecifiedMasonryGridImageAndCloseButton_ShouldShowImageModalAndClose()
+    {
+        await Page.PauseAsync();
+
+        await Page.GotoAsync(RootUri.AbsoluteUri);
+
+        var imageContainer = Page.Locator("div#masonry-grid-container > div:nth-child(8)"); // container div must be clicked to show modal
+        await imageContainer.ClickAsync();
+
+        var modal = Page.Locator("div.blazored-modal-container");
+        await Expect(modal).ToBeVisibleAsync();
+
+        
+        //var dialog = Page.GetByRole(AriaRole.Dialog);
+        //var closeButton = dialog.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true });
+        var closeButton = Page.Locator("div[role=dialog] button:has-text(\"Close\")");
+
+        await Expect(closeButton).ToBeVisibleAsync();
+        await closeButton.ClickAsync();
+    }
+
+    [Test]
+    public async Task IndexPage_ClickingSpecifiedMasonryGridImageAndBuyPrintsButton_ShouldGoToPhotoDetailsPage()
+    {
+        await Page.PauseAsync();
+
+        await Page.GotoAsync(RootUri.AbsoluteUri);
+
+        var imageContainer = Page.Locator("div#masonry-grid-container > div:nth-child(8)"); // container div must be clicked to show modal
+        await imageContainer.ClickAsync();
+
+        var modal = Page.Locator("div.blazored-modal-container");
+        await Expect(modal).ToBeVisibleAsync();
+
+        var buyButton = Page.Locator("div[role=dialog] button:has-text(\"Buy\")");
+        //var buyButton = Page.Locator("div[role=dialog] button.lightbox-confirm");
+        await Expect(buyButton).ToBeVisibleAsync();
+        await buyButton.ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(new Regex("/photo/")); // PhotoDetails page
+    }
 }
