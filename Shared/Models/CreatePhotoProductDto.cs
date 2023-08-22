@@ -14,6 +14,6 @@ public class CreatePhotoProductDto : Product
     public string? MockupImageUri { get; set; }
 
     [Required(ErrorMessage = "Markup Percentage can not be empty")]
-    [Range(100, 1000, ErrorMessage = "Value must be between {1} and {2}.")]
+    [Range(0, 1000, ErrorMessage = "Value must be between {1} and {2}.")]
     public int MarkupPercentage { get; set; } = 100;
 }
