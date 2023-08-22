@@ -87,22 +87,22 @@ public partial class EditPhoto
             {
                 // exclude any products already added to the photo
                 products = allProducts.Where(p => photo.Products.All(pp => pp.ProdigiSku != p.ProdigiSku)).ToList();
-
-                dropdownOptions.Clear();
-
-                // convert the products into a list of DropdownItems
-                foreach (Product product in products)
-                {
-                    dropdownOptions.Add(new DropdownItem
-                    {
-                        OptionName = product.ProdigiSku + " - " + product.ProdigiDescription,
-                        OptionRef = product.ProdigiSku
-                    });
-                }
             }
             else
             {
                 products = allProducts;
+            }
+
+            dropdownOptions.Clear();
+
+            // convert the products into a list of DropdownItems
+            foreach (Product product in products)
+            {
+                dropdownOptions.Add(new DropdownItem
+                {
+                    OptionName = product.ProdigiSku + " - " + product.ProdigiDescription,
+                    OptionRef = product.ProdigiSku
+                });
             }
 
             errorMessage = "";
