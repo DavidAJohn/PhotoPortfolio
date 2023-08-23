@@ -182,7 +182,7 @@ else
                 <div class="p-2">
                     <MudPaper Class="mx-2 my-2">
                         <MudText Class="mb-4">@editedProduct.ProdigiDescription</MudText>
-                        <MudText Class="mb-4">@editedProduct.CustomDescription</MudText>
+                        <MudTextField Label="Custom Description" @bind-Value="@editedProduct.CustomDescription" />
                         <MudTextField Label="Markup Percentage (%)" @bind-Value="editedMarkupPercentage" />
                         @if (wholesalePrice == 0.0m)
                         {
@@ -197,7 +197,7 @@ else
                 </div>
             </DialogContent>
             <DialogActions>
-                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => EditProduct(editedMarkupPercentage))" form="@EditProductFormId" Class="px-10">Save</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => EditProduct(editedProduct, editedMarkupPercentage))" form="@EditProductFormId" Class="px-10">Save</MudButton>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close" Class="px-10">Close</MudButton>
             </DialogActions>
         </MudDialog>

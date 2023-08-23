@@ -244,9 +244,10 @@ public partial class EditPhoto
         }
     }
 
-    private async Task EditProduct(int markupPercentage)
+    private async Task EditProduct(PhotoProduct editedProduct, int markupPercentage)
     {
         var productToUpdate = photo.Products.FirstOrDefault(p => p.ProdigiSku == editedProduct.ProdigiSku) ?? null!;
+        productToUpdate.CustomDescription = editedProduct.CustomDescription;
         productToUpdate.MarkupPercentage = markupPercentage;
 
         if (string.IsNullOrEmpty(productToUpdate.Id))
