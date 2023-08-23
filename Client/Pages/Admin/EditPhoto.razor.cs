@@ -194,14 +194,19 @@ public partial class EditPhoto
             MarkupPercentage = model.MarkupPercentage
         };
 
-        photo.Products?.Add(productToAdd);
+        var productToAddList = new List<PhotoProduct>()
+        {
+            productToAdd
+        };
+
+        photo.Products = photo.Products?.Concat(productToAddList).ToList();
 
         var photoUpdated = await adminService.UpdatePhotoAsync(photo);
 
         if (photoUpdated)
         {
             addDialogVisible = false;
-            Snackbar.Add($"'{productToAdd.ProdigiSku}' has now been added to this photo", Severity.Success);
+            Snackbar.Add($"'{productToAdd!.ProdigiSku}' has now been added to this photo", Severity.Success);
         }
         else
         {
