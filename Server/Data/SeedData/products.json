@@ -1,0 +1,21 @@
+[{
+  "_id": {
+    "$oid": "64e49a0e706b34c53ea5cd7b"
+  },
+  "ProdigiSku": "GLOBAL-FAP-16X24",
+  "ProdigiDescription": "EMA, Enhanced Matte Art Paper, 200gsm, 40x60cm / 16x24\"",
+  "ProdigiImageAssetUris": [
+    "https://photoportfolioimgs.blob.core.windows.net/repo/global-fap-16x24-asset-01.jpg",
+    "https://photoportfolioimgs.blob.core.windows.net/repo/global-fap-16x24-asset-02.jpg",
+    "https://photoportfolioimgs.blob.core.windows.net/repo/global-fap-16x24-asset-03.jpg"
+  ],
+  "DefaultMarkupPercentage": 100
+},{
+  "_id": {
+    "$oid": "64e49d04706b34c53ea5cd7c"
+  },
+  "ProdigiSku": "GLOBAL-FAP-20X30",
+  "ProdigiDescription": "EMA, Enhanced Matte Art Paper, 200gsm, 20x30\" / 50x75cm",
+  "ProdigiImageAssetUris": [],
+  "DefaultMarkupPercentage": 100
+}]

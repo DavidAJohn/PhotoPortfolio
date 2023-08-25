@@ -1,0 +1,13 @@
+[
+	{
+		"_id": {
+			"$oid": "63ff656c79461a7346026485"
+		  },
+		"SiteName" : "PhotoPortfolio",
+		"Metadata" : 
+		{ 
+			"OrdersSentToProdigiAutomatically": "ManuallyApproveAll",
+			"OrderAutoApproveLimit": "10"
+		}	
+	}
+]

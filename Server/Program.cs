@@ -70,6 +70,12 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseWebAssemblyDebugging();
+
+        // Seed initial data
+        if (config.GetValue<bool>("InitialDataSeeding"))
+        {
+            await SeedInitialData(app, config);
+        }
     }
     else
     {
@@ -107,4 +113,41 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
+}
+
+static async Task SeedInitialData(IHost app, IConfiguration config)
+{
+    try
+    {
+        var scopedFactory = app.Services.GetService<IServiceScopeFactory>();
+
+        if (scopedFactory == null)
+        {
+            Log.Error("An error occurred while seeding initial data: ServiceScopeFactory is null");
+            return;
+        }
+
+        using var scope = scopedFactory.CreateScope();
+        var appContext = scope.ServiceProvider.GetService<MongoContext>();
+
+        if (appContext == null)
+        {
+            Log.Error("An error occurred while seeding initial data: MongoContext is null");
+            return;
+        }
+
+        var databaseName = config.GetValue<string>("MongoConnection:DatabaseName");
+
+        /// optionally check if the database already exists
+        //var databases = await appContext.Client.ListDatabaseNamesAsync().Result.ToListAsync();
+        //if (!databases.Contains(databaseName))
+        //{
+            appContext.Client.GetDatabase(databaseName);
+            await SeedData.SeedDatabaseCollections(appContext, config);
+        //}
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while seeding initial data");
+    }
 }

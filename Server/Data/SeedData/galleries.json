@@ -1,0 +1,396 @@
+[
+  {
+    "_id": {
+      "$oid": "62791e80cc28b5b11025378a"
+    },
+    "Name": "Landscapes",
+    "Description": "Dolor laboris exercitation laborum aute sunt commodo commodo consequat esse aute ut amet occaecat esse.",
+    "HeaderImage": "https://images.unsplash.com/photo-1525302220185-c387a117886e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80",
+    "HeaderImageAlign": "top",
+    "ParentGallery": null,
+    "SortBy": "Custom",
+    "SortOrder": "Asc",
+    "LastUpdated": {
+      "$date": "2022-09-29T17:06:38.766Z"
+    },
+    "Photos": [],
+    "Public": true,
+    "DisplayInGalleryList": true
+  },
+  {
+    "_id": {
+      "$oid": "6279254c3761cdde44e68c0c"
+    },
+    "Name": "Wildlife",
+    "Description": "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ratione itaque perspiciatis quod sapiente quidem, vero consectetur quae iure error tempore reprehenderit unde veritatis fugit iusto nemo amet.",
+    "HeaderImage": "https://photoportfolioimgs.blob.core.windows.net/repo/scott-carroll-favQn8WgRyk-unsplash.jpg",
+    "HeaderImageAlign": "bottom",
+    "ParentGallery": null,
+    "SortBy": "Custom",
+    "SortOrder": "Desc",
+    "LastUpdated": {
+      "$date": "2022-09-29T17:13:11.520Z"
+    },
+    "Photos": [],
+    "Public": true,
+    "DisplayInGalleryList": true
+  },
+  {
+    "_id": {
+      "$oid": "6334c9aa0257ef74a2250641"
+    },
+    "Name": "Plants",
+    "Description": "Dolor laboris exercitation laborum aute sunt commodo commodo consequat esse aute ut amet occaecat esse.",
+    "HeaderImage": "https://photoportfolioimgs.blob.core.windows.net/repo/justin-ha-bxKKZNNsqTg-unsplash.jpg",
+    "ParentGallery": null,
+    "SortBy": "Custom",
+    "SortOrder": "Asc",
+    "LastUpdated": {
+      "$date": "2022-09-28T22:44:39.794Z"
+    },
+    "Photos": [],
+    "Public": true,
+    "DisplayInGalleryList": true
+  },
+  {
+    "_id": {
+      "$oid": "633ef7cbd533e1f767344e2e"
+    },
+    "Name": "Favourites",
+    "Description": "A collection of my favourite images.",
+    "HeaderImage": "https://photoportfolioimgs.blob.core.windows.net/repo/mark-harpur-K2s_YE031CA-unsplash.jpg",
+    "HeaderImageAlign": "center",
+    "ParentGallery": null,
+    "SortBy": "Custom",
+    "SortOrder": "Asc",
+    "LastUpdated": {
+      "$date": "2023-05-24T13:44:23.290Z"
+    },
+    "Photos": [
+      {
+        "_id": {
+          "$oid": "63c861f953a517cc07a652da"
+        },
+        "Title": "Lake Atitlan, Guatemala",
+        "Caption": "I had been travelling around Central America, living in a van and sharing experiences with other travelers. Having just dropped my last travel buddy off I headed back to Lake Atitlan and found an incredible spot to camp right next to the lake. There was this jetty sticking out into the lake where I sat watching the sunset, once again living the dream on my own.",
+        "FileName": "mark-harpur-K2s_YE031CA-unsplash.jpg",
+        "Uri": "https://photoportfolioimgs.blob.core.windows.net/repo/mark-harpur-K2s_YE031CA-unsplash.jpg",
+        "GalleryId": "633ef7cbd533e1f767344e2e",
+        "GallerySortOrder": 1,
+        "DateAdded": {
+          "$date": "2022-10-10T14:16:29.428Z"
+        },
+        "Metadata": {
+          "Tags": [
+            "Nature",
+            "Wallpapers",
+            "Editorial"
+          ],
+          "Width": 1920,
+          "Height": 1280,
+          "CameraMake": "Canon",
+          "CameraModel": "EOS 7D",
+          "LensMake": "",
+          "LensModel": "",
+          "ShutterSpeed": "1/12s",
+          "Aperture": "f18",
+          "Iso": "100",
+          "FocalLength": "11mm",
+          "DateTaken": "22/07/2018"
+        },
+        "Products": null
+      },
+      {
+        "_id": {
+          "$oid": "63c861f953a517cc07a652db"
+        },
+        "Title": "New York Clouds",
+        "Caption": "Cotton Candy Skies.",
+        "FileName": "andre-benz-sLokLIacItI-unsplash.jpg",
+        "Uri": "https://photoportfolioimgs.blob.core.windows.net/repo/andre-benz-sLokLIacItI-unsplash.jpg",
+        "GalleryId": "633ef7cbd533e1f767344e2e",
+        "GallerySortOrder": 2,
+        "DateAdded": {
+          "$date": "2022-10-10T15:00:29.428Z"
+        },
+        "Metadata": {
+          "Tags": [
+            "New York",
+            "Clouds"
+          ],
+          "Width": 1920,
+          "Height": 1280,
+          "CameraMake": "Canon",
+          "CameraModel": "EOS 5D Mark IV",
+          "LensMake": "",
+          "LensModel": "",
+          "ShutterSpeed": "1/40s",
+          "Aperture": "f4",
+          "Iso": "100",
+          "FocalLength": "70mm",
+          "DateTaken": "09/05/2018"
+        },
+        "Products": null
+      },
+      {
+        "_id": {
+          "$oid": "63c861f953a517cc07a652dc"
+        },
+        "Title": "Brown Texas Deer",
+        "Caption": "This image was taken near a lake in South East Texas in an area that is off limits for hunting. The deer around here are scared of just about anything that moves. This young deer (fawn) let me get pretty close before darting off with his crew into the woods.",
+        "FileName": "scott-carroll-favQn8WgRyk-unsplash.jpg",
+        "Uri": "https://photoportfolioimgs.blob.core.windows.net/repo/scott-carroll-favQn8WgRyk-unsplash.jpg",
+        "GalleryId": "633ef7cbd533e1f767344e2e",
+        "GallerySortOrder": 3,
+        "DateAdded": {
+          "$date": "2022-10-10T14:25:21.097Z"
+        },
+        "Metadata": {
+          "Tags": [
+            "Deer",
+            "Animals",
+            "Wildlife",
+            "Texas",
+            "USA"
+          ],
+          "Width": 1920,
+          "Height": 1280,
+          "CameraMake": "NIKON",
+          "CameraModel": "D500",
+          "LensMake": "",
+          "LensModel": "",
+          "ShutterSpeed": "1/1000s",
+          "Aperture": "f5.6",
+          "Iso": "500",
+          "FocalLength": "350mm",
+          "DateTaken": "17/12/2018"
+        },
+        "Products": null
+      },
+      {
+        "_id": {
+          "$oid": "63c861f953a517cc07a652dd"
+        },
+        "Title": "Purple Crocus",
+        "Caption": "Crocus flowers starting to bloom",
+        "FileName": "cody-fitzgerald-lWJeGCgVbYI-unsplash.jpg",
+        "Uri": "https://photoportfolioimgs.blob.core.windows.net/repo/cody-fitzgerald-lWJeGCgVbYI-unsplash.jpg",
+        "GalleryId": "633ef7cbd533e1f767344e2e",
+        "GallerySortOrder": 4,
+        "DateAdded": {
+          "$date": "2022-10-10T15:25:29.428Z"
+        },
+        "Metadata": {
+          "Tags": [
+            "Crocus",
+            "Purple",
+            "Flowers"
+          ],
+          "Width": 1920,
+          "Height": 2880,
+          "CameraMake": "Canon",
+          "CameraModel": "EOS 80D",
+          "LensMake": "",
+          "LensModel": "",
+          "ShutterSpeed": "1/400s",
+          "Aperture": "f5.6",
+          "Iso": "125",
+          "FocalLength": "300mm",
+          "DateTaken": "14/03/2021"
+        },
+        "Products": null
+      },
+      {
+        "_id": {
+          "$oid": "63c861f953a517cc07a652e0"
+        },
+        "Title": "Mountain Canyon",
+        "Caption": "Taken in Lower Antelope Canyon, Page, United States",
+        "FileName": "ashim-d-silva-WeYamle9fDM-unsplash.jpg",
+        "Uri": "https://photoportfolioimgs.blob.core.windows.net/repo/ashim-d-silva-WeYamle9fDM-unsplash.jpg",
+        "GalleryId": "633ef7cbd533e1f767344e2e",
+        "GallerySortOrder": 5,
+        "DateAdded": {
+          "$date": "2022-10-10T14:20:21.097Z"
+        },
+        "Metadata": {
+          "Tags": [
+            "Canyon",
+            "Nature"
+          ],
+          "Width": 1920,
+          "Height": 1280,
+          "CameraMake": "Fujifilm",
+          "CameraModel": "X100T",
+          "LensMake": "",
+          "LensModel": "",
+          "ShutterSpeed": "1/450s",
+          "Aperture": "f2",
+          "Iso": "400",
+          "FocalLength": "23mm",
+          "DateTaken": "13/11/2016"
+        },
+        "Products": null
+      },
+      {
+        "_id": {
+          "$oid": "63c861f953a517cc07a652e2"
+        },
+        "Title": "Tulips in Spring",
+        "Caption": "",
+        "FileName": "justin-ha-bxKKZNNsqTg-unsplash.jpg",
+        "Uri": "https://photoportfolioimgs.blob.core.windows.net/repo/justin-ha-bxKKZNNsqTg-unsplash.jpg",
+        "GalleryId": "633ef7cbd533e1f767344e2e",
+        "GallerySortOrder": 6,
+        "DateAdded": {
+          "$date": "2022-10-10T15:50:29.428Z"
+        },
+        "Metadata": {
+          "Tags": [
+            "Tulips",
+            "Flowers"
+          ],
+          "Width": 1920,
+          "Height": 1280,
+          "CameraMake": "Canon",
+          "CameraModel": "EOS 750D",
+          "LensMake": "",
+          "LensModel": "",
+          "ShutterSpeed": "1/640s",
+          "Aperture": "f1.8",
+          "Iso": "100",
+          "FocalLength": "85mm",
+          "DateTaken": "22/04/2018"
+        },
+        "Products": null
+      },
+      {
+        "_id": {
+          "$oid": "63c861f953a517cc07a652de"
+        },
+        "Title": "Eagles Nest, Inverloch",
+        "Caption": "Eagles Nest, Inverloch VIC, Australia",
+        "FileName": "paul-rogers-qbOnG07yDCM-unsplash.jpg",
+        "Uri": "https://photoportfolioimgs.blob.core.windows.net/repo/paul-rogers-qbOnG07yDCM-unsplash.jpg",
+        "GalleryId": "633ef7cbd533e1f767344e2e",
+        "GallerySortOrder": 7,
+        "DateAdded": {
+          "$date": "2022-10-10T14:55:29.428Z"
+        },
+        "Metadata": {
+          "Tags": [
+            "Australia",
+            "Eagles Nest"
+          ],
+          "Width": 1920,
+          "Height": 1280,
+          "CameraMake": "Canon",
+          "CameraModel": "EOS 5D Mark IV",
+          "LensMake": "",
+          "LensModel": "",
+          "ShutterSpeed": "1s",
+          "Aperture": "f22",
+          "Iso": "50",
+          "FocalLength": "20mm",
+          "DateTaken": "02/03/2021"
+        },
+        "Products": null
+      },
+      {
+        "_id": {
+          "$oid": "63c862cd2165ce1d017b83a8"
+        },
+        "Title": "Severn Bridge at Sunset",
+        "Caption": "The Second Severn Crossing which links Wales and England, on a clear Winter evening.",
+        "FileName": "DavidAJohn_SevernBridge.jpg",
+        "Uri": "https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg",
+        "GalleryId": "633ef7cbd533e1f767344e2e",
+        "GallerySortOrder": 8,
+        "DateAdded": {
+          "$date": "2023-01-18T21:21:17.447Z"
+        },
+        "Metadata": {
+          "Tags": [
+            "Severn Bridge",
+            "sunset"
+          ],
+          "Width": 800,
+          "Height": 1200,
+          "CameraMake": "Fujifilm",
+          "CameraModel": "X-T20",
+          "LensMake": "Fujinon",
+          "LensModel": "18-55mm f2.8-4 OIS",
+          "ShutterSpeed": "1/10s",
+          "Aperture": "f8",
+          "Iso": "200",
+          "FocalLength": "21mm",
+          "DateTaken": "15/02/2019"
+        },
+        "Products": [
+          {
+            "_id": {
+              "$oid": "64e49a0e706b34c53ea5cd7b"
+            },
+            "ProdigiSku": "GLOBAL-FAP-16X24",
+            "ProdigiDescription": "Enhanced Matte Art Paper, 200gsm, 40x60cm / 16x24",
+            "ProdigiImageAssetUris": [
+              "https://photoportfolioimgs.blob.core.windows.net/repo/global-fap-16x24-asset-01.jpg",
+              "https://photoportfolioimgs.blob.core.windows.net/repo/global-fap-16x24-asset-02.jpg",
+              "https://photoportfolioimgs.blob.core.windows.net/repo/global-fap-16x24-asset-03.jpg"
+            ],
+            "CustomDescription": "Fine Art Print (16x24in)",
+            "FurtherDetails": "A premium quality heavyweight fine art print material with a smooth, clean finish. This museum-quality paper is extremely consistent and works perfectly with large, full colour graphics or illustrations.",
+            "MockupImageUri": "https://photoportfolioimgs.blob.core.windows.net/repo/63470ed50918b77fbb77295a-mockup-global-fap-16x24.png",
+            "MarkupPercentage": 50
+          },
+          {
+            "_id": {
+              "$oid": "64e49d04706b34c53ea5cd7c"
+            },
+            "ProdigiSku": "GLOBAL-FAP-20X30",
+            "ProdigiDescription": "Enhanced Matte Art Paper, 200gsm, 50x75cm / 20x30",
+            "ProdigiImageAssetUris": [],
+            "CustomDescription": "Fine Art Print (20x30in)",
+            "FurtherDetails": " A premium quality heavyweight fine art print material with a smooth, clean finish. This museum-quality paper is extremely consistent and works perfectly with large, full colour graphics or illustrations.",
+            "MockupImageUri": "https://photoportfolioimgs.blob.core.windows.net/repo/63470ed50918b77fbb77295a-mockup-global-fap-16x24.png",
+            "MarkupPercentage": 100
+          }
+        ]
+      },
+      {
+        "_id": {
+          "$oid": "63c861f953a517cc07a652df"
+        },
+        "Title": "Lake Garda, Italy",
+        "Caption": "Bad weather on the Lake Garda",
+        "FileName": "guillaume-camera-zBEDh-HhTY0-unsplash.jpg",
+        "Uri": "https://photoportfolioimgs.blob.core.windows.net/repo/guillaume-camera-zBEDh-HhTY0-unsplash.jpg",
+        "GalleryId": "633ef7cbd533e1f767344e2e",
+        "GallerySortOrder": 9,
+        "DateAdded": {
+          "$date": "2022-10-10T14:50:29.428Z"
+        },
+        "Metadata": {
+          "Tags": [
+            "Lake Garda",
+            "Italy"
+          ],
+          "Width": 1920,
+          "Height": 1280,
+          "CameraMake": "SONY",
+          "CameraModel": "ILCE-7M3",
+          "LensMake": "",
+          "LensModel": "",
+          "ShutterSpeed": "1/100s",
+          "Aperture": "f7.1",
+          "Iso": "200",
+          "FocalLength": "27mm",
+          "DateTaken": "01/11/2018"
+        },
+        "Products": null
+      }
+    ],
+    "Public": true,
+    "DisplayInGalleryList": false
+  }
+]
