@@ -29,6 +29,8 @@ public partial class PhotoDetails
     private List<PhotoProduct> products = new();
     private PhotoProduct product { get; set; }
     private Dictionary<string, string[]> productOptions = new();
+    private int productOptionsRequired = 0;
+    private int productOptionsChosen = 0;
 
     private string initialInstructionsText = "Choose an option above to see further details, including prices.";
 
@@ -125,6 +127,7 @@ public partial class PhotoDetails
                 if (attribute.Value.Length > 1)
                 {
                     productOptions.Add(attribute.Key, attribute.Value);
+                    productOptionsRequired++;
                 }
             }
         }
@@ -207,34 +210,41 @@ public partial class PhotoDetails
 
     private async Task AddItemToBasket()
     {
-        var productOptions = await GetProductOptionsFromSession();
-
-        // remove product options from session storage
-        await sessionStorage.RemoveItemAsync("product_options");
-
-        var productToAdd = new ProductBasketItemDto(product)
+        if (productOptionsRequired == productOptionsChosen)
         {
-            Id = product.Id,
-            ProdigiSku = product.ProdigiSku,
-            ProdigiDescription = product.ProdigiDescription,
-            CustomDescription = product.CustomDescription,
-            FurtherDetails = product.FurtherDetails,
-            MockupImageUri = product.MockupImageUri,
-            PhotoId = photo.Id,
-            ImageUri = photo.Uri,
-            ImageTitle = photo.Title,
-            Options = productOptions
-        };
+            var selectedProductOptions = await GetProductOptionsFromSession();
 
-        var tempPrice = productPrice.Remove(0, 1);
-        decimal totalPrice = decimal.Parse(tempPrice);
-        var item = new BasketItem { Product = productToAdd, Quantity = 1, Total = totalPrice };
+            // remove product options from session storage
+            await sessionStorage.RemoveItemAsync("product_options");
 
-        basketState.Basket.BasketItems.Add(item);
-        await basketState.SaveChangesAsync(); // save to local storage
-        basketState.BasketItemCount++;
+            var productToAdd = new ProductBasketItemDto(product)
+            {
+                Id = product.Id,
+                ProdigiSku = product.ProdigiSku,
+                ProdigiDescription = product.ProdigiDescription,
+                CustomDescription = product.CustomDescription,
+                FurtherDetails = product.FurtherDetails,
+                MockupImageUri = product.MockupImageUri,
+                PhotoId = photo.Id,
+                ImageUri = photo.Uri,
+                ImageTitle = photo.Title,
+                Options = selectedProductOptions
+            };
 
-        snackbar.Add("A new item has been added to your basket", Severity.Success);
+            var tempPrice = productPrice.Remove(0, 1);
+            decimal totalPrice = decimal.Parse(tempPrice);
+            var item = new BasketItem { Product = productToAdd, Quantity = 1, Total = totalPrice };
+
+            basketState.Basket.BasketItems.Add(item);
+            await basketState.SaveChangesAsync(); // save to local storage
+            basketState.BasketItemCount++;
+
+            snackbar.Add("A new item has been added to your basket", Severity.Success);
+        }
+        else
+        {
+            snackbar.Add("Please select your product options", Severity.Error);
+        }
     }
 
     private bool AnyNulls(CostSummary costSummary)
@@ -310,6 +320,7 @@ public partial class PhotoDetails
         }
 
         productOptions.Add(selectedOption);
+        productOptionsChosen++;
 
         selectedDropdown.DropdownTitle = selectedOption.OptionName;
         await sessionStorage.SetItemAsync("product_options", productOptions);
