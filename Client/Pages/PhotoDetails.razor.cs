@@ -109,20 +109,22 @@ public partial class PhotoDetails
             }
         }
 
+        await CreateProductOptions(sku);
+    }
+
+    private async Task CreateProductOptions(string sku)
+    {
         productOptions.Clear();
 
         var productDetails = await productService.GetProductDetailsAsync(sku);
+
         if (productDetails.Attributes is not null)
         {
-            // create list of productOptions where the productDetails.Attributes value is an array of length > 1
-            if (productDetails.Attributes != null)
+            foreach (var attribute in productDetails.Attributes)
             {
-                foreach (var attribute in productDetails.Attributes)
+                if (attribute.Value.Length > 1)
                 {
-                    if (attribute.Value.Length > 1)
-                    {
-                        productOptions.Add(attribute.Key, attribute.Value);
-                    }
+                    productOptions.Add(attribute.Key, attribute.Value);
                 }
             }
         }
