@@ -1,12 +1,11 @@
 ﻿using Humanizer;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
-using PhotoPortfolio.Client.Components;
 using PhotoPortfolio.Client.Shared;
 using PhotoPortfolio.Shared.Entities;
-using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
 using PhotoPortfolio.Shared.Models;
+using PhotoPortfolio.Shared.Models.Prodigi.Quotes;
 
 namespace PhotoPortfolio.Client.Pages;
 
@@ -40,8 +39,6 @@ public partial class PhotoDetails
     private bool quoteReceived = false;
     private string quoteError = "";
     private bool awaitingQuote = false;
-
-    private ProductOptionDropdown selectedDropdown;
 
     protected override async Task OnInitializedAsync()
     {
@@ -322,7 +319,6 @@ public partial class PhotoDetails
         productOptions.Add(selectedOption);
         productOptionsChosen++;
 
-        selectedDropdown.DropdownTitle = selectedOption.OptionName;
         await sessionStorage.SetItemAsync("product_options", productOptions);
     }
 
