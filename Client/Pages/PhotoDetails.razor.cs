@@ -30,6 +30,7 @@ public partial class PhotoDetails
     private Dictionary<string, string[]> productOptions = new();
     private int productOptionsRequired = 0;
     private int productOptionsChosen = 0;
+    private List<ProductOptionSelected> selectedProductOptions = new();
 
     private string initialInstructionsText = "Choose an option above to see further details, including prices.";
 
@@ -43,7 +44,6 @@ public partial class PhotoDetails
     protected override async Task OnInitializedAsync()
     {
         await GetPhotoById();
-        await sessionStorage.RemoveItemAsync("product_options");
     }
 
     private async Task GetPhotoById()
@@ -84,6 +84,11 @@ public partial class PhotoDetails
 
     private async Task SelectedOption(DropdownItem selectedOption)
     {
+        // reset the product option variables when a new option is selected
+        productOptionsRequired = 0;
+        productOptionsChosen = 0;
+        selectedProductOptions.Clear();
+
         string sku = selectedOption.OptionRef;
         productPrice = "";
 
@@ -209,11 +214,6 @@ public partial class PhotoDetails
     {
         if (productOptionsRequired == productOptionsChosen)
         {
-            var selectedProductOptions = await GetProductOptionsFromSession();
-
-            // remove product options from session storage
-            await sessionStorage.RemoveItemAsync("product_options");
-
             var productToAdd = new ProductBasketItemDto(product)
             {
                 Id = product.Id,
@@ -302,28 +302,14 @@ public partial class PhotoDetails
 
     private async Task SelectedProductOption(ProductOptionSelected selectedOption)
     {
-        var productOptions = await GetProductOptionsFromSession();
-
-        if (productOptions is null)
-        {
-            productOptions = new List<ProductOptionSelected>();
-        }
-
-        var existingOption = productOptions.FirstOrDefault(x => x.OptionLabel == selectedOption.OptionLabel);
+        var existingOption = selectedProductOptions.FirstOrDefault(x => x.OptionLabel == selectedOption.OptionLabel);
 
         if (existingOption is not null)
         {
-            productOptions.Remove(existingOption);
+            selectedProductOptions.Remove(existingOption);
         }
 
-        productOptions.Add(selectedOption);
+        selectedProductOptions.Add(selectedOption);
         productOptionsChosen++;
-
-        await sessionStorage.SetItemAsync("product_options", productOptions);
-    }
-
-    private async Task<List<ProductOptionSelected>> GetProductOptionsFromSession()
-    {
-        return await sessionStorage.GetItemAsync<List<ProductOptionSelected>>("product_options");
     }
 }
