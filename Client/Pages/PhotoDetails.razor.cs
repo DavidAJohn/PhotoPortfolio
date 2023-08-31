@@ -214,6 +214,13 @@ public partial class PhotoDetails
     {
         if (productOptionsRequired == productOptionsChosen)
         {
+            var productOptionsToAdd = new List<ProductOptionSelected>();
+
+            if (selectedProductOptions is not null && selectedProductOptions.Count != 0)
+            {
+                productOptionsToAdd = selectedProductOptions;
+            }
+
             var productToAdd = new ProductBasketItemDto(product)
             {
                 Id = product.Id,
@@ -225,7 +232,7 @@ public partial class PhotoDetails
                 PhotoId = photo.Id,
                 ImageUri = photo.Uri,
                 ImageTitle = photo.Title,
-                Options = selectedProductOptions
+                Options = productOptionsToAdd
             };
 
             var tempPrice = productPrice.Remove(0, 1);
