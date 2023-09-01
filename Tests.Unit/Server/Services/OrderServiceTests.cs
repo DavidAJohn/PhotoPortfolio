@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
 using Prodigi = PhotoPortfolio.Shared.Models.Prodigi;
 
-namespace PhotoPortfolio.Tests.Server.Services;
+namespace PhotoPortfolio.Tests.Unit.Server.Services;
 
 public class OrderServiceTests
 {

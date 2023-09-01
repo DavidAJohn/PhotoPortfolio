@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace PhotoPortfolio.Tests.Shared.Helpers;
+namespace PhotoPortfolio.Tests.Unit.Shared.Helpers;
 
 public class QueryHelpersTests
 {

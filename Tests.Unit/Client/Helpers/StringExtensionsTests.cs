@@ -1,6 +1,6 @@
 ﻿using PhotoPortfolio.Client.Helpers;
 
-namespace PhotoPortfolio.Tests.Client.Helpers;
+namespace PhotoPortfolio.Tests.Unit.Client.Helpers;
 
 public class StringExtensionsTests
 {

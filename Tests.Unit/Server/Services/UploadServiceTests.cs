@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoPortfolio.Tests.Server.Services;
+namespace PhotoPortfolio.Tests.Unit.Server.Services;
 
 public class UploadServiceTests
 {

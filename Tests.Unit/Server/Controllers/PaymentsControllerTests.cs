@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace PhotoPortfolio.Tests.Server.Controllers;
+namespace PhotoPortfolio.Tests.Unit.Server.Controllers;
 
 public class PaymentsControllerTests : BaseApiController
 {

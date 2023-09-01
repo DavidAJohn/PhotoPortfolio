@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace PhotoPortfolio.Tests.Server.Controllers;
+namespace PhotoPortfolio.Tests.Unit.Server.Controllers;
 
 public class PhotosControllerTests : BaseApiController
 {

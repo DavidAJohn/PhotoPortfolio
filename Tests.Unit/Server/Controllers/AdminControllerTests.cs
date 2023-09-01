@@ -15,7 +15,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PhotoPortfolio.Tests.Server.Controllers;
+namespace PhotoPortfolio.Tests.Unit.Server.Controllers;
 
 public class AdminControllerTests : BaseApiController
 {
