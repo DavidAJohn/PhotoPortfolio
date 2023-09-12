@@ -12,6 +12,7 @@ public class AdminController : BaseApiController
     private readonly IPhotoRepository _photoRepository;
     private readonly IProductRepository _productRepository;
     private readonly IPreferencesRepository _preferencesRepository;
+    private readonly IOrderRepository _orderRepository;
     private readonly IOrderService _orderService;
     private readonly ILogger<AdminController> _logger;
     private readonly IUploadService _uploadService;
@@ -21,6 +22,7 @@ public class AdminController : BaseApiController
         IPhotoRepository photoRepository, 
         IProductRepository productRepository,
         IPreferencesRepository preferencesRepository,
+        IOrderRepository orderRepository,
         IOrderService orderService,
         ILogger<AdminController> logger,
         IUploadService uploadService,
@@ -30,6 +32,7 @@ public class AdminController : BaseApiController
         _photoRepository = photoRepository;
         _productRepository = productRepository;
         _preferencesRepository = preferencesRepository;
+        _orderRepository = orderRepository;
         _orderService = orderService;
         _logger = logger;
         _uploadService = uploadService;
@@ -332,4 +335,17 @@ public class AdminController : BaseApiController
         return NotFound();
     }
 
+    [HttpPut("orders/approve")]
+    public async Task<IActionResult> ApproveOrder([FromBody] string orderId)
+    {
+        if (string.IsNullOrWhiteSpace(orderId)) return BadRequest();
+
+        var order = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
+        if (order is null) return NotFound();
+
+        var updated = await _orderService.ApproveOrder(order.Id!);
+        if (!updated) return BadRequest();
+
+        return NoContent();
+    }
 }

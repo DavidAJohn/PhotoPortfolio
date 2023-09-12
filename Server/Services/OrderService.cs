@@ -289,4 +289,17 @@ public class OrderService : IOrderService
 
         return approveDecision;
     }
+
+    public async Task<bool> ApproveOrder(string orderId)
+    {
+        var order = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
+        if (order is null) return false;
+
+        order.Status = OrderStatus.Approved;
+        var response = await _orderRepository.UpdateAsync(order);
+
+        if (response is null) return false;
+
+        return true;
+    }
 }
