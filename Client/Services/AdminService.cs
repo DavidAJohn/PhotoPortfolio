@@ -368,4 +368,28 @@ public class AdminService : IAdminService
             throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
         }
     }
+
+    public async Task<bool> ApproveOrderAsync(string orderId)
+    {
+        try
+        {
+            var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
+            var order = new { orderId };
+            HttpContent orderJson = new StringContent(JsonSerializer.Serialize(order));
+            orderJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            HttpResponseMessage response = await client.PutAsync($"admin/orders/approve", orderJson);
+
+            if (response.StatusCode == HttpStatusCode.NoContent)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException(ex.Message, ex.InnerException, ex.StatusCode);
+        }
+    }
 }

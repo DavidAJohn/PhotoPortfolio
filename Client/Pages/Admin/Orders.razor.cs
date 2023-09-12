@@ -325,9 +325,7 @@ public partial class Orders
 
         if (!result.Cancelled) // user must have clicked the approve button - cancelling just closes the confirm dialog
         {
-            // TO DO: send order id to an approve order method
-            // var orderApproved = await adminService.ApproveOrder(orderId);
-            var orderApproved = true;
+            var orderApproved = await adminService.ApproveOrderAsync(orderId);
 
             if (orderApproved)
             {

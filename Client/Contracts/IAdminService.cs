@@ -20,4 +20,5 @@ public interface IAdminService
     Task<Preferences> GetSitePreferencesAsync();
     Task<bool> UpdateSitePreferencesAsync(Preferences prefs);
     Task<List<OrderDetailsDto>> GetOrdersAsync(OrderSpecificationParams? orderParams);
+    Task<bool> ApproveOrderAsync(string orderId);
 }
