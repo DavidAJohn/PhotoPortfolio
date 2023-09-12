@@ -25,13 +25,14 @@ public class AdminControllerTests : BaseApiController
     private readonly IPhotoRepository _photoRepository = Substitute.For<IPhotoRepository>();
     private readonly IGalleryRepository _galleryRepository = Substitute.For<IGalleryRepository>();
     private readonly IProductRepository _productRepository = Substitute.For<IProductRepository>();
+    private readonly IOrderRepository _orderRepository = Substitute.For<IOrderRepository>();
     private readonly IPreferencesRepository _preferencesRepository = Substitute.For<IPreferencesRepository>();
     private readonly IUploadService _uploadService = Substitute.For<IUploadService>();
     private readonly IConfigurationService _configService = Substitute.For<IConfigurationService>();
 
     public AdminControllerTests()
     {
-        _sut = new AdminController(_galleryRepository, _photoRepository, _productRepository, _preferencesRepository, _orderService, _logger, _uploadService, _configService);
+        _sut = new AdminController(_galleryRepository, _photoRepository, _productRepository, _preferencesRepository, _orderRepository, _orderService, _logger, _uploadService, _configService);
     }
 
     // GALLERIES
@@ -932,5 +933,73 @@ public class AdminControllerTests : BaseApiController
 
         // Assert
         result.StatusCode.Should().Be(404);
+    }
+
+    [Fact]
+    public async Task ApproveOrder_ShouldReturnNoContent_WhenOrderIsApproved()
+    {
+        // Arrange
+        var orderId = Guid.NewGuid().ToString();
+        var order = new Order
+        {
+            Id = orderId,
+            Status = OrderStatus.AwaitingApproval
+        };
+
+        _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(order);
+        _orderService.ApproveOrder(Arg.Any<string>()).Returns(true);
+
+        // Act
+        var result = (NoContentResult)await _sut.ApproveOrder(orderId);
+
+        // Assert
+        result.StatusCode.Should().Be(204);
+    }
+
+    [Fact]
+    public async Task ApproveOrder_ShouldReturnNotFound_WhenOrderIsNotFound()
+    {
+        // Arrange
+        _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).ReturnsNull();
+
+        // Act
+        var result = (NotFoundResult)await _sut.ApproveOrder(Guid.NewGuid().ToString());
+
+        // Assert
+        result.StatusCode.Should().Be(404);
+    }
+
+    [Fact]
+    public async Task ApproveOrder_ShouldReturnBadRequest_WhenOrderIdIsNullOrWhitespace()
+    {
+        // Arrange
+        _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).ReturnsNull();
+
+        // Act
+        var result = (BadRequestResult)await _sut.ApproveOrder(string.Empty);
+
+        // Assert
+        result.StatusCode.Should().Be(400);
+    }
+
+    [Fact]
+    public async Task ApproveOrder_ShouldReturnBadRequest_WhenOrderWasNotApproved()
+    {
+        // Arrange
+        var orderId = Guid.NewGuid().ToString();
+        var order = new Order
+        {
+            Id = orderId,
+            Status = OrderStatus.AwaitingApproval
+        };
+
+        _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(order);
+        _orderService.ApproveOrder(Arg.Any<string>()).Returns(false);
+
+        // Act
+        var result = (BadRequestResult)await _sut.ApproveOrder(orderId);
+
+        // Assert
+        result.StatusCode.Should().Be(400);
     }
 }

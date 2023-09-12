@@ -743,4 +743,53 @@ public class OrderServiceTests
         // Assert
         result.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task ApproveOrder_ShouldReturnTrue_WhenOrderIsApproved()
+    {
+        // Arrange
+        var orderBasketDto = CreateOrderBasketDto();
+        var orderId = Guid.NewGuid().ToString();
+        var newOrder = CreateInProgressOrder(orderId, orderBasketDto);
+
+        _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(newOrder);
+        _orderRepository.UpdateAsync(Arg.Any<Order>()).Returns(newOrder);
+
+        // Act
+        var result = await _sut.ApproveOrder(orderId);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ApproveOrder_ShouldReturnFalse_WhenOrderIsNotFound()
+    {
+        // Arrange
+        _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).ReturnsNull();
+
+        // Act
+        var result = await _sut.ApproveOrder(Guid.NewGuid().ToString());
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ApproveOrder_ShouldReturnFalse_WhenOrderWasNotUpdated()
+    {
+        // Arrange
+        var orderBasketDto = CreateOrderBasketDto();
+        var orderId = Guid.NewGuid().ToString();
+        var newOrder = CreateInProgressOrder(orderId, orderBasketDto);
+
+        _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(newOrder);
+        _orderRepository.UpdateAsync(Arg.Any<Order>()).ReturnsNull();
+
+        // Act
+        var result = await _sut.ApproveOrder(orderId);
+
+        // Assert
+        result.Should().BeFalse();
+    }
 }
