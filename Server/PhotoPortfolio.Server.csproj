@@ -8,12 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.16.1" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
     <PackageReference Include="LinqKit" Version="1.2.4" />
     <PackageReference Include="MetadataExtractor" Version="2.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.0" />
     <PackageReference Include="Microsoft.Identity.Web" Version="2.13.4" />
     <PackageReference Include="MongoDB.Driver" Version="2.19.2" />
     <PackageReference Include="Ocelot" Version="19.0.2" />
