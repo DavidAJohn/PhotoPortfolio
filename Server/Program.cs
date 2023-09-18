@@ -1,8 +1,12 @@
+using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Azure;
 using Microsoft.Identity.Web;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Server.Services;
 using Serilog;
 using Serilog.Events;
@@ -44,6 +48,36 @@ try
     builder.Services.AddSingleton(_ =>
         new MongoContext(builder.Configuration.GetValue<string>("MongoConnection:ConnectionString"),
                          builder.Configuration.GetValue<string>("MongoConnection:DatabaseName")));
+
+    // Azure Service Bus setup
+    var adminClient = new ServiceBusAdministrationClient(config.GetValue<string>("AzureServiceBus:Endpoint"));
+    var queueName = config.GetValue<string>("AzureServiceBus:Queue");
+
+    builder.Services.AddAzureClients(builder =>
+    {
+        builder.AddServiceBusClient(config.GetValue<string>("AzureServiceBus:Endpoint"));
+
+        var clientOptions = new ServiceBusClientOptions()
+        {
+            TransportType = ServiceBusTransportType.AmqpWebSockets,
+            RetryOptions = new ServiceBusRetryOptions()
+            {
+                Mode = ServiceBusRetryMode.Exponential,
+                MaxRetries = 3,
+                Delay = TimeSpan.FromSeconds(1),
+                MaxDelay = TimeSpan.FromSeconds(10)
+            }
+        };
+
+        builder.AddClient<ServiceBusSender, ServiceBusClientOptions>((_, clientOptions, provider) =>
+            provider
+                .GetService<ServiceBusClient>()
+                .CreateSender(queueName)
+        )
+        .WithName(queueName);
+    });
+
+    builder.Services.AddScoped<IMessageSender, MessageSender>();
 
     builder.Services.AddScoped<IGalleryRepository, GalleryRepository>();
     builder.Services.AddScoped<IPhotoRepository, PhotoRepository>();
