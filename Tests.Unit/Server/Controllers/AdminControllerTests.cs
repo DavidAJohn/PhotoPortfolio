@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoFixture;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -939,7 +940,11 @@ public class AdminControllerTests : BaseApiController
     public async Task ApproveOrder_ShouldReturnNoContent_WhenOrderIsApproved()
     {
         // Arrange
+        Fixture fixture = new();
+        var orderDetailsDto = fixture.Create<OrderDetailsDto>();
         var orderId = Guid.NewGuid().ToString();
+        orderDetailsDto.Id = orderId;
+
         var order = new Order
         {
             Id = orderId,
@@ -950,7 +955,7 @@ public class AdminControllerTests : BaseApiController
         _orderService.ApproveOrder(Arg.Any<string>()).Returns(true);
 
         // Act
-        var result = (NoContentResult)await _sut.ApproveOrder(orderId);
+        var result = (NoContentResult)await _sut.ApproveOrder(orderDetailsDto);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -963,20 +968,20 @@ public class AdminControllerTests : BaseApiController
         _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).ReturnsNull();
 
         // Act
-        var result = (NotFoundResult)await _sut.ApproveOrder(Guid.NewGuid().ToString());
+        var result = (NotFoundResult)await _sut.ApproveOrder(new OrderDetailsDto());
 
         // Assert
         result.StatusCode.Should().Be(404);
     }
 
     [Fact]
-    public async Task ApproveOrder_ShouldReturnBadRequest_WhenOrderIdIsNullOrWhitespace()
+    public async Task ApproveOrder_ShouldReturnBadRequest_WhenOrderIsNull()
     {
         // Arrange
         _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).ReturnsNull();
 
         // Act
-        var result = (BadRequestResult)await _sut.ApproveOrder(string.Empty);
+        var result = (BadRequestResult)await _sut.ApproveOrder(null!);
 
         // Assert
         result.StatusCode.Should().Be(400);
@@ -987,6 +992,11 @@ public class AdminControllerTests : BaseApiController
     {
         // Arrange
         var orderId = Guid.NewGuid().ToString();
+
+        Fixture fixture = new();
+        var orderDetailsDto = fixture.Create<OrderDetailsDto>();
+        orderDetailsDto.Id = orderId;
+
         var order = new Order
         {
             Id = orderId,
@@ -997,7 +1007,7 @@ public class AdminControllerTests : BaseApiController
         _orderService.ApproveOrder(Arg.Any<string>()).Returns(false);
 
         // Act
-        var result = (BadRequestResult)await _sut.ApproveOrder(orderId);
+        var result = (BadRequestResult)await _sut.ApproveOrder(orderDetailsDto);
 
         // Assert
         result.StatusCode.Should().Be(400);

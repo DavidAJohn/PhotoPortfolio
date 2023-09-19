@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using PhotoPortfolio.Server.Contracts;
+using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Server.Services;
 using PhotoPortfolio.Shared.Entities;
 using PhotoPortfolio.Shared.Helpers;
@@ -21,11 +22,12 @@ public class OrderServiceTests
     private readonly IOrderRepository _orderRepository = Substitute.For<IOrderRepository>();
     private readonly IPreferencesRepository _preferencesRepository = Substitute.For<IPreferencesRepository>();
     private readonly IConfigurationService _configService = Substitute.For<IConfigurationService>();
+    private readonly IMessageSender _messageSender = Substitute.For<IMessageSender>();
     private readonly ILogger<OrderService> _logger = Substitute.For<ILogger<OrderService>>();
 
     public OrderServiceTests()
     { 
-        _sut = new OrderService(_orderRepository, _preferencesRepository, _configService, _logger);
+        _sut = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger);
     }
 
     private static OrderBasketDto CreateOrderBasketDto()
@@ -754,6 +756,7 @@ public class OrderServiceTests
 
         _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(newOrder);
         _orderRepository.UpdateAsync(Arg.Any<Order>()).Returns(newOrder);
+        _messageSender.SendOrderApprovedMessageAsync(Arg.Any<OrderDetailsDto>()).Returns(true);
 
         // Act
         var result = await _sut.ApproveOrder(orderId);
@@ -785,6 +788,25 @@ public class OrderServiceTests
 
         _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(newOrder);
         _orderRepository.UpdateAsync(Arg.Any<Order>()).ReturnsNull();
+
+        // Act
+        var result = await _sut.ApproveOrder(orderId);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ApproveOrder_ShouldReturnFalse_WhenMessageToServiceBusWasNotSent()
+    {
+        // Arrange
+        var orderBasketDto = CreateOrderBasketDto();
+        var orderId = Guid.NewGuid().ToString();
+        var newOrder = CreateInProgressOrder(orderId, orderBasketDto);
+
+        _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(newOrder);
+        _orderRepository.UpdateAsync(Arg.Any<Order>()).Returns(newOrder);
+        _messageSender.SendOrderApprovedMessageAsync(Arg.Any<OrderDetailsDto>()).Returns(false);
 
         // Act
         var result = await _sut.ApproveOrder(orderId);
