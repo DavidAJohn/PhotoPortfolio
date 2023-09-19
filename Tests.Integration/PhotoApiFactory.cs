@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PhotoPortfolio.Server;
 using PhotoPortfolio.Server.Data;
+using PhotoPortfolio.Server.Messaging;
+using PhotoPortfolio.Tests.Integration.Infrastructure;
 using Testcontainers.MongoDb;
 
 namespace PhotoPortfolio.Tests.Integration;
@@ -42,6 +44,9 @@ public class PhotoApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
             services.RemoveAll(typeof(MongoContext));
             services.AddSingleton(_ =>
                     new MongoContext(_dbContainer.GetConnectionString(), TestDbName));
+
+            services.RemoveAll(typeof(IMessageSender));
+            services.AddSingleton<IMessageSender, MockMessageSender>();
         });
 
         builder.UseConfiguration(new ConfigurationBuilder()
