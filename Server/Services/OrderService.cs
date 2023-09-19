@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Shared.Entities;
 using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolio.Shared.Models;
@@ -12,13 +13,15 @@ public class OrderService : IOrderService
     private readonly IOrderRepository _orderRepository;
     private readonly IPreferencesRepository _preferencesRepository;
     private readonly IConfigurationService _configService;
+    private readonly IMessageSender _messageSender;
     private readonly ILogger<OrderService> _logger;
 
-    public OrderService(IOrderRepository orderRepository, IPreferencesRepository preferencesRepository, IConfigurationService configService, ILogger<OrderService> logger)
+    public OrderService(IOrderRepository orderRepository, IPreferencesRepository preferencesRepository, IConfigurationService configService, IMessageSender messageSender, ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
         _preferencesRepository = preferencesRepository;
         _configService = configService;
+        _messageSender = messageSender;
         _logger = logger;
     }
 
@@ -296,9 +299,16 @@ public class OrderService : IOrderService
         if (order is null) return false;
 
         order.Status = OrderStatus.Approved;
-        var response = await _orderRepository.UpdateAsync(order);
+        var updateResponse = await _orderRepository.UpdateAsync(order);
 
-        if (response is null) return false;
+        if (updateResponse is null) return false;
+
+        OrderDetailsDto orderDetails = OrderToDetailsConverter(order);
+
+        // send message to Azure Service Bus queue
+        var messageSent = await _messageSender.SendOrderApprovedMessageAsync(orderDetails);
+
+        if (!messageSent) return false;
 
         return true;
     }

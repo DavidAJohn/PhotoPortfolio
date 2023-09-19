@@ -336,15 +336,15 @@ public class AdminController : BaseApiController
     }
 
     [HttpPut("orders/approve")]
-    public async Task<IActionResult> ApproveOrder([FromBody] string orderId)
+    public async Task<IActionResult> ApproveOrder(OrderDetailsDto order)
     {
-        if (string.IsNullOrWhiteSpace(orderId)) return BadRequest();
+        if (order is null) return BadRequest();
 
-        var order = await _orderRepository.GetSingleAsync(o => o.Id == orderId);
-        if (order is null) return NotFound();
+        var existingOrder = await _orderRepository.GetSingleAsync(o => o.Id == order.Id);
+        if (existingOrder is null) return NotFound();
 
-        var updated = await _orderService.ApproveOrder(order.Id!);
-        if (!updated) return BadRequest();
+        var approved = await _orderService.ApproveOrder(order.Id!);
+        if (!approved) return BadRequest();
 
         return NoContent();
     }

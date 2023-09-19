@@ -1,6 +1,7 @@
 ﻿using PhotoPortfolio.Shared.Models;
 using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
+using PhotoPortfolio.Shared.Entities;
 
 namespace PhotoPortfolio.Server.Contracts;
 
