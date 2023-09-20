@@ -369,12 +369,11 @@ public class AdminService : IAdminService
         }
     }
 
-    public async Task<bool> ApproveOrderAsync(string orderId)
+    public async Task<bool> ApproveOrderAsync(OrderDetailsDto order)
     {
         try
         {
             var client = _httpClient.CreateClient("PhotoPortfolio.ServerAPI.Secure");
-            var order = new { orderId };
             HttpContent orderJson = new StringContent(JsonSerializer.Serialize(order));
             orderJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 

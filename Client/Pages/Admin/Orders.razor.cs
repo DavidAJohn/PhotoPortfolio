@@ -311,7 +311,7 @@ public partial class Orders
         }
     }
 
-    private async Task OnApproveClick(string orderId)
+    private async Task OnApproveClick(OrderDetailsDto order)
     {
         var parameters = new DialogParameters();
         parameters.Add("ContentText", "Are you sure? The order will be sent to the Prodigi Print API immediately");
@@ -325,7 +325,7 @@ public partial class Orders
 
         if (!result.Cancelled) // user must have clicked the approve button - cancelling just closes the confirm dialog
         {
-            var orderApproved = await adminService.ApproveOrderAsync(orderId);
+            var orderApproved = await adminService.ApproveOrderAsync(order);
 
             if (orderApproved)
             {

@@ -160,7 +160,7 @@ else
                                         @if (order.Status == "AwaitingApproval")
                                         {
                                             <div class="mt-8 font-semibold text-sm md:text-base flex items-center">
-                                                <button @onclick="@(() => OnApproveClick(order.Id))"
+                                                <button @onclick="@(() => OnApproveClick(order))"
                                                         type="button"
                                                         class="approve-order bg-green-700 hover:bg-green-600 text-white text-sm py-2 px-2 rounded-sm">
                                                     Approve Order
