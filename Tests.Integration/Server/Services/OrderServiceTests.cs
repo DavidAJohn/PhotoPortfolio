@@ -1,9 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using PhotoPortfolio.Server.Contracts;
 using PhotoPortfolio.Server.Data;
+using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Server.Services;
 using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolio.Shared.Models;
@@ -19,7 +22,9 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
     private readonly IPreferencesRepository _preferencesRepository;
     private readonly IConfiguration _configuration;
     private readonly IConfigurationService _configService;
+    private readonly IMessageSender _messageSender;
     private readonly ILogger<OrderService> _logger;
+    private readonly ILogger<MessageSender> _messageSenderLogger;
 
     public OrderServiceTests(PhotoApiFactory apiFactory)
     {
@@ -34,6 +39,8 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
         _preferencesRepository = new PreferencesRepository(_mongoContext);
         _logger = new Logger<OrderService>(new LoggerFactory());
         _orderRepository = new OrderRepository(_mongoContext);
+        _messageSenderLogger = new Logger<MessageSender>(new LoggerFactory());
+        _messageSender = new MessageSender(_apiFactory.Services.GetRequiredService<IAzureClientFactory<ServiceBusSender>>(), _configuration, _messageSenderLogger);
     }
 
     private static OrderBasketDto CreateOrderBasketDto()
@@ -64,7 +71,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetOrderDetails_ReturnsListOfOrderDetailsDto_WhenParamsNotNullAndOrdersExist()
     {
         // Arrange
-        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _logger);
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger);
 
         var orderSpecParams = new OrderSpecificationParams()
         {
@@ -95,7 +102,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetOrderDetails_ReturnsListOfOrderDetailsDto_WhenSortOrderNotSpecifiedAndOrdersExist()
     {
         // Arrange
-        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _logger);
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger);
 
         var orderSpecParams = new OrderSpecificationParams()
         {
@@ -126,7 +133,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetOrderDetails_ReturnsListOfOrderDetailsDto_WhenSortOrderIsNotDescAndOrdersExist()
     {
         // Arrange
-        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _logger);
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger);
 
         var orderSpecParams = new OrderSpecificationParams()
         {

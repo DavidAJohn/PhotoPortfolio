@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PhotoPortfolio.Server.Contracts;
 using PhotoPortfolio.Server.Data;
+using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Server.Services;
 using PhotoPortfolio.Shared.Entities;
 using System.Net;
@@ -25,6 +27,7 @@ public class GetSitePreferencesTests : IClassFixture<PhotoApiFactory>
     private readonly IUploadService _uploadService;
     private readonly IConfiguration _configuration;
     private readonly IConfigurationService _configService;
+    private readonly IMessageSender _messageSender;
     private readonly string _sitePreferencesId;
 
     public GetSitePreferencesTests(PhotoApiFactory apiFactory)
@@ -43,8 +46,12 @@ public class GetSitePreferencesTests : IClassFixture<PhotoApiFactory>
         _productRepository = new ProductRepository(_mongoContext);
         _preferencesRepository = new PreferencesRepository(_mongoContext);
         _orderRepository = new OrderRepository(_mongoContext);
+        _configuration = _apiFactory.Services.GetRequiredService<IConfiguration>();
         _configService = new ConfigurationService(_configuration);
-        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _orderServiceLogger);
+        _orderServiceLogger = new Logger<OrderService>(new LoggerFactory());
+        _uploadServiceLogger = new Logger<UploadService>(new LoggerFactory());
+        _messageSender = _apiFactory.Services.GetRequiredService<IMessageSender>();
+        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _orderServiceLogger);
         _uploadService = new UploadService(_uploadServiceLogger, _configService);
     }
 

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using PhotoPortfolio.Server.Contracts;
 using PhotoPortfolio.Server.Data;
+using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Server.Services;
 using PhotoPortfolio.Shared.Models;
 using System.Net;
@@ -22,6 +23,7 @@ public class CreateOrdersControllerTests : IClassFixture<PhotoApiFactory>
     private readonly IConfigurationService _configService;
     private readonly IOrderService _orderService;
     private readonly ILogger<OrderService> _orderServiceLogger;
+    private readonly IMessageSender _messageSender;
     private readonly ILogger<CreateOrdersControllerTests> _logger;
 
     public CreateOrdersControllerTests(PhotoApiFactory apiFactory)
@@ -39,7 +41,8 @@ public class CreateOrdersControllerTests : IClassFixture<PhotoApiFactory>
         _configService = new ConfigurationService(_configuration);
         _logger = new Logger<CreateOrdersControllerTests>(new LoggerFactory());
         _orderServiceLogger = new Logger<OrderService>(new LoggerFactory());
-        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _orderServiceLogger);
+        _messageSender = _apiFactory.Services.GetRequiredService<IMessageSender>();
+        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _orderServiceLogger);
     }
 
     private static OrderBasketDto CreateOrderBasketDto()

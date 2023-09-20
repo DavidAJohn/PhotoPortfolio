@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using PhotoPortfolio.Server.Contracts;
 using PhotoPortfolio.Server.Data;
+using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Server.Services;
 using PhotoPortfolio.Shared.Models;
 using PhotoPortfolio.Tests.Integration.Infrastructure;
@@ -20,8 +21,9 @@ public class StripeWebhookTests : IClassFixture<PhotoApiFactory>
     private readonly IConfigurationService _configService;
     private readonly IOrderService _orderService;
     private readonly IOrderRepository _orderRepository;
-    private readonly ILogger<OrderService> _logger;
+    private readonly ILogger<OrderService> _orderServiceLogger;
     private readonly IPreferencesRepository _preferencesRepository;
+    private readonly IMessageSender _messageSender;
 
     public StripeWebhookTests(PhotoApiFactory apiFactory)
     {
@@ -33,8 +35,10 @@ public class StripeWebhookTests : IClassFixture<PhotoApiFactory>
         _configService = new ConfigurationService(_configuration);
         _mongoContext = new MongoContext(_apiFactory.ConnectionString, PhotoApiFactory.TestDbName);
         _preferencesRepository = new PreferencesRepository(_mongoContext);
+        _orderServiceLogger = new Logger<OrderService>(new LoggerFactory());
+        _messageSender = _apiFactory.Services.GetRequiredService<IMessageSender>();
         _orderRepository = new OrderRepository(_mongoContext);
-        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _logger);
+        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _orderServiceLogger);
     }
 
     private static OrderBasketDto CreateOrderBasketDto()
