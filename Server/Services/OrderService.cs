@@ -312,4 +312,9 @@ public class OrderService : IOrderService
 
         return true;
     }
+
+    public async Task<bool> CreateProdigiOrder(OrderDetailsDto order)
+    {
+        return true;
+    }
 }

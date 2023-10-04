@@ -23,4 +23,5 @@ public interface IOrderService
     Task<List<OrderDetailsDto>> GetOrderDetails(OrderSpecificationParams? orderParams = null!);
     Task<bool> ShouldApproveOrder(string orderId);
     Task<bool> ApproveOrder(string orderId);
+    Task<bool> CreateProdigiOrder(OrderDetailsDto order);
 }

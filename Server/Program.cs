@@ -75,9 +75,17 @@ try
                 .CreateSender(queueName)
         )
         .WithName(queueName);
+
+        builder.AddClient<ServiceBusReceiver, ServiceBusClientOptions>((_, clientOptions, provider) =>
+            provider
+                .GetService<ServiceBusClient>()
+                .CreateReceiver(queueName)
+        )
+        .WithName(queueName);
     });
 
     builder.Services.AddScoped<IMessageSender, MessageSender>();
+    builder.Services.AddHostedService<MessageConsumer>();
 
     builder.Services.AddScoped<IGalleryRepository, GalleryRepository>();
     builder.Services.AddScoped<IPhotoRepository, PhotoRepository>();
