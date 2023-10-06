@@ -1,8 +1,6 @@
-﻿using PhotoPortfolio.Shared.Models;
-
-namespace PhotoPortfolio.Server.Messaging;
+﻿namespace PhotoPortfolio.Server.Messaging;
 
 public interface IMessageSender
 {
-    Task<bool> SendOrderApprovedMessageAsync(OrderDetailsDto order);
+    Task<bool> SendMessage<T>(T message);
 }

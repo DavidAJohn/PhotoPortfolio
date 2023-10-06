@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using PhotoPortfolio.Server.Mapping;
 using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Shared.Entities;
 using PhotoPortfolio.Shared.Helpers;
@@ -306,7 +307,7 @@ public class OrderService : IOrderService
         OrderDetailsDto orderDetails = OrderToDetailsConverter(order);
 
         // send message to Azure Service Bus queue
-        var messageSent = await _messageSender.SendOrderApprovedMessageAsync(orderDetails);
+        var messageSent = await _messageSender.SendMessage(orderDetails.ToOrderApprovedMessage());
 
         if (!messageSent) return false;
 

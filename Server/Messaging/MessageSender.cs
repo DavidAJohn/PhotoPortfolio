@@ -1,6 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Azure;
-using PhotoPortfolio.Shared.Models;
 using System.Text.Json;
 
 namespace PhotoPortfolio.Server.Messaging;
@@ -18,26 +17,30 @@ public class MessageSender : IMessageSender
         _sender = serviceBusSenderFactory.CreateClient(_configuration.GetValue<string>("AzureServiceBus:Queue"));
     }
 
-    public async Task<bool> SendOrderApprovedMessageAsync(OrderDetailsDto order)
+    public async Task<bool> SendMessage<T>(T message)
     {
         try
         {
-            var serializedOrder = JsonSerializer.Serialize(order);
+            var serializedMessage = JsonSerializer.Serialize(message);
 
-            var serializedMessage = new ServiceBusMessage(serializedOrder)
+            var serviceBusMessage = new ServiceBusMessage(serializedMessage)
             {
-                Subject = $"Order Approved: {order.Id}",
+                Subject = $"{typeof(T).Name} Message",
                 ContentType = "application/json;charset=utf-8",
                 ScheduledEnqueueTime = DateTimeOffset.UtcNow.AddMinutes(1),
+                ApplicationProperties =
+                {
+                    { "MessageType", typeof(T).Name }
+                }
             };
 
-            await _sender.SendMessageAsync(serializedMessage);
-            _logger.LogInformation("Order Approved message sent to Azure Service Bus - Order No: {orderNo}", order.Id);
+            await _sender.SendMessageAsync(serviceBusMessage);
+            _logger.LogInformation("{MessageType} message sent to Azure Service Bus", typeof(T).Name);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending message to Azure Service Bus - Order No: {orderNo}", order.Id);
+            _logger.LogError(ex, "Error sending {MessageType} message to Azure Service Bus", typeof(T).Name);
             return false;
         }
     }

@@ -1,6 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Azure;
-using PhotoPortfolio.Shared.Models;
+using PhotoPortfolio.Server.Mapping;
 using System.Text.Json;
 
 namespace PhotoPortfolio.Server.Messaging;
@@ -34,26 +34,42 @@ public class MessageConsumer : BackgroundService
                 {
                     try
                     {
+                        var messageType = message.ApplicationProperties.FirstOrDefault(x => x.Key == "MessageType").Value ?? "";
+                        var type = Type.GetType($"PhotoPortfolio.Server.Messaging.{messageType}");
+
+                        if (type is null)
+                        {
+                            _logger.LogWarning("Message Consumer -> Unknown message type received");
+                            continue;
+                        }
+
                         body = message.Body.ToString();
 
-                        var order = JsonSerializer.Deserialize<OrderDetailsDto>(body);
+                        var typedMessage = JsonSerializer.Deserialize(body, type);
 
-                        if (order == null)
+                        if (typedMessage == null)
                         {
-                            _logger.LogInformation("Message Consumer -> Error when deserializing message body: {body}", body);
+                            _logger.LogWarning("Message Consumer -> Error when deserializing message body: {body}", body);
                             return;
                         }
 
-                        _logger.LogInformation("Message Consumer -> Received: {orderId}", order.Id);
-
-                        var orderCreated = await _orderService.CreateProdigiOrder(order);
-                        if (!orderCreated)
+                        if (type == typeof(OrderApproved))
                         {
-                            _logger.LogError("Message Consumer -> Error when creating Prodigi order: {orderId}", order.Id);
-                            return;
-                        }
+                            var order = (OrderApproved)typedMessage;
+                            var orderCreated = await _orderService.CreateProdigiOrder(order.ToOrderDetailsMessage());
 
-                        _logger.LogInformation("Message Consumer -> Prodigi order created: {orderId}", order.Id);
+                            if (!orderCreated)
+                            {
+                                _logger.LogError("Message Consumer -> Error when creating Prodigi order: {orderId}", order.Id);
+                                return;
+                            }
+
+                            _logger.LogInformation("Message Consumer -> {type.Name} Received: {order.Id}", type.Name, order.Id);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Unexpected message type received: {type.Name}", type.Name);
+                        }
 
                         await _receiver.CompleteMessageAsync(message, stoppingToken);
                         _logger.LogInformation("Message Consumer -> Message completed");
