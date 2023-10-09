@@ -1,6 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
+using MediatR;
 using Microsoft.Extensions.Azure;
-using PhotoPortfolio.Server.Mapping;
 using System.Text.Json;
 
 namespace PhotoPortfolio.Server.Messaging;
@@ -9,15 +9,15 @@ public class MessageConsumer : BackgroundService
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<MessageConsumer> _logger;
-    private readonly IOrderService _orderService;
+    private readonly IMediator _mediator;
     private readonly ServiceBusReceiver _receiver;
 
-    public MessageConsumer(IAzureClientFactory<ServiceBusReceiver> serviceBusReceiverFactory, IConfiguration configuration, ILogger<MessageConsumer> logger, IOrderService orderService)
+    public MessageConsumer(IAzureClientFactory<ServiceBusReceiver> serviceBusReceiverFactory, IConfiguration configuration, ILogger<MessageConsumer> logger, IMediator mediator)
     {
         _configuration = configuration;
         _logger = logger;
-        _orderService = orderService;
-        _receiver = serviceBusReceiverFactory.CreateClient(_configuration.GetValue<string>("ServiceBus:Queue"));
+        _mediator = mediator;
+        _receiver = serviceBusReceiverFactory.CreateClient(_configuration.GetValue<string>("AzureServiceBus:Queue"));
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -45,7 +45,7 @@ public class MessageConsumer : BackgroundService
 
                         body = message.Body.ToString();
 
-                        var typedMessage = JsonSerializer.Deserialize(body, type);
+                        var typedMessage = (IServiceBusMessage)JsonSerializer.Deserialize(body, type)!;
 
                         if (typedMessage == null)
                         {
@@ -53,23 +53,8 @@ public class MessageConsumer : BackgroundService
                             return;
                         }
 
-                        if (type == typeof(OrderApproved))
-                        {
-                            var order = (OrderApproved)typedMessage;
-                            var orderCreated = await _orderService.CreateProdigiOrder(order.ToOrderDetailsMessage());
-
-                            if (!orderCreated)
-                            {
-                                _logger.LogError("Message Consumer -> Error when creating Prodigi order: {orderId}", order.Id);
-                                return;
-                            }
-
-                            _logger.LogInformation("Message Consumer -> {type.Name} Received: {order.Id}", type.Name, order.Id);
-                        }
-                        else
-                        {
-                            _logger.LogWarning("Unexpected message type received: {type.Name}", type.Name);
-                        }
+                        await _mediator.Send(typedMessage, stoppingToken);
+                        _logger.LogInformation("Message Consumer -> {type.Name} Received", type.Name);
 
                         await _receiver.CompleteMessageAsync(message, stoppingToken);
                         _logger.LogInformation("Message Consumer -> Message completed");

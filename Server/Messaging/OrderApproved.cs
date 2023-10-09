@@ -1,9 +1,10 @@
-﻿using PhotoPortfolio.Shared.Entities;
+﻿using MediatR;
+using PhotoPortfolio.Shared.Entities;
 using PhotoPortfolio.Shared.Models.Prodigi.Orders;
 
 namespace PhotoPortfolio.Server.Messaging;
 
-public class OrderApproved : BaseEntity
+public class OrderApproved : BaseEntity, IRequest
 {
     public string Name { get; set; }
     public string EmailAddress { get; set; }

@@ -107,6 +107,8 @@ try
 
     builder.Services.AddHttpContextAccessor();
 
+    builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())
