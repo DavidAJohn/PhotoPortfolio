@@ -1,11 +1,10 @@
-﻿using MediatR;
-using PhotoPortfolio.Shared.Entities;
-using PhotoPortfolio.Shared.Models.Prodigi.Orders;
+﻿using PhotoPortfolio.Shared.Models.Prodigi.Orders;
 
 namespace PhotoPortfolio.Server.Messaging;
 
-public class OrderApproved : BaseEntity, IRequest
+public class OrderApproved : IServiceBusMessage
 {
+    public string Id { get; set; }
     public string Name { get; set; }
     public string EmailAddress { get; set; }
     public DateTime OrderDate { get; set; }
