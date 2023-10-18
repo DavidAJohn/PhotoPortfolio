@@ -16,15 +16,15 @@ public class OrderApprovedHandler : IRequestHandler<OrderApproved>
 
     async Task IRequestHandler<OrderApproved>.Handle(OrderApproved request, CancellationToken cancellationToken)
     {
-        var orderCreated = await _orderService.CreateProdigiOrder(request.ToOrderDetails());
+        var orderProcessed = await _orderService.CreateProdigiOrder(request.ToOrderDetails());
 
-        if (!orderCreated)
+        if (!orderProcessed)
         {
-            _logger.LogError("Error when creating order in Prodigi");
-            throw new Exception("Error when creating order in Prodigi");
+            _logger.LogError("Error creating order with Prodigi. Order Id: {orderId}", request.Id);
+            throw new Exception("Error creating order with Prodigi.");
         }
 
-        _logger.LogInformation("Order sent to Prodigi");
+        _logger.LogInformation("Order response from Prodigi successfully processed. Order Id: {orderId}", request.Id);
 
         return;
     }
