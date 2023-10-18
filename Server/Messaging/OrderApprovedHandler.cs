@@ -16,7 +16,7 @@ public class OrderApprovedHandler : IRequestHandler<OrderApproved>
 
     async Task IRequestHandler<OrderApproved>.Handle(OrderApproved request, CancellationToken cancellationToken)
     {
-        var orderCreated = await _orderService.CreateProdigiOrder(request.ToOrderDetailsMessage());
+        var orderCreated = await _orderService.CreateProdigiOrder(request.ToOrderDetails());
 
         if (!orderCreated)
         {

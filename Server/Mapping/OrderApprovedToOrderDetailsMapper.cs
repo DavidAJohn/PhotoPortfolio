@@ -5,7 +5,7 @@ namespace PhotoPortfolio.Server.Mapping;
 
 public static class OrderApprovedToOrderDetailsMapper
 {
-    public static OrderDetailsDto ToOrderDetailsMessage(this OrderApproved orderApproved)
+    public static OrderDetailsDto ToOrderDetails(this OrderApproved orderApproved)
     {
         return new OrderDetailsDto
         {
