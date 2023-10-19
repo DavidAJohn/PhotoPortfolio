@@ -25,6 +25,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
     private readonly IMessageSender _messageSender;
     private readonly ILogger<OrderService> _logger;
     private readonly ILogger<MessageSender> _messageSenderLogger;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     public OrderServiceTests(PhotoApiFactory apiFactory)
     {
@@ -41,6 +42,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
         _orderRepository = new OrderRepository(_mongoContext);
         _messageSenderLogger = new Logger<MessageSender>(new LoggerFactory());
         _messageSender = new MessageSender(_apiFactory.Services.GetRequiredService<IAzureClientFactory<ServiceBusSender>>(), _configuration, _messageSenderLogger);
+        _httpClientFactory = _apiFactory.Services.GetRequiredService<IHttpClientFactory>();
     }
 
     private static OrderBasketDto CreateOrderBasketDto()
@@ -71,7 +73,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetOrderDetails_ReturnsListOfOrderDetailsDto_WhenParamsNotNullAndOrdersExist()
     {
         // Arrange
-        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger);
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
 
         var orderSpecParams = new OrderSpecificationParams()
         {
@@ -102,7 +104,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetOrderDetails_ReturnsListOfOrderDetailsDto_WhenSortOrderNotSpecifiedAndOrdersExist()
     {
         // Arrange
-        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger);
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
 
         var orderSpecParams = new OrderSpecificationParams()
         {
@@ -133,7 +135,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetOrderDetails_ReturnsListOfOrderDetailsDto_WhenSortOrderIsNotDescAndOrdersExist()
     {
         // Arrange
-        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger);
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
 
         var orderSpecParams = new OrderSpecificationParams()
         {
