@@ -4,6 +4,9 @@ using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Shared.Entities;
 using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolio.Shared.Models;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
 using Prodigi = PhotoPortfolio.Shared.Models.Prodigi.Orders;
 
@@ -16,14 +19,16 @@ public class OrderService : IOrderService
     private readonly IConfigurationService _configService;
     private readonly IMessageSender _messageSender;
     private readonly ILogger<OrderService> _logger;
+    private readonly IHttpClientFactory _httpClient;
 
-    public OrderService(IOrderRepository orderRepository, IPreferencesRepository preferencesRepository, IConfigurationService configService, IMessageSender messageSender, ILogger<OrderService> logger)
+    public OrderService(IOrderRepository orderRepository, IPreferencesRepository preferencesRepository, IConfigurationService configService, IMessageSender messageSender, ILogger<OrderService> logger, IHttpClientFactory httpClient)
     {
         _orderRepository = orderRepository;
         _preferencesRepository = preferencesRepository;
         _configService = configService;
         _messageSender = messageSender;
         _logger = logger;
+        _httpClient = httpClient;
     }
 
     public async Task<string> CreatOrder(OrderBasketDto orderBasketDto)
@@ -316,6 +321,103 @@ public class OrderService : IOrderService
 
     public async Task<bool> CreateProdigiOrder(OrderDetailsDto order)
     {
-        return true;
+        try
+        {
+            var prodigiOrder = order.ToProdigiOrder();
+
+            var config = _configService.GetConfiguration();
+            var prodigiApiKey = config["Prodigi:ApiKey"];
+            var prodigiApiUri = config["Prodigi:ApiUri"];
+
+            var client = _httpClient.CreateClient();
+
+            JsonSerializerOptions serializerOptions = new()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            HttpContent orderJson = new StringContent(JsonSerializer.Serialize(prodigiOrder, serializerOptions));
+            orderJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            orderJson.Headers.Add("X-API-Key", prodigiApiKey);
+            HttpResponseMessage response = await client.PostAsync(prodigiApiUri + "orders", orderJson);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                var orderResponse = JsonSerializer.Deserialize<Prodigi.OrderResponse>(
+                                       responseContent,
+                                       new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                if (orderResponse != null)
+                {
+                    if (orderResponse.Outcome.ToLower() != "created")
+                    {
+                        _logger.LogWarning("Prodigi warning -> Print API response outcome was: {response}", orderResponse.Outcome);
+                    }
+
+                    await UpdateOrderWithProdigiDetails(orderResponse);
+
+                    return orderResponse.Outcome.ToLower() switch
+                    {
+                        "created" => true,
+                        "createdwithissues" => true,
+                        "alreadyexists" => true,
+                        _ => false,
+                    };
+                }
+
+                _logger.LogWarning("Prodigi warning -> Print API response was null");
+                return false;
+            }
+
+            _logger.LogError("Prodigi error -> Print API response status code was: {statusCode}", response.StatusCode);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error creating Prodigi Order: {message}", ex.Message);
+            return false;
+        }
+    }
+
+    private async Task UpdateOrderWithProdigiDetails(Prodigi.OrderResponse orderResponse)
+    {
+        if (orderResponse.Outcome.ToLower() == "alreadyexists")
+        {
+            _logger.LogWarning("Prodigi warning -> Print API response indicates a duplicate order creation request. Idempotency key: {key}", orderResponse.Order!.IdempotencyKey);
+        }
+        else 
+        {
+            try
+            {
+                var order = await _orderRepository.GetSingleAsync(o => o.Id == orderResponse.Order!.IdempotencyKey);
+
+                if (order is not null)
+                {
+                    order.ProdigiDetails = orderResponse;
+                    order.Status = OrderStatus.InProgress;
+                    var updateResponse = await _orderRepository.UpdateAsync(order);
+
+                    if (updateResponse is null)
+                    {
+                        _logger.LogError("Error updating Order with Prodigi details, Id : {orderId}", order.Id);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Order updated with Prodigi details, Id : {orderId}", order.Id);
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("Error updating Order with Prodigi details. Could not find Id : {orderId}", orderResponse.Order!.IdempotencyKey);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating Order with Prodigi details: {message}", ex.Message);
+            }
+        }
     }
 }
