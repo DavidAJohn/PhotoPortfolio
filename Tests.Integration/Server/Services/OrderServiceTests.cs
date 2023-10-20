@@ -161,4 +161,71 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
         // Clean up
         await _orderRepository.DeleteAsync(orderId);
     }
+
+    [Fact]
+    public async Task GetOrderDetails_ReturnsListOfOrderDetailsDto_WhenSortByNotSpecifiedAndOrdersExist()
+    {
+        // Arrange
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
+
+        var orderSpecParams = new OrderSpecificationParams()
+        {
+            InLastNumberOfDays = 365,
+            //SortBy = "OrderCreated",
+            SortOrder = "Desc",
+            ExcludePaymentIncomplete = false
+        };
+
+        var orderBasketDto = CreateOrderBasketDto();
+
+        var orderId = await orderService.CreatOrder(orderBasketDto);
+
+        // Act
+        var result = await orderService.GetOrderDetails(orderSpecParams);
+
+        // Assert
+        orderId.Should().NotBeNull();
+
+        result.Should().NotBeNull();
+        result.Count.Should().Be(1);
+
+        // Clean up
+        await _orderRepository.DeleteAsync(orderId);
+    }
+
+    [Fact]
+    public async Task GetOrderDetails_ReturnsListOfOrderDetailsDto_WhenOrderSpecIsNullAndOrdersExist()
+    {
+        // Arrange
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
+
+        var orderBasketDto = CreateOrderBasketDto();
+
+        var orderId = await orderService.CreatOrder(orderBasketDto);
+
+        // Act
+        var result = await orderService.GetOrderDetails(null! as OrderSpecificationParams);
+
+        // Assert
+        orderId.Should().NotBeNull();
+
+        result.Should().NotBeNull();
+        result.Count.Should().Be(1);
+
+        // Clean up
+        await _orderRepository.DeleteAsync(orderId);
+    }
+
+    [Fact]
+    public async Task GetOrderDetails_ReturnsNull_WhenNoOrdersExist()
+    {
+        // Arrange
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
+
+        // Act
+        var result = await orderService.GetOrderDetails(null! as OrderSpecificationParams);
+
+        // Assert
+        result.Should().BeNull();
+    }
 }
