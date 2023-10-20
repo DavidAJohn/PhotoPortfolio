@@ -25,6 +25,7 @@ public class CreateOrdersControllerTests : IClassFixture<PhotoApiFactory>
     private readonly ILogger<OrderService> _orderServiceLogger;
     private readonly IMessageSender _messageSender;
     private readonly ILogger<CreateOrdersControllerTests> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     public CreateOrdersControllerTests(PhotoApiFactory apiFactory)
     {
@@ -42,7 +43,8 @@ public class CreateOrdersControllerTests : IClassFixture<PhotoApiFactory>
         _logger = new Logger<CreateOrdersControllerTests>(new LoggerFactory());
         _orderServiceLogger = new Logger<OrderService>(new LoggerFactory());
         _messageSender = _apiFactory.Services.GetRequiredService<IMessageSender>();
-        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _orderServiceLogger);
+        _httpClientFactory = _apiFactory.Services.GetRequiredService<IHttpClientFactory>();
+        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _orderServiceLogger, _httpClientFactory);
     }
 
     private static OrderBasketDto CreateOrderBasketDto()

@@ -29,6 +29,7 @@ public class UpdateSitePreferencesTests : IClassFixture<PhotoApiFactory>
     private readonly IConfiguration _configuration;
     private readonly IConfigurationService _configService;
     private readonly IMessageSender _messageSender;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _sitePreferencesId;
 
     public UpdateSitePreferencesTests(PhotoApiFactory apiFactory)
@@ -52,7 +53,8 @@ public class UpdateSitePreferencesTests : IClassFixture<PhotoApiFactory>
         _orderServiceLogger = new Logger<OrderService>(new LoggerFactory());
         _uploadServiceLogger = new Logger<UploadService>(new LoggerFactory());
         _messageSender = _apiFactory.Services.GetRequiredService<IMessageSender>();
-        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _orderServiceLogger);
+        _httpClientFactory = _apiFactory.Services.GetRequiredService<IHttpClientFactory>();
+        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _orderServiceLogger, _httpClientFactory);
         _uploadService = new UploadService(_uploadServiceLogger, _configService);
     }
 

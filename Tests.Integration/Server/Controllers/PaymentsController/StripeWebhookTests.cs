@@ -24,6 +24,7 @@ public class StripeWebhookTests : IClassFixture<PhotoApiFactory>
     private readonly ILogger<OrderService> _orderServiceLogger;
     private readonly IPreferencesRepository _preferencesRepository;
     private readonly IMessageSender _messageSender;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     public StripeWebhookTests(PhotoApiFactory apiFactory)
     {
@@ -38,7 +39,8 @@ public class StripeWebhookTests : IClassFixture<PhotoApiFactory>
         _orderServiceLogger = new Logger<OrderService>(new LoggerFactory());
         _messageSender = _apiFactory.Services.GetRequiredService<IMessageSender>();
         _orderRepository = new OrderRepository(_mongoContext);
-        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _orderServiceLogger);
+        _httpClientFactory = _apiFactory.Services.GetRequiredService<IHttpClientFactory>();
+        _orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _orderServiceLogger, _httpClientFactory);
     }
 
     private static OrderBasketDto CreateOrderBasketDto()
