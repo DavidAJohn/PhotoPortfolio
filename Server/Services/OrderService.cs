@@ -198,7 +198,8 @@ public class OrderService : IOrderService
                 Address = order.Address,
                 ShippingMethod = order.ShippingMethod,
                 StripePaymentIntentId = order.StripePaymentIntentId,
-                Status = order.Status.ToString()
+                Status = order.Status.ToString(),
+                ProdigiDetails = order.ProdigiDetails
             };
 
             return orderDetails;

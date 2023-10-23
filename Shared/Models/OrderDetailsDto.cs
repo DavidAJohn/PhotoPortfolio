@@ -17,4 +17,5 @@ public class OrderDetailsDto : BaseEntity
     public string ShippingMethod { get; set; }
     public string StripePaymentIntentId { get; set; }
     public string Status { get; set; }
+    public OrderResponse? ProdigiDetails { get; set; }
 }
