@@ -37,7 +37,11 @@ public static class OrderDetailsToProdigiOrderMapper
                         { "url", item.Product.ImageUri }
                     }
                 }
-            }).ToList()
+            }).ToList(),
+            Metadata = new Dictionary<string, string>
+            {
+                { "pi_id", orderDetailsDto.StripePaymentIntentId },
+            }
         };
     }
 

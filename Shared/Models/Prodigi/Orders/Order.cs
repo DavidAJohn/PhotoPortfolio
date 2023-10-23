@@ -13,5 +13,6 @@ public class Order
     public List<Shipment> Shipments { get; set; }
     public Recipient Recipient { get; set; }
     public List<Item> Items { get; set; }
-    public PackingSlip PackingSlip { get; set; }
+    public PackingSlip? PackingSlip { get; set; }
+    public Dictionary<string, string> Metadata { get; set; }
 }
