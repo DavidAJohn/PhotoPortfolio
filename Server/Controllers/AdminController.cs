@@ -335,6 +335,16 @@ public class AdminController : BaseApiController
         return NotFound();
     }
 
+    [HttpGet("orders/{id:length(24)}")]
+    public async Task<IActionResult> GetOrderById(string id)
+    {
+        var order = await _orderService.GetOrderDetailsFromId(id);
+
+        if (order is not null) return Ok(order);
+        
+        return NotFound();
+    }
+
     [HttpPut("orders/approve")]
     public async Task<IActionResult> ApproveOrder(OrderDetailsDto order)
     {

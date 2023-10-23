@@ -937,6 +937,44 @@ public class AdminControllerTests : BaseApiController
     }
 
     [Fact]
+    public async Task GetOrderById_ShouldReturnOrderDetailsDto_WhenOrderExists()
+    {
+        // Arrange
+        Fixture fixture = new();
+        var orderDetailsDto = fixture.Create<OrderDetailsDto>();
+        var orderId = Guid.NewGuid().ToString();
+        orderDetailsDto.Id = orderId;
+
+        _orderService.GetOrderDetailsFromId(orderId).Returns(orderDetailsDto);
+
+        // Act
+        var result = (OkObjectResult)await _sut.GetOrderById(orderId);
+
+        // Assert
+        result.StatusCode.Should().Be(200);
+        result.Value.Should().BeOfType<OrderDetailsDto>();
+        
+        var returnedOrder = result.Value as OrderDetailsDto;
+        returnedOrder.Should().NotBeNull();
+        returnedOrder!.Id.Should().Be(orderId);
+    }
+
+    [Fact]
+    public async Task GetOrderById_ShouldReturnNotFound_WhenOrderDoesNotExist()
+    {
+        // Arrange
+        var orderId = Guid.NewGuid().ToString();
+
+        _orderService.GetOrderDetailsFromId(orderId).ReturnsNull();
+
+        // Act
+        var result = (NotFoundResult)await _sut.GetOrderById(orderId);
+
+        // Assert
+        result.StatusCode.Should().Be(404);
+    }
+
+    [Fact]
     public async Task ApproveOrder_ShouldReturnNoContent_WhenOrderIsApproved()
     {
         // Arrange
