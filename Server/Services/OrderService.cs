@@ -262,6 +262,11 @@ public class OrderService : IOrderService
             orderDetails.OrderDate = order.PaymentCompleted.ToLocalTime();
         }
 
+        if (order.ProdigiDetails is not null)
+        {
+            orderDetails.ProdigiDetails = order.ProdigiDetails;
+        }
+
         return orderDetails;
     }
 
