@@ -10,6 +10,7 @@ using PhotoPortfolio.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Threading.Tasks;
 using PhotoPortfolioStripe = PhotoPortfolio.Shared.Models.Stripe;
 using Prodigi = PhotoPortfolio.Shared.Models.Prodigi;
@@ -24,10 +25,11 @@ public class OrderServiceTests
     private readonly IConfigurationService _configService = Substitute.For<IConfigurationService>();
     private readonly IMessageSender _messageSender = Substitute.For<IMessageSender>();
     private readonly ILogger<OrderService> _logger = Substitute.For<ILogger<OrderService>>();
+    private readonly IHttpClientFactory _httpClientFactory = Substitute.For<IHttpClientFactory>();
 
     public OrderServiceTests()
     { 
-        _sut = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger);
+        _sut = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
     }
 
     private static OrderBasketDto CreateOrderBasketDto()
@@ -756,7 +758,7 @@ public class OrderServiceTests
 
         _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(newOrder);
         _orderRepository.UpdateAsync(Arg.Any<Order>()).Returns(newOrder);
-        _messageSender.SendOrderApprovedMessageAsync(Arg.Any<OrderDetailsDto>()).Returns(true);
+        _messageSender.SendMessage(Arg.Any<OrderDetailsDto>()).Returns(true);
 
         // Act
         var result = await _sut.ApproveOrder(orderId);
@@ -806,7 +808,7 @@ public class OrderServiceTests
 
         _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(newOrder);
         _orderRepository.UpdateAsync(Arg.Any<Order>()).Returns(newOrder);
-        _messageSender.SendOrderApprovedMessageAsync(Arg.Any<OrderDetailsDto>()).Returns(false);
+        _messageSender.SendMessage(Arg.Any<OrderDetailsDto>()).Returns(false);
 
         // Act
         var result = await _sut.ApproveOrder(orderId);
