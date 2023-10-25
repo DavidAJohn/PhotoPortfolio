@@ -7,210 +7,230 @@ namespace PhotoPortfolio.Tests.Integration;
 
 public class ProdigiPrintApiServer : IDisposable
 {
-    private WireMockServer _server;
-    public string Url { get; set; }
+    private WireMockServer? server;
+    public string? Url { get; set; }
 
     public void Start()
     {
-        _server = WireMockServer.Start();
-        Url = _server.Url!;
+        server = WireMockServer.Start();
+        Url = server.Url!;
+
 
         // "/quotes" endpoint responses
         // 
-        _server
-            .Given(Request.Create()
-            .WithPath("/quotes")
-            .WithHeader("X-API-Key", "00000000-0000-0000-0000-000000000000")
-            .WithBody(new JsonPartialWildcardMatcher(@"{
-                ""shippingMethod"": ""ReturnCreatedWithIssues"",
-                ""destinationCountryCode"": ""GB"",
-                ""currencyCode"": ""GBP"",
-                ""items"": [
-                    {
-                        ""sku"": ""eco-can-16x24"",
-                        ""copies"": 1,
-                        ""attributes"": {
-                            ""wrap"" : ""MirrorWrap""
-                        },
-                        ""assets"": [
-                            {
-                            ""printArea"": ""default""
-                            }
-                        ]
-                    }
-                ]
-            }", true))
-            .UsingPost())
-            .RespondWith(Response.Create().WithStatusCode(200)
-            .WithHeader("Content-Type", "application/json")
-            .WithBody(GenerateQuoteCreatedWithIssuesResponseBody()
-        ));
 
-        _server
+        server
             .Given(Request.Create()
             .WithPath("/quotes")
-            .WithHeader("X-API-Key", "00000000-0000-0000-0000-000000000000")
-            .WithBody(new JsonMatcher(@"{
-                ""shippingMethod"": ""Standard"",
-                ""destinationCountryCode"": ""GB"",
-                ""currencyCode"": ""GBP"",
-                ""items"": [
-                    {
-                        ""sku"": ""eco-can-16x24"",
-                        ""copies"": 1,
-                        ""attributes"": {
-                            ""wrap"" : ""MirrorWrap""
-                        },
-                        ""assets"": [
-                            {
-                            ""printArea"": ""default""
-                            }
-                        ]
-                    }
-                ]
-            }", true))
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-created") // generates a "Created" outcome in response
+            //.WithBody(new JsonMatcher(@"{
+            //    ""shippingMethod"": ""Standard"",
+            //    ""destinationCountryCode"": ""GB"",
+            //    ""currencyCode"": ""GBP"",
+            //    ""items"": [
+            //        {
+            //            ""sku"": ""ECO-CAN-16x24"",
+            //            ""copies"": 1,
+            //            ""attributes"": {
+            //                ""wrap"" : ""MirrorWrap""
+            //            },
+            //            ""assets"": [
+            //                {
+            //                ""printArea"": ""default""
+            //                }
+            //            ]
+            //        }
+            //    ]
+            //}", true))
             .UsingPost())
             .RespondWith(Response.Create().WithStatusCode(200)
             .WithHeader("Content-Type", "application/json")
-            .WithBody(GenerateQuoteCreatedResponseBody()
-        ));
+            .WithBody(GenerateQuoteCreatedResponseBody())
+        );
+
+        server
+            .Given(Request.Create()
+            .WithPath("/quotes")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-createdwithissues")
+            //.WithBody(new JsonPartialWildcardMatcher(@"{
+            //    ""shippingMethod"": ""ReturnCreatedWithIssues"",
+            //    ""destinationCountryCode"": ""GB"",
+            //    ""currencyCode"": ""GBP"",
+            //    ""items"": [
+            //        {
+            //            ""sku"": ""eco-can-16x24"",
+            //            ""copies"": 1,
+            //            ""attributes"": {
+            //                ""wrap"" : ""MirrorWrap""
+            //            },
+            //            ""assets"": [
+            //                {
+            //                ""printArea"": ""default""
+            //                }
+            //            ]
+            //        }
+            //    ]
+            //}", true))
+            .UsingPost())
+            .RespondWith(Response.Create().WithStatusCode(200)
+            .WithHeader("Content-Type", "application/json")
+            .WithBody(GenerateQuoteCreatedWithIssuesResponseBody())
+        );
+
 
         // "/orders" endpoint responses
         //
-        _server
+
+        server
             .Given(Request.Create()
             .WithPath("/orders")
             .WithHeader("X-API-Key", "00000000-0000-0000-0000-created") // generates a "Created" outcome in response
-            .WithBody(new JsonMatcher(@"{
-                ""callbackUrl"": ""https://localhost:7200/callbacks"",
-                ""merchantReference"": ""MyMerchantReference940e45"",
-                ""shippingMethod"": ""Standard"",
-                ""idempotencyKey"": ""650067efd4547ce468940e45"",
-                ""recipient"": {
-                    ""address"": {
-                        ""line1"": ""1 Test Place"",
-                        ""line2"": ""Testville"",
-                        ""postalOrZipCode"": ""N1 2EF"",
-                        ""countryCode"": ""GB"",
-                        ""townOrCity"": ""Testington"",
-                        ""stateOrCounty"": null
-                    },
-                    ""name"": ""Mr Test"",
-                    ""email"": ""test@test.com"",
-                    ""phoneNumber"": ""440000000000""
-                },
-                ""items"": [
-                    {
-                        ""merchantReference"": ""MyItemId"",
-                        ""sku"": ""global-fap-16x24"",
-                        ""copies"": 1,
-                        ""sizing"": ""fillPrintArea"",
-                        ""attributes"": {
-                        },
-                        ""assets"": [
-                            {
-                                ""printArea"": ""default"",
-                                ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg""
-                            }
-                        ]
-                    }
-                ]
-            }", true))
+            //.WithBody(new JsonMatcher(@"{
+            //    ""callbackUrl"": ""https://localhost:7200/callbacks"",
+            //    ""merchantReference"": ""MyMerchantReference940e45"",
+            //    ""shippingMethod"": ""Standard"",
+            //    ""idempotencyKey"": ""650067efd4547ce468940e45"",
+            //    ""recipient"": {
+            //        ""address"": {
+            //            ""line1"": ""1 Test Place"",
+            //            ""line2"": ""Testville"",
+            //            ""postalOrZipCode"": ""N1 2EF"",
+            //            ""countryCode"": ""GB"",
+            //            ""townOrCity"": ""Testington"",
+            //            ""stateOrCounty"": null
+            //        },
+            //        ""name"": ""Mr Test"",
+            //        ""email"": ""test@test.com"",
+            //        ""phoneNumber"": ""440000000000""
+            //    },
+            //    ""items"": [
+            //        {
+            //            ""merchantReference"": ""MyItemId"",
+            //            ""sku"": ""global-fap-16x24"",
+            //            ""copies"": 1,
+            //            ""sizing"": ""fillPrintArea"",
+            //            ""attributes"": {
+            //            },
+            //            ""assets"": [
+            //                {
+            //                    ""printArea"": ""default"",
+            //                    ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg""
+            //                }
+            //            ]
+            //        }
+            //    ]
+            //}", true))
             .UsingPost())
             .RespondWith(Response.Create().WithStatusCode(200)
             .WithHeader("Content-Type", "application/json")
-            .WithBody(GenerateOrderCreatedResponseBody())
+            .WithBody(
+                GenerateOrderCreatedResponseBody(
+                    "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
+                )
+            )
+            .WithTransformer()
         );
 
-        _server
+        server
            .Given(Request.Create()
            .WithPath("/orders")
            .WithHeader("X-API-Key", "00000000-0000-0000-0000-createdwithissues") // generates a "CreatedWithIssues" outcome in response
-           .WithBody(new JsonMatcher(@"{
-                ""callbackUrl"": ""https://localhost:7200/callbacks"",
-                ""merchantReference"": ""MyMerchantReference940e45"",
-                ""shippingMethod"": ""Standard"",
-                ""idempotencyKey"": ""650067efd4547ce468940e45"",
-                ""recipient"": {
-                    ""address"": {
-                        ""line1"": ""1 Test Place"",
-                        ""line2"": ""Testville"",
-                        ""postalOrZipCode"": ""N1 2EF"",
-                        ""countryCode"": ""GB"",
-                        ""townOrCity"": ""Testington"",
-                        ""stateOrCounty"": null
-                    },
-                    ""name"": ""Mr Test"",
-                    ""email"": ""test@test.com"",
-                    ""phoneNumber"": ""440000000000""
-                },
-                ""items"": [
-                    {
-                        ""merchantReference"": ""MyItemId"",
-                        ""sku"": ""global-fap-16x24"",
-                        ""copies"": 1,
-                        ""sizing"": ""fillPrintArea"",
-                        ""attributes"": {
-                        },
-                        ""assets"": [
-                            {
-                                ""printArea"": ""default"",
-                                ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg""
-                            }
-                        ]
-                    }
-                ]
-            }", true))
+           //.WithBody(new JsonMatcher(@"{
+           //     ""callbackUrl"": ""https://localhost:7200/callbacks"",
+           //     ""merchantReference"": ""MyMerchantReference940e45"",
+           //     ""shippingMethod"": ""Standard"",
+           //     ""idempotencyKey"": ""650067efd4547ce468940e45"",
+           //     ""recipient"": {
+           //         ""address"": {
+           //             ""line1"": ""1 Test Place"",
+           //             ""line2"": ""Testville"",
+           //             ""postalOrZipCode"": ""N1 2EF"",
+           //             ""countryCode"": ""GB"",
+           //             ""townOrCity"": ""Testington"",
+           //             ""stateOrCounty"": null
+           //         },
+           //         ""name"": ""Mr Test"",
+           //         ""email"": ""test@test.com"",
+           //         ""phoneNumber"": ""440000000000""
+           //     },
+           //     ""items"": [
+           //         {
+           //             ""merchantReference"": ""MyItemId"",
+           //             ""sku"": ""global-fap-16x24"",
+           //             ""copies"": 1,
+           //             ""sizing"": ""fillPrintArea"",
+           //             ""attributes"": {
+           //             },
+           //             ""assets"": [
+           //                 {
+           //                     ""printArea"": ""default"",
+           //                     ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg""
+           //                 }
+           //             ]
+           //         }
+           //     ]
+           // }", true))
            .UsingPost())
            .RespondWith(Response.Create().WithStatusCode(200)
            .WithHeader("Content-Type", "application/json")
-           .WithBody(GenerateOrderCreatedWithIssuesResponseBody())
+           .WithBody(
+                GenerateOrderCreatedWithIssuesResponseBody(
+                    "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
+                )
+            )
+            .WithTransformer()
        );
 
-       _server
+       server
            .Given(Request.Create()
            .WithPath("/orders")
            .WithHeader("X-API-Key", "00000000-0000-0000-0000-alreadyexists") // generates an "AlreadyExists" outcome in response
-           .WithBody(new JsonMatcher(@"{
-                ""callbackUrl"": ""https://localhost:7200/callbacks"",
-                ""merchantReference"": ""MyMerchantReference940e45"",
-                ""shippingMethod"": ""Standard"",
-                ""idempotencyKey"": ""650067efd4547ce468940e45"",
-                ""recipient"": {
-                    ""address"": {
-                        ""line1"": ""1 Test Place"",
-                        ""line2"": ""Testville"",
-                        ""postalOrZipCode"": ""N1 2EF"",
-                        ""countryCode"": ""GB"",
-                        ""townOrCity"": ""Testington"",
-                        ""stateOrCounty"": null
-                    },
-                    ""name"": ""Mr Test"",
-                    ""email"": ""test@test.com"",
-                    ""phoneNumber"": ""440000000000""
-                },
-                ""items"": [
-                    {
-                        ""merchantReference"": ""MyItemId"",
-                        ""sku"": ""global-fap-16x24"",
-                        ""copies"": 1,
-                        ""sizing"": ""fillPrintArea"",
-                        ""attributes"": {
-                        },
-                        ""assets"": [
-                            {
-                                ""printArea"": ""default"",
-                                ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg""
-                            }
-                        ]
-                    }
-                ]
-            }", true))
+           //.WithBody(new JsonMatcher(@"{
+           //     ""callbackUrl"": ""https://localhost:7200/callbacks"",
+           //     ""merchantReference"": ""MyMerchantReference940e45"",
+           //     ""shippingMethod"": ""Standard"",
+           //     ""idempotencyKey"": ""650067efd4547ce468940e45"",
+           //     ""recipient"": {
+           //         ""address"": {
+           //             ""line1"": ""1 Test Place"",
+           //             ""line2"": ""Testville"",
+           //             ""postalOrZipCode"": ""N1 2EF"",
+           //             ""countryCode"": ""GB"",
+           //             ""townOrCity"": ""Testington"",
+           //             ""stateOrCounty"": null
+           //         },
+           //         ""name"": ""Mr Test"",
+           //         ""email"": ""test@test.com"",
+           //         ""phoneNumber"": ""440000000000""
+           //     },
+           //     ""items"": [
+           //         {
+           //             ""merchantReference"": ""MyItemId"",
+           //             ""sku"": ""global-fap-16x24"",
+           //             ""copies"": 1,
+           //             ""sizing"": ""fillPrintArea"",
+           //             ""attributes"": {
+           //             },
+           //             ""assets"": [
+           //                 {
+           //                     ""printArea"": ""default"",
+           //                     ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg""
+           //                 }
+           //             ]
+           //         }
+           //     ]
+           // }", true))
            .UsingPost())
            .RespondWith(Response.Create().WithStatusCode(200)
            .WithHeader("Content-Type", "application/json")
            .WithBody(GenerateOrderAlreadyExistsResponseBody())
        );
+    }
+
+    public void Dispose()
+    {
+        server!.Stop();
+        server.Dispose();
     }
 
     // Static body creation methods
@@ -376,7 +396,7 @@ public class ProdigiPrintApiServer : IDisposable
     }";
     }
 
-    private static string GenerateOrderCreatedResponseBody()
+    private static string GenerateOrderCreatedResponseBody(string idempotencyKey)
     {
         return @"{
             ""outcome"": ""Created"",
@@ -387,7 +407,7 @@ public class ProdigiPrintApiServer : IDisposable
                 ""callbackUrl"": ""https://localhost:7200/callbacks"",
                 ""merchantReference"": ""MyMerchantReference940e45"",
                 ""shippingMethod"": ""Standard"",
-                ""idempotencyKey"": ""650067efd4547ce468940e45"",
+                ""idempotencyKey"": """ + idempotencyKey + @""",
                 ""status"": {
                     ""stage"": ""InProgress"",
                     ""issues"": [],
@@ -447,7 +467,7 @@ public class ProdigiPrintApiServer : IDisposable
         }";
     }
 
-    private static string GenerateOrderCreatedWithIssuesResponseBody()
+    private static string GenerateOrderCreatedWithIssuesResponseBody(string idempotencyKey)
     {
         return @"{
             ""outcome"": ""CreatedWithIssues"",
@@ -458,7 +478,7 @@ public class ProdigiPrintApiServer : IDisposable
                 ""callbackUrl"": ""https://localhost:7200/callbacks"",
                 ""merchantReference"": ""MyMerchantReference940e45"",
                 ""shippingMethod"": ""Standard"",
-                ""idempotencyKey"": ""650067efd4547ce468940e45"",
+                ""idempotencyKey"": """ + idempotencyKey + @""",
                 ""status"": {
                     ""stage"": ""InProgress"",
                     ""issues"": [
@@ -663,11 +683,5 @@ public class ProdigiPrintApiServer : IDisposable
             },
             ""traceParent"": ""sent_from_mock_ProdigiPrintApiServer""
         }";
-    }
-
-    public void Dispose()
-    {
-        _server.Stop();
-        _server.Dispose();
     }
 }
