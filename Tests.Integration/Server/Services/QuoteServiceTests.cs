@@ -112,7 +112,7 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetBasketQuote_ReturnsOrderBasketDto_WhenIsAdminIsFalseQuoteIsReceived()
     {
         // Arrange
-        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-000000000000";
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-created";
         _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
         var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
 
@@ -137,7 +137,7 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetBasketQuote_ReturnsOrderBasketDto_WhenIsAdminIsTrueQuoteIsReceived()
     {
         // Arrange
-        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-000000000000";
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-created";
         _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
         var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
 
@@ -164,7 +164,7 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetBasketQuote_ReturnsOrderBasketDto_WhenQuoteIsReceivedAsCreatedWithIssues()
     {
         // Arrange
-        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-000000000000";
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-createdwithissues"; // returns a quote with issues from the mock
         _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
         var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
 
@@ -172,7 +172,6 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
         var createdPhoto = await _photoRepository.AddAsync(photo);
 
         var orderBasketDto = CreateOrderBasketDto();
-        orderBasketDto.ShippingMethod = "ReturnCreatedWithIssues"; // this will return a quote with issues from the mock
 
         // Act
         var orderBasketReturned = await quoteService.GetBasketQuote(orderBasketDto, false);
