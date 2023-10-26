@@ -1,5 +1,4 @@
 ﻿using PhotoPortfolio.Server.Messaging;
-using PhotoPortfolio.Shared.Models;
 
 namespace PhotoPortfolio.Tests.Integration.Infrastructure;
 
@@ -9,8 +8,8 @@ public class MockMessageSender : IMessageSender
     {
     }
 
-    public async Task<bool> SendOrderApprovedMessageAsync(OrderDetailsDto order)
+    public async Task<bool> SendMessage<T>(T message)
     {
-        return true;
+        return await Task.FromResult(true);
     }
 }
