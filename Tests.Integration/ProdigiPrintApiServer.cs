@@ -223,7 +223,12 @@ public class ProdigiPrintApiServer : IDisposable
            .UsingPost())
            .RespondWith(Response.Create().WithStatusCode(200)
            .WithHeader("Content-Type", "application/json")
-           .WithBody(GenerateOrderAlreadyExistsResponseBody())
+           .WithBody(
+                GenerateOrderAlreadyExistsResponseBody(
+                    "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
+                )
+            )
+            .WithTransformer()
        );
     }
 
@@ -556,7 +561,7 @@ public class ProdigiPrintApiServer : IDisposable
         }";
     }
 
-    private static string GenerateOrderAlreadyExistsResponseBody()
+    private static string GenerateOrderAlreadyExistsResponseBody(string idempotencyKey)
     {
         return @"{
             ""outcome"": ""AlreadyExists"",
@@ -567,7 +572,7 @@ public class ProdigiPrintApiServer : IDisposable
                 ""callbackUrl"": ""https://localhost:7200/callbacks"",
                 ""merchantReference"": ""MyMerchantReference940e45"",
                 ""shippingMethod"": ""Standard"",
-                ""idempotencyKey"": ""650067efd4547ce468940e45"",
+                ""idempotencyKey"": """ + idempotencyKey + @""",
                 ""status"": {
                     ""stage"": ""Complete"",
                     ""issues"": [],
