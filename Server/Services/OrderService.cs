@@ -374,12 +374,21 @@ public class OrderService : IOrderService
                     };
                 }
 
-                _logger.LogWarning("Prodigi warning -> Print API response was null");
+                _logger.LogWarning("Prodigi warning -> Print API response was 200 OK, but content was null");
                 return false;
             }
 
-            _logger.LogError("Prodigi error -> Print API response status code was: {statusCode}", response.StatusCode);
-            return false;
+            if (response.Content.Headers.ContentType?.MediaType == "application/problem+json")
+            {
+                var problemDetailsJson = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Prodigi error -> Print API response - status code: {statusCode}, details: {problemDetails}", response.StatusCode, problemDetailsJson);
+                return false;
+            }
+            else
+            {
+                _logger.LogError("Prodigi error -> Print API response - status code: {statusCode}", response.StatusCode);
+                return false;
+            }
         }
         catch (Exception ex)
         {
