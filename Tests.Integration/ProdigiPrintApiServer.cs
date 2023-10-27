@@ -230,6 +230,28 @@ public class ProdigiPrintApiServer : IDisposable
             )
             .WithTransformer()
        );
+
+       server
+           .Given(Request.Create()
+           .WithPath("/orders")
+           .WithHeader("X-API-Key", "00000000-0000-0000-0000-badrequest") // generates a 400 Bad Request response
+           .UsingPost())
+           .RespondWith(Response.Create().WithStatusCode(400)
+           .WithHeader("Content-Type", "application/problem+json")
+           .WithBody(
+                @"{
+                    ""type"": ""https://tools.ietf.org/html/rfc7231#section-6.5.1"",
+                    ""title"": ""One or more validation errors occurred."",
+                    ""status"": 400,
+                    ""traceId"": ""0HMHOVKKV3MHN:00000002"",
+                    ""errors"": {
+                        ""Orders"": [
+                            ""The Order object supplied is not valid""
+                        ]
+                    }
+                }"
+            )
+       );
     }
 
     public void Dispose()
