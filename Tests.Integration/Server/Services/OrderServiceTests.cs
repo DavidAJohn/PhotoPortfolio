@@ -10,6 +10,7 @@ using PhotoPortfolio.Server.Messaging;
 using PhotoPortfolio.Server.Services;
 using PhotoPortfolio.Shared.Helpers;
 using PhotoPortfolio.Shared.Models;
+using PhotoPortfolio.Shared.Models.Stripe;
 
 namespace PhotoPortfolio.Tests.Integration.Server.Services;
 
@@ -26,6 +27,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
     private readonly ILogger<OrderService> _logger;
     private readonly ILogger<MessageSender> _messageSenderLogger;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly string _prodigiWireMockUri;
 
     public OrderServiceTests(PhotoApiFactory apiFactory)
     {
@@ -33,6 +35,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
         _client = _apiFactory.CreateClient();
         _client.BaseAddress = new Uri("https://localhost/api/");
         _client.DefaultRequestHeaders.Add("Accept", "application/json");
+        _prodigiWireMockUri = _apiFactory.ProdigiPrintApiUrl + "/";
 
         _mongoContext = new MongoContext(_apiFactory.ConnectionString, PhotoApiFactory.TestDbName);
         _configuration = _apiFactory.Services.GetRequiredService<IConfiguration>();
@@ -66,6 +69,32 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
             },
             ShippingMethod = "Standard",
             ShippingCost = 5.25m
+        };
+    }
+
+    private static Customer CreateStripeCustomer()
+    {
+        return new Customer
+        {
+            Name = "Test Customer",
+            EmailAddress = "test@test.com"
+        };
+    }
+
+    private static ShippingDetails CreateStripeShippingDetails()
+    {
+        return new ShippingDetails
+        {
+            Name = "Test Customer",
+            Address = new Address
+            {
+                Line1 = "Test Address",
+                Line2 = "Test Address",
+                City = "Test City",
+                State = "Test State",
+                PostalCode = "TE3T 1NG",
+                Country = "Test Country"
+            }
         };
     }
 
@@ -227,5 +256,118 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
 
         // Assert
         result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateProdigiOrder_ShouldReturnTrue_WhenOrderIsCreated()
+    {
+        // Arrange
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-created"; // should return a "Created" response
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
+
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
+
+        var orderBasketDto = CreateOrderBasketDto();
+        var orderId = await orderService.CreatOrder(orderBasketDto);
+
+        var stripeCustomer = CreateStripeCustomer();
+        var stripeShippingDetails = CreateStripeShippingDetails();
+
+        await orderService.UpdateOrder(orderId, stripeCustomer, stripeShippingDetails, "Standard", "pi_12345");
+
+        var orderDetailsDto = await orderService.GetOrderDetailsFromId(orderId);
+
+        // Act
+        var result = await orderService.CreateProdigiOrder(orderDetailsDto);
+        var updatedOrderDetailsDto = await orderService.GetOrderDetailsFromId(orderId);
+
+        // Assert
+        result.Should().BeTrue();
+        updatedOrderDetailsDto.ProdigiDetails.Should().NotBeNull();
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.IdempotencyKey.Should().NotBeNullOrEmpty();
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.IdempotencyKey.Should().Be(orderId);
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.Status.Issues.Should().BeEmpty();
+        //updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Should().NotBeNullOrEmpty();
+
+        // Clean up
+        await _orderRepository.DeleteAsync(orderId);
+    }
+
+    [Fact]
+    public async Task CreateProdigiOrder_ShouldReturnTrueWithIssues_WhenOrderIsCreatedWithIssues()
+    {
+        // Arrange
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-createdwithissues"; // should return a "CreatedWithIssues" response
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
+
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
+
+        var orderBasketDto = CreateOrderBasketDto();
+        var orderId = await orderService.CreatOrder(orderBasketDto);
+
+        var stripeCustomer = CreateStripeCustomer();
+        var stripeShippingDetails = CreateStripeShippingDetails();
+
+        await orderService.UpdateOrder(orderId, stripeCustomer, stripeShippingDetails, "Standard", "pi_12345");
+
+        var orderDetailsDto = await orderService.GetOrderDetailsFromId(orderId);
+
+        // Act
+        var result = await orderService.CreateProdigiOrder(orderDetailsDto);
+        var updatedOrderDetailsDto = await orderService.GetOrderDetailsFromId(orderId);
+
+        // Assert
+        result.Should().BeTrue();
+        updatedOrderDetailsDto.ProdigiDetails.Should().NotBeNull();
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.IdempotencyKey.Should().NotBeNullOrEmpty();
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.IdempotencyKey.Should().Be(orderId);
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.Status.Issues.Should().NotBeNullOrEmpty();
+        //updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Should().NotBeNullOrEmpty();
+
+        // Clean up
+        await _orderRepository.DeleteAsync(orderId);
+    }
+
+    [Fact]
+    public async Task CreateProdigiOrder_ShouldReturnTrue_WhenOrderAlreadyExists()
+    {
+        // Arrange
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-created"; // should return a "Created" response
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
+
+        var orderServiceCreated = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
+
+        var orderBasketDto = CreateOrderBasketDto();
+        var orderId = await orderServiceCreated.CreatOrder(orderBasketDto);
+
+        var stripeCustomer = CreateStripeCustomer();
+        var stripeShippingDetails = CreateStripeShippingDetails();
+
+        await orderServiceCreated.UpdateOrder(orderId, stripeCustomer, stripeShippingDetails, "Standard", "pi_12345");
+
+        var orderDetailsDto = await orderServiceCreated.GetOrderDetailsFromId(orderId);
+
+        var createdResult = await orderServiceCreated.CreateProdigiOrder(orderDetailsDto);
+        var createdOrderDetailsDto = await orderServiceCreated.GetOrderDetailsFromId(orderId);
+
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-alreadyexists"; // should return an "AlreadyExists" response
+
+        var orderServiceAlreadyExists = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
+
+        // Act
+        var existsResult = await orderServiceAlreadyExists.CreateProdigiOrder(orderDetailsDto);
+        var updatedOrderDetailsDto = await orderServiceAlreadyExists.GetOrderDetailsFromId(orderId);
+
+        // Assert
+        createdResult.Should().BeTrue();
+        existsResult.Should().BeTrue();
+        createdOrderDetailsDto.ProdigiDetails.Should().NotBeNull();
+        updatedOrderDetailsDto.ProdigiDetails.Should().NotBeNull();
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.IdempotencyKey.Should().Be(orderId); // idempotency key/order id should not have changed
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.Status.Issues.Should().BeEmpty(); // issues should still be empty
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.Status.Stage.Should().BeEquivalentTo(createdOrderDetailsDto.ProdigiDetails!.Order!.Status.Stage); // order status stage should not have changed
+
+        // Clean up
+        await _orderRepository.DeleteAsync(orderId);
     }
 }
