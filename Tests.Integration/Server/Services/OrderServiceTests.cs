@@ -399,4 +399,33 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
         // Clean up
         await _orderRepository.DeleteAsync(orderId);
     }
+
+    [Fact]
+    public async Task CreateProdigiOrder_ShouldReturnFalse_WhenAnExceptionIsThrown()
+    {
+        // Arrange
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-unexpectedorderstructure"; // should return a 200 Ok response with an unexpected response structure
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
+
+        var orderService = new OrderService(_orderRepository, _preferencesRepository, _configService, _messageSender, _logger, _httpClientFactory);
+
+        var orderBasketDto = CreateOrderBasketDto();
+        var orderId = await orderService.CreatOrder(orderBasketDto);
+
+        var stripeCustomer = CreateStripeCustomer();
+        var stripeShippingDetails = CreateStripeShippingDetails();
+
+        await orderService.UpdateOrder(orderId, stripeCustomer, stripeShippingDetails, "Standard", "pi_12345");
+
+        var orderDetailsDto = await orderService.GetOrderDetailsFromId(orderId);
+
+        // Act
+        var result = await orderService.CreateProdigiOrder(orderDetailsDto);
+
+        // Assert
+        result.Should().BeFalse();
+
+        // Clean up
+        await _orderRepository.DeleteAsync(orderId);
+    }
 }

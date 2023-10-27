@@ -232,13 +232,13 @@ public class ProdigiPrintApiServer : IDisposable
        );
 
        server
-           .Given(Request.Create()
-           .WithPath("/orders")
-           .WithHeader("X-API-Key", "00000000-0000-0000-0000-badrequest") // generates a 400 Bad Request response
-           .UsingPost())
-           .RespondWith(Response.Create().WithStatusCode(400)
-           .WithHeader("Content-Type", "application/problem+json")
-           .WithBody(
+            .Given(Request.Create()
+            .WithPath("/orders")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-badrequest") // generates a 400 Bad Request response
+            .UsingPost())
+            .RespondWith(Response.Create().WithStatusCode(400)
+            .WithHeader("Content-Type", "application/problem+json")
+            .WithBody(
                 @"{
                     ""type"": ""https://tools.ietf.org/html/rfc7231#section-6.5.1"",
                     ""title"": ""One or more validation errors occurred."",
@@ -250,6 +250,21 @@ public class ProdigiPrintApiServer : IDisposable
                         ]
                     }
                 }"
+            )
+        );
+
+        server
+           .Given(Request.Create()
+           .WithPath("/orders")
+           .WithHeader("X-API-Key", "00000000-0000-0000-0000-unexpectedorderstructure") // generates a 200 OK response with an order that can't be deserialized
+           .UsingPost())
+           .RespondWith(Response.Create().WithStatusCode(200)
+           .WithHeader("Content-Type", "application/json")
+           .WithBody(
+                @"{
+                    ""outcome"": ""Created"",
+                    ""unexpectedfield"": ""unexpectedvalue""
+                "
             )
        );
     }
