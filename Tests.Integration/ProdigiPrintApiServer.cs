@@ -267,8 +267,23 @@ public class ProdigiPrintApiServer : IDisposable
                 "
             )
        );
-    }
 
+       server
+           .Given(Request.Create()
+           .WithPath("/orders")
+           .WithHeader("X-API-Key", "00000000-0000-0000-0000-unexpectedoutcome") // generates a 200 OK response with an unexpected outcome
+           .UsingPost())
+           .RespondWith(Response.Create().WithStatusCode(200)
+           .WithHeader("Content-Type", "application/json")
+           .WithBody(
+                GenerateOrderCreatedWithUnexpectedOutcomeResponse(
+                    "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
+                )
+            )
+            .WithTransformer()
+       );
+    }
+    
     public void Dispose()
     {
         server!.Stop();
@@ -712,6 +727,77 @@ public class ProdigiPrintApiServer : IDisposable
                                 ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg"",
                                 ""thumbnailUrl"": ""https://pwintyimages.blob.core.windows.net/imagestorage-sandbox/1103294/665175/default-220709-thumbnail.jpg?skoid=9a8153f9-c101-46c8-90eb-53dee276678d&sktid=95af27ff-c62f-4dc3-b489-99265b850f61&skt=2023-10-16T17%3A00%3A10Z&ske=2023-10-22T17%3A05%3A10Z&sks=b&skv=2021-10-04&sv=2021-10-04&st=2023-10-16T17%3A12%3A52Z&se=2023-10-23T17%3A14%3A52Z&sr=b&sp=rw&sig=%2FieJN3REPdS4s7z7Ndw3Cark%2FVnh192KPuknq5okVeY%3D"",
                                 ""status"": ""Complete""
+                            }
+                        ],
+                        ""recipientCost"": null,
+                        ""correlationIdentifier"": ""23989788686705152""
+                    }
+                ],
+                ""packingSlip"": null,
+                ""metadata"": {
+                    ""mycustomkey"": ""some-guid""
+                }
+            },
+            ""traceParent"": ""sent_from_mock_ProdigiPrintApiServer""
+        }";
+    }
+
+    private static string GenerateOrderCreatedWithUnexpectedOutcomeResponse(string idempotencyKey)
+    {
+        return @"{
+            ""outcome"": ""UnexpectedOutcome"",
+            ""order"": {
+                ""id"": ""ord_1103294"",
+                ""created"": ""2023-10-16T14:14:51.02Z"",
+                ""lastUpdated"": ""2023-10-16T14:14:51.7746508Z"",
+                ""callbackUrl"": ""https://localhost:7200/callbacks"",
+                ""merchantReference"": ""MyMerchantReference940e45"",
+                ""shippingMethod"": ""Standard"",
+                ""idempotencyKey"": """ + idempotencyKey + @""",
+                ""status"": {
+                    ""stage"": ""InProgress"",
+                    ""issues"": [],
+                    ""details"": {
+                        ""downloadAssets"": ""NotStarted"",
+                        ""printReadyAssetsPrepared"": ""NotStarted"",
+                        ""allocateProductionLocation"": ""NotStarted"",
+                        ""inProduction"": ""NotStarted"",
+                        ""shipping"": ""NotStarted""
+                    }
+                },
+                ""charges"": [],
+                ""shipments"": [],
+                ""recipient"": {
+                    ""name"": ""Mr Test"",
+                    ""email"": ""test@test.com"",
+                    ""phoneNumber"": ""440000000000"",
+                    ""address"": {
+                        ""line1"": ""1 Test Place"",
+                        ""line2"": ""Testville"",
+                        ""postalOrZipCode"": ""N1 2EF"",
+                        ""countryCode"": ""GB"",
+                        ""townOrCity"": ""Testington"",
+                        ""stateOrCounty"": null
+                    }
+                },
+                ""items"": [
+                    {
+                        ""id"": ""ori_1426359"",
+                        ""status"": ""NotYetDownloaded"",
+                        ""merchantReference"": ""MyItemId"",
+                        ""sku"": ""GLOBAL-FAP-16X24"",
+                        ""copies"": 1,
+                        ""sizing"": ""fillPrintArea"",
+                        ""thumbnailUrl"": null,
+                        ""attributes"": {},
+                        ""assets"": [
+                            {
+                                ""id"": ""ast_189"",
+                                ""printArea"": ""default"",
+                                ""md5Hash"": null,
+                                ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg"",
+                                ""thumbnailUrl"": null,
+                                ""status"": ""InProgress""
                             }
                         ],
                         ""recipientCost"": null,
