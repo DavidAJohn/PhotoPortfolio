@@ -363,6 +363,14 @@ public class OrderService : IOrderService
                         _logger.LogWarning("Prodigi warning -> Print API response outcome was: {response}", orderResponse.Outcome);
                     }
 
+                    var responseOutcomes = new string[] { "created", "createdwithissues", "alreadyexists" };
+
+                    if (!responseOutcomes.Contains(orderResponse.Outcome.ToLower()))
+                    {
+                        _logger.LogError("Prodigi warning -> Print API unexpected response outcome: {response}", orderResponse.Outcome);
+                        return false;
+                    }
+
                     await UpdateOrderWithProdigiDetails(orderResponse);
 
                     return orderResponse.Outcome.ToLower() switch
