@@ -758,7 +758,7 @@ public class OrderServiceTests
 
         _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(newOrder);
         _orderRepository.UpdateAsync(Arg.Any<Order>()).Returns(newOrder);
-        _messageSender.SendMessage(Arg.Any<OrderDetailsDto>()).Returns(true);
+        _messageSender.SendMessage(Arg.Any<OrderApproved>()).Returns(true);
 
         // Act
         var result = await _sut.ApproveOrder(orderId);
@@ -808,7 +808,7 @@ public class OrderServiceTests
 
         _orderRepository.GetSingleAsync(Arg.Any<Expression<Func<Order, bool>>>()).Returns(newOrder);
         _orderRepository.UpdateAsync(Arg.Any<Order>()).Returns(newOrder);
-        _messageSender.SendMessage(Arg.Any<OrderDetailsDto>()).Returns(false);
+        _messageSender.SendMessage(Arg.Any<OrderApproved>()).Returns(false);
 
         // Act
         var result = await _sut.ApproveOrder(orderId);
