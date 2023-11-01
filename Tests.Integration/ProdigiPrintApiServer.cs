@@ -1,7 +1,12 @@
-﻿using WireMock.Matchers;
+﻿using PhotoPortfolio.Shared.Models.Prodigi.Orders;
+using System.Text.Json;
+using WireMock;
+using WireMock.Matchers;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
+using WireMock.Types;
+using WireMock.Util;
 
 namespace PhotoPortfolio.Tests.Integration;
 
@@ -121,13 +126,106 @@ public class ProdigiPrintApiServer : IDisposable
             //    ]
             //}", true))
             .UsingPost())
-            .RespondWith(Response.Create().WithStatusCode(200)
-            .WithHeader("Content-Type", "application/json")
-            .WithBody(
-                GenerateOrderCreatedResponseBody(
-                    "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
-                )
-            )
+            .RespondWith(Response.Create()
+            .WithCallback(req =>
+            {
+                var request = JsonSerializer.Deserialize<Order>(req.Body, 
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                var items = new List<object>();
+
+                foreach (var item in request!.Items)
+                {
+                    var assets = new List<object>();
+                    foreach (var asset in item.Assets)
+                    {
+                        assets.Add(new
+                        {
+                            id = "ast_123",
+                            printArea = asset.GetValueOrDefault("printArea"),
+                            md5Hash = (string?)null,
+                            url = asset.GetValueOrDefault("url"),
+                            thumbnailUrl = (string?)null,
+                            status = "InProgress"
+                        });
+                    }
+
+                    items.Add(new
+                    {
+                        id = "ori_1234567",
+                        status = "NotYetDownloaded",
+                        merchantReference = item.MerchantReference,
+                        sku = item.Sku,
+                        copies = item.Copies,
+                        sizing = item.Sizing,
+                        thumbnailUrl = (string?)null,
+                        attributes = item.Attributes,
+                        assets,
+                        recipientCost = (string?)null,
+                        correlationIdentifier = "23989788686705152"
+                    });
+                }
+                
+                var responseMessage = new ResponseMessage
+                {
+                    StatusCode = 200,
+                    Headers = new Dictionary<string, WireMockList<string>> {{ "Content-Type", new WireMockList<string>("application/json") }},
+                    BodyData = new BodyData
+                    {
+                        DetectedBodyType = BodyType.Json,
+                        BodyAsJson = new
+                        {
+                            outcome = "Created",
+                            order = new
+                            {
+                                id = "ord_1234567",
+                                created = "2023-10-16T14:14:51.02Z",
+                                lastUpdated = "2023-10-16T14:14:51.7746508Z",
+                                callbackUrl = request!.CallbackUrl,
+                                merchantReference = request.MerchantReference,
+                                shippingMethod = request.ShippingMethod,
+                                idempotencyKey = request.IdempotencyKey,
+                                status = new
+                                {
+                                    stage = "InProgress",
+                                    issues = Array.Empty<string>(),
+                                    details = new
+                                    {
+                                        downloadAssets = "NotStarted",
+                                        printReadyAssetsPrepared = "NotStarted",
+                                        allocateProductionLocation = "NotStarted",
+                                        inProduction = "NotStarted",
+                                        shipping = "NotStarted"
+                                    }
+                                },
+                                charges = Array.Empty<string>(),
+                                shipments = Array.Empty<string>(),
+                                recipient = new 
+                                {
+                                    name = request.Recipient.Name,
+                                    email = request.Recipient.Email,
+                                    phoneNumber = request.Recipient.PhoneNumber,
+                                    address = new
+                                    {
+                                        line1 = request.Recipient.Address.Line1,
+                                        line2 = request.Recipient.Address.Line2,
+                                        postalOrZipCode = request.Recipient.Address.PostalOrZipCode,
+                                        countryCode = request.Recipient.Address.CountryCode,
+                                        townOrCity = request.Recipient.Address.TownOrCity,
+                                        stateOrCounty = request.Recipient.Address.StateOrCounty
+                                    }
+                                },
+                                items,
+                                packingSlip = (string?)null,
+                                metadata = request.Metadata
+                            },
+                            traceParent = "sent_from_mock_ProdigiPrintApiServer"
+                        }
+                    }
+                };
+
+                return Task.FromResult(responseMessage);
+            })
             .WithTransformer()
         );
 
@@ -453,76 +551,78 @@ public class ProdigiPrintApiServer : IDisposable
     }";
     }
 
-    private static string GenerateOrderCreatedResponseBody(string idempotencyKey)
-    {
-        return @"{
-            ""outcome"": ""Created"",
-            ""order"": {
-                ""id"": ""ord_1103294"",
-                ""created"": ""2023-10-16T14:14:51.02Z"",
-                ""lastUpdated"": ""2023-10-16T14:14:51.7746508Z"",
-                ""callbackUrl"": ""https://localhost:7200/callbacks"",
-                ""merchantReference"": ""MyMerchantReference940e45"",
-                ""shippingMethod"": ""Standard"",
-                ""idempotencyKey"": """ + idempotencyKey + @""",
-                ""status"": {
-                    ""stage"": ""InProgress"",
-                    ""issues"": [],
-                    ""details"": {
-                        ""downloadAssets"": ""NotStarted"",
-                        ""printReadyAssetsPrepared"": ""NotStarted"",
-                        ""allocateProductionLocation"": ""NotStarted"",
-                        ""inProduction"": ""NotStarted"",
-                        ""shipping"": ""NotStarted""
-                    }
-                },
-                ""charges"": [],
-                ""shipments"": [],
-                ""recipient"": {
-                    ""name"": ""Mr Test"",
-                    ""email"": ""test@test.com"",
-                    ""phoneNumber"": ""440000000000"",
-                    ""address"": {
-                        ""line1"": ""1 Test Place"",
-                        ""line2"": ""Testville"",
-                        ""postalOrZipCode"": ""N1 2EF"",
-                        ""countryCode"": ""GB"",
-                        ""townOrCity"": ""Testington"",
-                        ""stateOrCounty"": null
-                    }
-                },
-                ""items"": [
-                    {
-                        ""id"": ""ori_1426359"",
-                        ""status"": ""NotYetDownloaded"",
-                        ""merchantReference"": ""MyItemId"",
-                        ""sku"": ""GLOBAL-FAP-16X24"",
-                        ""copies"": 1,
-                        ""sizing"": ""fillPrintArea"",
-                        ""thumbnailUrl"": null,
-                        ""attributes"": {},
-                        ""assets"": [
-                            {
-                                ""id"": ""ast_189"",
-                                ""printArea"": ""default"",
-                                ""md5Hash"": null,
-                                ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg"",
-                                ""thumbnailUrl"": null,
-                                ""status"": ""InProgress""
-                            }
-                        ],
-                        ""recipientCost"": null,
-                        ""correlationIdentifier"": ""23989788686705152""
-                    }
-                ],
-                ""packingSlip"": null,
-                ""metadata"": {
-                    ""mycustomkey"": ""some-guid""
-                }
-            },
-            ""traceParent"": ""sent_from_mock_ProdigiPrintApiServer""
-        }";
-    }
+    //private static string GenerateOrderCreatedResponseBody(Order request)
+    //{
+    //    var json = JsonSerializer.Serialize(request);
+
+    //    return @"{
+    //        ""outcome"": ""Created"",
+    //        ""order"": {
+    //            ""id"": ""ord_1103294"",
+    //            ""created"": ""2023-10-16T14:14:51.02Z"",
+    //            ""lastUpdated"": ""2023-10-16T14:14:51.7746508Z"",
+    //            ""callbackUrl"": """ + request.CallbackUrl + @""",
+    //            ""merchantReference"": """ + request.MerchantReference + @""",
+    //            ""shippingMethod"": """ + request.ShippingMethod + @""",
+    //            ""idempotencyKey"": """ + request.IdempotencyKey + @""",
+    //            ""status"": {
+    //                ""stage"": ""InProgress"",
+    //                ""issues"": [],
+    //                ""details"": {
+    //                    ""downloadAssets"": ""NotStarted"",
+    //                    ""printReadyAssetsPrepared"": ""NotStarted"",
+    //                    ""allocateProductionLocation"": ""NotStarted"",
+    //                    ""inProduction"": ""NotStarted"",
+    //                    ""shipping"": ""NotStarted""
+    //                }
+    //            },
+    //            ""charges"": [],
+    //            ""shipments"": [],
+    //            ""recipient"": {
+    //                ""name"": """ + request.Recipient.Name + @""",
+    //                ""email"": ""test@test.com"",
+    //                ""phoneNumber"": ""440000000000"",
+    //                ""address"": {
+    //                    ""line1"": ""1 Test Place"",
+    //                    ""line2"": ""Testville"",
+    //                    ""postalOrZipCode"": ""N1 2EF"",
+    //                    ""countryCode"": ""GB"",
+    //                    ""townOrCity"": ""Testington"",
+    //                    ""stateOrCounty"": null
+    //                }
+    //            },
+    //            ""items"": [
+    //                {
+    //                    ""id"": ""ori_1426359"",
+    //                    ""status"": ""NotYetDownloaded"",
+    //                    ""merchantReference"": ""MyItemId"",
+    //                    ""sku"": ""GLOBAL-FAP-16X24"",
+    //                    ""copies"": 1,
+    //                    ""sizing"": ""fillPrintArea"",
+    //                    ""thumbnailUrl"": null,
+    //                    ""attributes"": {},
+    //                    ""assets"": [
+    //                        {
+    //                            ""id"": ""ast_189"",
+    //                            ""printArea"": ""default"",
+    //                            ""md5Hash"": null,
+    //                            ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg"",
+    //                            ""thumbnailUrl"": null,
+    //                            ""status"": ""InProgress""
+    //                        }
+    //                    ],
+    //                    ""recipientCost"": null,
+    //                    ""correlationIdentifier"": ""23989788686705152""
+    //                }
+    //            ],
+    //            ""packingSlip"": null,
+    //            ""metadata"": {
+    //                ""mycustomkey"": ""some-guid""
+    //            }
+    //        },
+    //        ""traceParent"": ""sent_from_mock_ProdigiPrintApiServer""
+    //    }";
+    //}
 
     private static string GenerateOrderCreatedWithIssuesResponseBody(string idempotencyKey)
     {
