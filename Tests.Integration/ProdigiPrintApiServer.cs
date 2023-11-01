@@ -86,147 +86,160 @@ public class ProdigiPrintApiServer : IDisposable
         // "/orders" endpoint responses
         //
 
+        var callbackUrlMatcher = new JsonPartialWildcardMatcher("{ \"callbackUrl\": \"*\" }");
+        var merchantReferenceMatcher = new JsonPartialWildcardMatcher("{ \"merchantReference\": \"*\" }");
+        var shippingMethodMatcher = new JsonPartialWildcardMatcher("{ \"shippingMethod\": \"*\" }");
+        var idempotencyKeyMatcher = new JsonPartialWildcardMatcher("{ \"idempotencyKey\": \"*\" }");
+        var recipientNameMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"name\": \"*\" } }");
+        var recipientEmailMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"email\": \"*\" } }");
+        var recipientPhoneNumberMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"phoneNumber\": \"*\" } }");
+        var recipientAddressLine1Matcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"line1\": \"*\" } } }");
+        var recipientAddressLine2Matcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"line2\": \"*\" } } }");
+        var recipientAddressPostalOrZipCodeMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"postalOrZipCode\": \"*\" } } }");
+        var recipientAddressCountryCodeMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"countryCode\": \"*\" } } }");
+        var recipientAddressTownOrCityMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"townOrCity\": \"*\" } } }");
+        var recipientAddressStateOrCountyMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"stateOrCounty\": \"*\" } } }");
+        var itemsMatcher = new JsonPathMatcher("$.items[*]"); // checks items exist
+        var itemsMerchantReferenceMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"merchantReference\": \"*\" } ] }");
+        var itemsSkuMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"sku\": \"*\" } ] }");
+        var itemsCopiesMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"copies\": 1 } ] }");
+        var itemsAttributesMatcher = new JsonPathMatcher("$.items[*].attributes"); // checks attributes exist on each item
+        var itemsAssetsPrintAreaMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"printArea\": \"*\" } ] } ] }");
+        var itemsAssetsUrlMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"url\": \"*\" } ] } ] }");
+        var metadataMatcher = new JsonPartialWildcardMatcher("{ \"metadata\": { \"pi_id\": \"pi_*\" } }");
+
+        var orderMatchers = new IMatcher[]
+        {
+            callbackUrlMatcher,
+            merchantReferenceMatcher,
+            shippingMethodMatcher,
+            idempotencyKeyMatcher,
+            recipientNameMatcher,
+            recipientEmailMatcher,
+            recipientPhoneNumberMatcher,
+            recipientAddressLine1Matcher,
+            recipientAddressLine2Matcher,
+            recipientAddressPostalOrZipCodeMatcher,
+            recipientAddressCountryCodeMatcher,
+            recipientAddressTownOrCityMatcher,
+            recipientAddressStateOrCountyMatcher,
+            itemsMatcher,
+            itemsMerchantReferenceMatcher,
+            itemsSkuMatcher,
+            itemsCopiesMatcher,
+            itemsAttributesMatcher,
+            itemsAssetsPrintAreaMatcher,
+            itemsAssetsUrlMatcher,
+            metadataMatcher
+        };
+
         server
             .Given(Request.Create()
             .WithPath("/orders")
             .WithHeader("X-API-Key", "00000000-0000-0000-0000-created") // generates a "Created" outcome in response
-            //.WithBody(new JsonMatcher(@"{
-            //    ""callbackUrl"": ""https://localhost:7200/callbacks"",
-            //    ""merchantReference"": ""MyMerchantReference940e45"",
-            //    ""shippingMethod"": ""Standard"",
-            //    ""idempotencyKey"": ""650067efd4547ce468940e45"",
-            //    ""recipient"": {
-            //        ""address"": {
-            //            ""line1"": ""1 Test Place"",
-            //            ""line2"": ""Testville"",
-            //            ""postalOrZipCode"": ""N1 2EF"",
-            //            ""countryCode"": ""GB"",
-            //            ""townOrCity"": ""Testington"",
-            //            ""stateOrCounty"": null
-            //        },
-            //        ""name"": ""Mr Test"",
-            //        ""email"": ""test@test.com"",
-            //        ""phoneNumber"": ""440000000000""
-            //    },
-            //    ""items"": [
-            //        {
-            //            ""merchantReference"": ""MyItemId"",
-            //            ""sku"": ""global-fap-16x24"",
-            //            ""copies"": 1,
-            //            ""sizing"": ""fillPrintArea"",
-            //            ""attributes"": {
-            //            },
-            //            ""assets"": [
-            //                {
-            //                    ""printArea"": ""default"",
-            //                    ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg""
-            //                }
-            //            ]
-            //        }
-            //    ]
-            //}", true))
+            .WithBody(orderMatchers, MatchOperator.And)
             .UsingPost())
             .RespondWith(Response.Create()
-            .WithCallback(req =>
-            {
-                var request = JsonSerializer.Deserialize<Order>(req.Body, 
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                var items = new List<object>();
-
-                foreach (var item in request!.Items)
+                .WithCallback(req =>
                 {
-                    var assets = new List<object>();
-                    foreach (var asset in item.Assets)
+                    var request = JsonSerializer.Deserialize<Order>(req.Body, 
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    var items = new List<object>();
+
+                    foreach (var item in request!.Items)
                     {
-                        assets.Add(new
+                        var assets = new List<object>();
+                        foreach (var asset in item.Assets)
                         {
-                            id = "ast_123",
-                            printArea = asset.GetValueOrDefault("printArea"),
-                            md5Hash = (string?)null,
-                            url = asset.GetValueOrDefault("url"),
+                            assets.Add(new
+                            {
+                                id = "ast_123",
+                                printArea = asset.GetValueOrDefault("printArea"),
+                                md5Hash = (string?)null,
+                                url = asset.GetValueOrDefault("url"),
+                                thumbnailUrl = (string?)null,
+                                status = "InProgress"
+                            });
+                        }
+
+                        items.Add(new
+                        {
+                            id = "ori_1234567",
+                            status = "NotYetDownloaded",
+                            merchantReference = item.MerchantReference,
+                            sku = item.Sku,
+                            copies = item.Copies,
+                            sizing = item.Sizing,
                             thumbnailUrl = (string?)null,
-                            status = "InProgress"
+                            attributes = item.Attributes,
+                            assets,
+                            recipientCost = (string?)null,
+                            correlationIdentifier = "23989788686705152"
                         });
                     }
-
-                    items.Add(new
-                    {
-                        id = "ori_1234567",
-                        status = "NotYetDownloaded",
-                        merchantReference = item.MerchantReference,
-                        sku = item.Sku,
-                        copies = item.Copies,
-                        sizing = item.Sizing,
-                        thumbnailUrl = (string?)null,
-                        attributes = item.Attributes,
-                        assets,
-                        recipientCost = (string?)null,
-                        correlationIdentifier = "23989788686705152"
-                    });
-                }
                 
-                var responseMessage = new ResponseMessage
-                {
-                    StatusCode = 200,
-                    Headers = new Dictionary<string, WireMockList<string>> {{ "Content-Type", new WireMockList<string>("application/json") }},
-                    BodyData = new BodyData
+                    var responseMessage = new ResponseMessage
                     {
-                        DetectedBodyType = BodyType.Json,
-                        BodyAsJson = new
+                        StatusCode = 200,
+                        Headers = new Dictionary<string, WireMockList<string>> {{ "Content-Type", new WireMockList<string>("application/json") }},
+                        BodyData = new BodyData
                         {
-                            outcome = "Created",
-                            order = new
+                            DetectedBodyType = BodyType.Json,
+                            BodyAsJson = new
                             {
-                                id = "ord_1234567",
-                                created = "2023-10-16T14:14:51.02Z",
-                                lastUpdated = "2023-10-16T14:14:51.7746508Z",
-                                callbackUrl = request!.CallbackUrl,
-                                merchantReference = request.MerchantReference,
-                                shippingMethod = request.ShippingMethod,
-                                idempotencyKey = request.IdempotencyKey,
-                                status = new
+                                outcome = "Created",
+                                order = new
                                 {
-                                    stage = "InProgress",
-                                    issues = Array.Empty<string>(),
-                                    details = new
+                                    id = "ord_1234567",
+                                    created = "2023-10-16T14:14:51.02Z",
+                                    lastUpdated = "2023-10-16T14:14:51.7746508Z",
+                                    callbackUrl = request!.CallbackUrl,
+                                    merchantReference = request.MerchantReference,
+                                    shippingMethod = request.ShippingMethod,
+                                    idempotencyKey = request.IdempotencyKey,
+                                    status = new
                                     {
-                                        downloadAssets = "NotStarted",
-                                        printReadyAssetsPrepared = "NotStarted",
-                                        allocateProductionLocation = "NotStarted",
-                                        inProduction = "NotStarted",
-                                        shipping = "NotStarted"
-                                    }
-                                },
-                                charges = Array.Empty<string>(),
-                                shipments = Array.Empty<string>(),
-                                recipient = new 
-                                {
-                                    name = request.Recipient.Name,
-                                    email = request.Recipient.Email,
-                                    phoneNumber = request.Recipient.PhoneNumber,
-                                    address = new
+                                        stage = "InProgress",
+                                        issues = Array.Empty<string>(),
+                                        details = new
+                                        {
+                                            downloadAssets = "NotStarted",
+                                            printReadyAssetsPrepared = "NotStarted",
+                                            allocateProductionLocation = "NotStarted",
+                                            inProduction = "NotStarted",
+                                            shipping = "NotStarted"
+                                        }
+                                    },
+                                    charges = Array.Empty<string>(),
+                                    shipments = Array.Empty<string>(),
+                                    recipient = new 
                                     {
-                                        line1 = request.Recipient.Address.Line1,
-                                        line2 = request.Recipient.Address.Line2,
-                                        postalOrZipCode = request.Recipient.Address.PostalOrZipCode,
-                                        countryCode = request.Recipient.Address.CountryCode,
-                                        townOrCity = request.Recipient.Address.TownOrCity,
-                                        stateOrCounty = request.Recipient.Address.StateOrCounty
-                                    }
+                                        name = request.Recipient.Name,
+                                        email = request.Recipient.Email,
+                                        phoneNumber = request.Recipient.PhoneNumber,
+                                        address = new
+                                        {
+                                            line1 = request.Recipient.Address.Line1,
+                                            line2 = request.Recipient.Address.Line2,
+                                            postalOrZipCode = request.Recipient.Address.PostalOrZipCode,
+                                            countryCode = request.Recipient.Address.CountryCode,
+                                            townOrCity = request.Recipient.Address.TownOrCity,
+                                            stateOrCounty = request.Recipient.Address.StateOrCounty
+                                        }
+                                    },
+                                    items,
+                                    packingSlip = (string?)null,
+                                    metadata = request.Metadata
                                 },
-                                items,
-                                packingSlip = (string?)null,
-                                metadata = request.Metadata
-                            },
-                            traceParent = "sent_from_mock_ProdigiPrintApiServer"
+                                traceParent = "sent_from_mock_ProdigiPrintApiServer"
+                            }
                         }
-                    }
-                };
+                    };
 
-                return Task.FromResult(responseMessage);
-            })
-            .WithTransformer()
+                    return Task.FromResult(responseMessage);
+                }
+            ).WithTransformer()
         );
 
         server

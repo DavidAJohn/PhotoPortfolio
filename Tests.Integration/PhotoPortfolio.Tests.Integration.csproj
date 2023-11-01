@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.Playwright" Version="1.36.0" />
     <PackageReference Include="Testcontainers" Version="3.3.0" />
     <PackageReference Include="Testcontainers.MongoDb" Version="3.3.0" />
-    <PackageReference Include="WireMock.Net" Version="1.5.34" />
+    <PackageReference Include="WireMock.Net" Version="1.5.39" />
     <PackageReference Include="xunit" Version="2.5.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
