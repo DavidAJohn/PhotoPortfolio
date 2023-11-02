@@ -6,59 +6,35 @@ public class ProdigiWireMockHelpers
 {
     public static IMatcher[] GetOrderRequestMatchers()
     {
-        var callbackUrlMatcher = new JsonPartialWildcardMatcher("{ \"callbackUrl\": \"*\" }");
-        var merchantReferenceMatcher = new JsonPartialWildcardMatcher("{ \"merchantReference\": \"*\" }");
-        var shippingMethodMatcher = new JsonPartialWildcardMatcher("{ \"shippingMethod\": \"*\" }");
-        var idempotencyKeyMatcher = new JsonPartialWildcardMatcher("{ \"idempotencyKey\": \"*\" }");
-        var recipientNameMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"name\": \"*\" } }");
-        var recipientEmailMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"email\": \"*\" } }");
-        var recipientPhoneNumberMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"phoneNumber\": \"*\" } }");
-        var recipientAddressLine1Matcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"line1\": \"*\" } } }");
-        var recipientAddressLine2Matcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"line2\": \"*\" } } }");
-        var recipientAddressPostalOrZipCodeMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"postalOrZipCode\": \"*\" } } }");
-        var recipientAddressCountryCodeMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"countryCode\": \"*\" } } }");
-        var recipientAddressTownOrCityMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"townOrCity\": \"*\" } } }");
-        var recipientAddressStateOrCountyMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"stateOrCounty\": \"*\" } } }");
-        var itemsMatcher = new JsonPathMatcher("$.items[*]"); // checks items exist
-        var itemsMerchantReferenceMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"merchantReference\": \"*\" } ] }");
-        var itemsSkuMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"sku\": \"*\" } ] }");
-        var itemsCopiesMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"copies\": 1 } ] }");
-        var itemsAttributesMatcher = new JsonPathMatcher("$.items[*].attributes"); // checks attributes exist on each item
-        var itemsAssetsPrintAreaMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"printArea\": \"*\" } ] } ] }");
-        var itemsAssetsUrlMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"url\": \"*\" } ] } ] }");
-        var metadataMatcher = new JsonPartialWildcardMatcher("{ \"metadata\": { \"pi_id\": \"pi_*\" } }");
-
-        var orderMatchers = new IMatcher[]
+        return new IMatcher[]
         {
-            callbackUrlMatcher,
-            merchantReferenceMatcher,
-            shippingMethodMatcher,
-            idempotencyKeyMatcher,
-            recipientNameMatcher,
-            recipientEmailMatcher,
-            recipientPhoneNumberMatcher,
-            recipientAddressLine1Matcher,
-            recipientAddressLine2Matcher,
-            recipientAddressPostalOrZipCodeMatcher,
-            recipientAddressCountryCodeMatcher,
-            recipientAddressTownOrCityMatcher,
-            recipientAddressStateOrCountyMatcher,
-            itemsMatcher,
-            itemsMerchantReferenceMatcher,
-            itemsSkuMatcher,
-            itemsCopiesMatcher,
-            itemsAttributesMatcher,
-            itemsAssetsPrintAreaMatcher,
-            itemsAssetsUrlMatcher,
-            metadataMatcher
+            new JsonPartialWildcardMatcher("{ \"callbackUrl\": \"*\" }"),
+            new JsonPartialWildcardMatcher("{ \"merchantReference\": \"*\" }"),
+            new JsonPartialWildcardMatcher("{ \"shippingMethod\": \"*\" }"),
+            new JsonPartialWildcardMatcher("{ \"idempotencyKey\": \"*\" }"),
+            new JsonPartialWildcardMatcher("{ \"recipient\": { \"name\": \"*\" } }"),
+            new JsonPartialWildcardMatcher("{ \"recipient\": { \"email\": \"*\" } }"),
+            new JsonPartialWildcardMatcher("{ \"recipient\": { \"phoneNumber\": \"*\" } }"),
+            new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"line1\": \"*\" } } }"),
+            new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"line2\": \"*\" } } }"),
+            new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"postalOrZipCode\": \"*\" } } }"),
+            new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"countryCode\": \"*\" } } }"),
+            new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"townOrCity\": \"*\" } } }"),
+            new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"stateOrCounty\": \"*\" } } }"),
+            new JsonPathMatcher("$.items[*]"), // checks items exist
+            new JsonPartialWildcardMatcher("{ \"items\": [ { \"merchantReference\": \"*\" } ] }"),
+            new JsonPartialWildcardMatcher("{ \"items\": [ { \"sku\": \"*\" } ] }"),
+            new JsonPartialWildcardMatcher("{ \"items\": [ { \"copies\": 1 } ] }"),
+            new JsonPathMatcher("$.items[*].attributes"), // checks attributes exist on each item
+            new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"printArea\": \"*\" } ] } ] }"),
+            new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"url\": \"*\" } ] } ] }"),
+            new JsonPartialWildcardMatcher("{ \"metadata\": { \"pi_id\": \"pi_*\" } }"),
         };
-
-        return orderMatchers;
     }
 
     public static IMatcher[] GetQuoteRequestMatchers()
     {
-        var quoteMatchers = new IMatcher[]
+        return new IMatcher[]
         {
             new JsonPartialWildcardMatcher("{ \"shippingMethod\": \"*\" }"),
             new JsonPartialWildcardMatcher("{ \"destinationCountryCode\": \"*\" }"),
@@ -69,7 +45,5 @@ public class ProdigiWireMockHelpers
             new JsonPathMatcher("$.items[*].attributes"), // checks 'attributes' property exists on each item
             new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"printArea\": \"*\" } ] } ] }"),
         };
-
-        return quoteMatchers;
     }
 }
