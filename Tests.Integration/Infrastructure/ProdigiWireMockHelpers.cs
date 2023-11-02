@@ -55,4 +55,21 @@ public class ProdigiWireMockHelpers
 
         return orderMatchers;
     }
+
+    public static IMatcher[] GetQuoteRequestMatchers()
+    {
+        var quoteMatchers = new IMatcher[]
+        {
+            new JsonPartialWildcardMatcher("{ \"shippingMethod\": \"*\" }"),
+            new JsonPartialWildcardMatcher("{ \"destinationCountryCode\": \"*\" }"),
+            new JsonPartialWildcardMatcher("{ \"currencyCode\": \"*\" }"),
+            new JsonPathMatcher("$.items[*]"), // checks 'items' property exists
+            new JsonPartialWildcardMatcher("{ \"items\": [ { \"sku\": \"*\" } ] }"),
+            new JsonPartialWildcardMatcher("{ \"items\": [ { \"copies\": 1 } ] }"),
+            new JsonPathMatcher("$.items[*].attributes"), // checks 'attributes' property exists on each item
+            new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"printArea\": \"*\" } ] } ] }"),
+        };
+
+        return quoteMatchers;
+    }
 }
