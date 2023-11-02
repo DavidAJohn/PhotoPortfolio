@@ -1,4 +1,5 @@
 ﻿using PhotoPortfolio.Shared.Models.Prodigi.Orders;
+using PhotoPortfolio.Tests.Integration.Infrastructure;
 using System.Text.Json;
 using WireMock;
 using WireMock.Matchers;
@@ -24,120 +25,43 @@ public class ProdigiPrintApiServer : IDisposable
         // "/quotes" endpoint responses
         // 
 
+        var quoteRequestMatchers = ProdigiWireMockHelpers.GetQuoteRequestMatchers();
+
         server
             .Given(Request.Create()
             .WithPath("/quotes")
             .WithHeader("X-API-Key", "00000000-0000-0000-0000-created") // generates a "Created" outcome in response
-            //.WithBody(new JsonMatcher(@"{
-            //    ""shippingMethod"": ""Standard"",
-            //    ""destinationCountryCode"": ""GB"",
-            //    ""currencyCode"": ""GBP"",
-            //    ""items"": [
-            //        {
-            //            ""sku"": ""ECO-CAN-16x24"",
-            //            ""copies"": 1,
-            //            ""attributes"": {
-            //                ""wrap"" : ""MirrorWrap""
-            //            },
-            //            ""assets"": [
-            //                {
-            //                ""printArea"": ""default""
-            //                }
-            //            ]
-            //        }
-            //    ]
-            //}", true))
+            .WithBody(quoteRequestMatchers, MatchOperator.And)
             .UsingPost())
-            .RespondWith(Response.Create().WithStatusCode(200)
-            .WithHeader("Content-Type", "application/json")
-            .WithBody(GenerateQuoteCreatedResponseBody())
-        );
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(GenerateQuoteCreatedResponseBody())
+            );
 
         server
             .Given(Request.Create()
             .WithPath("/quotes")
             .WithHeader("X-API-Key", "00000000-0000-0000-0000-createdwithissues")
-            //.WithBody(new JsonPartialWildcardMatcher(@"{
-            //    ""shippingMethod"": ""ReturnCreatedWithIssues"",
-            //    ""destinationCountryCode"": ""GB"",
-            //    ""currencyCode"": ""GBP"",
-            //    ""items"": [
-            //        {
-            //            ""sku"": ""eco-can-16x24"",
-            //            ""copies"": 1,
-            //            ""attributes"": {
-            //                ""wrap"" : ""MirrorWrap""
-            //            },
-            //            ""assets"": [
-            //                {
-            //                ""printArea"": ""default""
-            //                }
-            //            ]
-            //        }
-            //    ]
-            //}", true))
+            .WithBody(quoteRequestMatchers, MatchOperator.And)
             .UsingPost())
-            .RespondWith(Response.Create().WithStatusCode(200)
-            .WithHeader("Content-Type", "application/json")
-            .WithBody(GenerateQuoteCreatedWithIssuesResponseBody())
-        );
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(GenerateQuoteCreatedWithIssuesResponseBody())
+            );
 
 
         // "/orders" endpoint responses
         //
 
-        var callbackUrlMatcher = new JsonPartialWildcardMatcher("{ \"callbackUrl\": \"*\" }");
-        var merchantReferenceMatcher = new JsonPartialWildcardMatcher("{ \"merchantReference\": \"*\" }");
-        var shippingMethodMatcher = new JsonPartialWildcardMatcher("{ \"shippingMethod\": \"*\" }");
-        var idempotencyKeyMatcher = new JsonPartialWildcardMatcher("{ \"idempotencyKey\": \"*\" }");
-        var recipientNameMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"name\": \"*\" } }");
-        var recipientEmailMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"email\": \"*\" } }");
-        var recipientPhoneNumberMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"phoneNumber\": \"*\" } }");
-        var recipientAddressLine1Matcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"line1\": \"*\" } } }");
-        var recipientAddressLine2Matcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"line2\": \"*\" } } }");
-        var recipientAddressPostalOrZipCodeMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"postalOrZipCode\": \"*\" } } }");
-        var recipientAddressCountryCodeMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"countryCode\": \"*\" } } }");
-        var recipientAddressTownOrCityMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"townOrCity\": \"*\" } } }");
-        var recipientAddressStateOrCountyMatcher = new JsonPartialWildcardMatcher("{ \"recipient\": { \"address\": { \"stateOrCounty\": \"*\" } } }");
-        var itemsMatcher = new JsonPathMatcher("$.items[*]"); // checks items exist
-        var itemsMerchantReferenceMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"merchantReference\": \"*\" } ] }");
-        var itemsSkuMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"sku\": \"*\" } ] }");
-        var itemsCopiesMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"copies\": 1 } ] }");
-        var itemsAttributesMatcher = new JsonPathMatcher("$.items[*].attributes"); // checks attributes exist on each item
-        var itemsAssetsPrintAreaMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"printArea\": \"*\" } ] } ] }");
-        var itemsAssetsUrlMatcher = new JsonPartialWildcardMatcher("{ \"items\": [ { \"assets\": [ { \"url\": \"*\" } ] } ] }");
-        var metadataMatcher = new JsonPartialWildcardMatcher("{ \"metadata\": { \"pi_id\": \"pi_*\" } }");
-
-        var orderMatchers = new IMatcher[]
-        {
-            callbackUrlMatcher,
-            merchantReferenceMatcher,
-            shippingMethodMatcher,
-            idempotencyKeyMatcher,
-            recipientNameMatcher,
-            recipientEmailMatcher,
-            recipientPhoneNumberMatcher,
-            recipientAddressLine1Matcher,
-            recipientAddressLine2Matcher,
-            recipientAddressPostalOrZipCodeMatcher,
-            recipientAddressCountryCodeMatcher,
-            recipientAddressTownOrCityMatcher,
-            recipientAddressStateOrCountyMatcher,
-            itemsMatcher,
-            itemsMerchantReferenceMatcher,
-            itemsSkuMatcher,
-            itemsCopiesMatcher,
-            itemsAttributesMatcher,
-            itemsAssetsPrintAreaMatcher,
-            itemsAssetsUrlMatcher,
-            metadataMatcher
-        };
+        var orderRequestMatchers = ProdigiWireMockHelpers.GetOrderRequestMatchers();
 
         server
             .Given(Request.Create()
             .WithPath("/orders")
             .WithHeader("X-API-Key", "00000000-0000-0000-0000-created") // generates a "Created" outcome in response
-            .WithBody(orderMatchers, MatchOperator.And)
+            .WithBody(orderRequestMatchers, MatchOperator.And)
             .UsingPost())
             .RespondWith(Response.Create()
                 .WithCallback(req =>
@@ -243,104 +167,38 @@ public class ProdigiPrintApiServer : IDisposable
         );
 
         server
-           .Given(Request.Create()
-           .WithPath("/orders")
-           .WithHeader("X-API-Key", "00000000-0000-0000-0000-createdwithissues") // generates a "CreatedWithIssues" outcome in response
-           //.WithBody(new JsonMatcher(@"{
-           //     ""callbackUrl"": ""https://localhost:7200/callbacks"",
-           //     ""merchantReference"": ""MyMerchantReference940e45"",
-           //     ""shippingMethod"": ""Standard"",
-           //     ""idempotencyKey"": ""650067efd4547ce468940e45"",
-           //     ""recipient"": {
-           //         ""address"": {
-           //             ""line1"": ""1 Test Place"",
-           //             ""line2"": ""Testville"",
-           //             ""postalOrZipCode"": ""N1 2EF"",
-           //             ""countryCode"": ""GB"",
-           //             ""townOrCity"": ""Testington"",
-           //             ""stateOrCounty"": null
-           //         },
-           //         ""name"": ""Mr Test"",
-           //         ""email"": ""test@test.com"",
-           //         ""phoneNumber"": ""440000000000""
-           //     },
-           //     ""items"": [
-           //         {
-           //             ""merchantReference"": ""MyItemId"",
-           //             ""sku"": ""global-fap-16x24"",
-           //             ""copies"": 1,
-           //             ""sizing"": ""fillPrintArea"",
-           //             ""attributes"": {
-           //             },
-           //             ""assets"": [
-           //                 {
-           //                     ""printArea"": ""default"",
-           //                     ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg""
-           //                 }
-           //             ]
-           //         }
-           //     ]
-           // }", true))
-           .UsingPost())
-           .RespondWith(Response.Create().WithStatusCode(200)
-           .WithHeader("Content-Type", "application/json")
-           .WithBody(
-                GenerateOrderCreatedWithIssuesResponseBody(
-                    "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
+            .Given(Request.Create()
+            .WithPath("/orders")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-createdwithissues") // generates a "CreatedWithIssues" outcome in response
+            .WithBody(orderRequestMatchers, MatchOperator.And)
+            .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(
+                    GenerateOrderCreatedWithIssuesResponseBody(
+                        "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
+                    )
                 )
-            )
-            .WithTransformer()
-       );
+                .WithTransformer()
+            );
 
-       server
-           .Given(Request.Create()
-           .WithPath("/orders")
-           .WithHeader("X-API-Key", "00000000-0000-0000-0000-alreadyexists") // generates an "AlreadyExists" outcome in response
-           //.WithBody(new JsonMatcher(@"{
-           //     ""callbackUrl"": ""https://localhost:7200/callbacks"",
-           //     ""merchantReference"": ""MyMerchantReference940e45"",
-           //     ""shippingMethod"": ""Standard"",
-           //     ""idempotencyKey"": ""650067efd4547ce468940e45"",
-           //     ""recipient"": {
-           //         ""address"": {
-           //             ""line1"": ""1 Test Place"",
-           //             ""line2"": ""Testville"",
-           //             ""postalOrZipCode"": ""N1 2EF"",
-           //             ""countryCode"": ""GB"",
-           //             ""townOrCity"": ""Testington"",
-           //             ""stateOrCounty"": null
-           //         },
-           //         ""name"": ""Mr Test"",
-           //         ""email"": ""test@test.com"",
-           //         ""phoneNumber"": ""440000000000""
-           //     },
-           //     ""items"": [
-           //         {
-           //             ""merchantReference"": ""MyItemId"",
-           //             ""sku"": ""global-fap-16x24"",
-           //             ""copies"": 1,
-           //             ""sizing"": ""fillPrintArea"",
-           //             ""attributes"": {
-           //             },
-           //             ""assets"": [
-           //                 {
-           //                     ""printArea"": ""default"",
-           //                     ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg""
-           //                 }
-           //             ]
-           //         }
-           //     ]
-           // }", true))
-           .UsingPost())
-           .RespondWith(Response.Create().WithStatusCode(200)
-           .WithHeader("Content-Type", "application/json")
-           .WithBody(
-                GenerateOrderAlreadyExistsResponseBody(
-                    "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
+        server
+            .Given(Request.Create()
+            .WithPath("/orders")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-alreadyexists") // generates an "AlreadyExists" outcome in response
+            .WithBody(orderRequestMatchers, MatchOperator.And)
+            .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(
+                    GenerateOrderAlreadyExistsResponseBody(
+                        "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
+                    )
                 )
-            )
-            .WithTransformer()
-       );
+                .WithTransformer()
+            );
 
        server
             .Given(Request.Create()
