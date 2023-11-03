@@ -272,8 +272,10 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
 
         var stripeCustomer = CreateStripeCustomer();
         var stripeShippingDetails = CreateStripeShippingDetails();
+        var shippingMethod = "Standard";
+        var paymentIntentId = "pi_12345";
 
-        await orderService.UpdateOrder(orderId, stripeCustomer, stripeShippingDetails, "Standard", "pi_12345");
+        await orderService.UpdateOrder(orderId, stripeCustomer, stripeShippingDetails, shippingMethod, paymentIntentId);
 
         var orderDetailsDto = await orderService.GetOrderDetailsFromId(orderId);
 
@@ -287,7 +289,8 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
         updatedOrderDetailsDto.ProdigiDetails!.Order!.IdempotencyKey.Should().NotBeNullOrEmpty();
         updatedOrderDetailsDto.ProdigiDetails!.Order!.IdempotencyKey.Should().Be(orderId);
         updatedOrderDetailsDto.ProdigiDetails!.Order!.Status.Issues.Should().BeEmpty();
-        //updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Should().NotBeNullOrEmpty();
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Should().NotBeNullOrEmpty();
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Values.Should().Contain(paymentIntentId);
 
         // Clean up
         await _orderRepository.DeleteAsync(orderId);
@@ -307,8 +310,10 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
 
         var stripeCustomer = CreateStripeCustomer();
         var stripeShippingDetails = CreateStripeShippingDetails();
+        var shippingMethod = "Standard";
+        var paymentIntentId = "pi_12345";
 
-        await orderService.UpdateOrder(orderId, stripeCustomer, stripeShippingDetails, "Standard", "pi_12345");
+        await orderService.UpdateOrder(orderId, stripeCustomer, stripeShippingDetails, shippingMethod, paymentIntentId);
 
         var orderDetailsDto = await orderService.GetOrderDetailsFromId(orderId);
 
@@ -322,7 +327,8 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
         updatedOrderDetailsDto.ProdigiDetails!.Order!.IdempotencyKey.Should().NotBeNullOrEmpty();
         updatedOrderDetailsDto.ProdigiDetails!.Order!.IdempotencyKey.Should().Be(orderId);
         updatedOrderDetailsDto.ProdigiDetails!.Order!.Status.Issues.Should().NotBeNullOrEmpty();
-        //updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Should().NotBeNullOrEmpty();
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Should().NotBeNullOrEmpty();
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Values.Should().Contain(paymentIntentId);
 
         // Clean up
         await _orderRepository.DeleteAsync(orderId);
