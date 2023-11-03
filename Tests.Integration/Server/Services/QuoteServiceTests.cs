@@ -184,4 +184,27 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
         // Clean up
         await _photoRepository.DeleteAsync(createdPhoto.Id!);
     }
+
+    [Fact]
+    public async Task GetBasketQuote_ShouldReturnNull_WhenQuoteResponseStatusCodeIsNot200OK()
+    {
+        // Arrange
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-badrequest"; // returns a 400 Bad Request from the mock
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
+        var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
+
+        var photo = CreatePhoto();
+        var createdPhoto = await _photoRepository.AddAsync(photo);
+
+        var orderBasketDto = CreateOrderBasketDto();
+
+        // Act
+        var orderBasketReturned = await quoteService.GetBasketQuote(orderBasketDto, false);
+
+        // Assert
+        orderBasketReturned.Should().BeNull();
+
+        // Clean up
+        await _photoRepository.DeleteAsync(createdPhoto.Id!);
+    }
 }

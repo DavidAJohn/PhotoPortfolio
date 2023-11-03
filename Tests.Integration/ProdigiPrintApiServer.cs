@@ -51,6 +51,28 @@ public class ProdigiPrintApiServer : IDisposable
                 .WithBody(GenerateQuoteCreatedWithIssuesResponseBody())
             );
 
+        server
+            .Given(Request.Create()
+            .WithPath("/quotes")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-badrequest") // generates a 400 Bad Request response
+            .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(400)
+                .WithHeader("Content-Type", "application/problem+json")
+                .WithBody(
+                    @"{
+                        ""type"": ""https://tools.ietf.org/html/rfc7231#section-6.5.1"",
+                        ""title"": ""One or more validation errors occurred."",
+                        ""status"": 400,
+                        ""traceId"": ""0HMHOVKKV3MHN:00000002"",
+                        ""errors"": {
+                            ""Orders"": [
+                                ""The Quote object supplied is not valid""
+                            ]
+                        }
+                    }"
+                )
+            );
 
         // "/orders" endpoint responses
         //
@@ -173,15 +195,132 @@ public class ProdigiPrintApiServer : IDisposable
             .WithBody(orderRequestMatchers, MatchOperator.And)
             .UsingPost())
             .RespondWith(Response.Create()
-                .WithStatusCode(200)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody(
-                    GenerateOrderCreatedWithIssuesResponseBody(
-                        "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
-                    )
-                )
-                .WithTransformer()
-            );
+                .WithCallback(req =>
+                {
+                    var request = JsonSerializer.Deserialize<Order>(req.Body,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    var issues = new List<object>
+                    {
+                        new
+                        {
+                            objectId = "ori_12345",
+                            errorCode = "items.assets.NotDownloaded",
+                            description = "Warning: Download attempt 1 of 10 failed for 'default' asset on item 'ori_12345' at location 'http://source.url'"
+                        },
+                        new
+                        {
+                            objectId = "ord_829398",
+                            errorCode = "RequiresPaymentAuthorisation",
+                            description = "Payment authorisation required for 'ord_829398' (195.02USD) please use the following URL to make payment: https://beta-dashboard.pwinty.com/payment/97323",
+                            authorisationDetails = new
+                            {
+                                authorisationUrl = "https://beta-dashboard.pwinty.com/payment/97323",
+                                paymentDetails = new
+                                {
+                                    amount = "195.02",
+                                    currency = "USD"
+                                }
+                            }
+                        }
+                    };
+
+                    var items = new List<object>();
+
+                    foreach (var item in request!.Items)
+                    {
+                        var assets = new List<object>();
+                        foreach (var asset in item.Assets)
+                        {
+                            assets.Add(new
+                            {
+                                id = "ast_123",
+                                printArea = asset.GetValueOrDefault("printArea"),
+                                md5Hash = (string?)null,
+                                url = asset.GetValueOrDefault("url"),
+                                thumbnailUrl = (string?)null,
+                                status = "InProgress"
+                            });
+                        }
+
+                        items.Add(new
+                        {
+                            id = "ori_1234567",
+                            status = "NotYetDownloaded",
+                            merchantReference = item.MerchantReference,
+                            sku = item.Sku,
+                            copies = item.Copies,
+                            sizing = item.Sizing,
+                            thumbnailUrl = (string?)null,
+                            attributes = item.Attributes,
+                            assets,
+                            recipientCost = (string?)null,
+                            correlationIdentifier = "23989788686705152"
+                        });
+                    }
+
+                    var responseMessage = new ResponseMessage
+                    {
+                        StatusCode = 200,
+                        Headers = new Dictionary<string, WireMockList<string>> { { "Content-Type", new WireMockList<string>("application/json") } },
+                        BodyData = new BodyData
+                        {
+                            DetectedBodyType = BodyType.Json,
+                            BodyAsJson = new
+                            {
+                                outcome = "Created",
+                                order = new
+                                {
+                                    id = "ord_1234567",
+                                    created = "2023-10-16T14:14:51.02Z",
+                                    lastUpdated = "2023-10-16T14:14:51.7746508Z",
+                                    callbackUrl = request!.CallbackUrl,
+                                    merchantReference = request.MerchantReference,
+                                    shippingMethod = request.ShippingMethod,
+                                    idempotencyKey = request.IdempotencyKey,
+                                    status = new
+                                    {
+                                        stage = "InProgress",
+                                        issues,
+                                        details = new
+                                        {
+                                            downloadAssets = "NotStarted",
+                                            printReadyAssetsPrepared = "NotStarted",
+                                            allocateProductionLocation = "NotStarted",
+                                            inProduction = "NotStarted",
+                                            shipping = "NotStarted"
+                                        }
+                                    },
+                                    charges = Array.Empty<string>(),
+                                    shipments = Array.Empty<string>(),
+                                    recipient = new
+                                    {
+                                        name = request.Recipient.Name,
+                                        email = request.Recipient.Email,
+                                        phoneNumber = request.Recipient.PhoneNumber,
+                                        address = new
+                                        {
+                                            line1 = request.Recipient.Address.Line1,
+                                            line2 = request.Recipient.Address.Line2,
+                                            postalOrZipCode = request.Recipient.Address.PostalOrZipCode,
+                                            countryCode = request.Recipient.Address.CountryCode,
+                                            townOrCity = request.Recipient.Address.TownOrCity,
+                                            stateOrCounty = request.Recipient.Address.StateOrCounty
+                                        }
+                                    },
+                                    items,
+                                    packingSlip = (string?)null,
+                                    metadata = request.Metadata
+                                },
+                                traceParent = "sent_from_mock_ProdigiPrintApiServer"
+                            }
+                        }
+                    };
+
+                    return Task.FromResult(responseMessage);
+                }
+            ).WithTransformer()
+        );
 
         server
             .Given(Request.Create()
@@ -495,94 +634,94 @@ public class ProdigiPrintApiServer : IDisposable
     //    }";
     //}
 
-    private static string GenerateOrderCreatedWithIssuesResponseBody(string idempotencyKey)
-    {
-        return @"{
-            ""outcome"": ""CreatedWithIssues"",
-            ""order"": {
-                ""id"": ""ord_1103294"",
-                ""created"": ""2023-10-16T14:14:51.02Z"",
-                ""lastUpdated"": ""2023-10-16T14:14:51.7746508Z"",
-                ""callbackUrl"": ""https://localhost:7200/callbacks"",
-                ""merchantReference"": ""MyMerchantReference940e45"",
-                ""shippingMethod"": ""Standard"",
-                ""idempotencyKey"": """ + idempotencyKey + @""",
-                ""status"": {
-                    ""stage"": ""InProgress"",
-                    ""issues"": [
-                        {
-                            ""objectId"": ""ori_12345"",
-                            ""errorCode"" : ""items.assets.NotDownloaded"",
-                            ""description"" : ""Warning: Download attempt 1 of 10 failed for 'default' asset on item 'ori_12345' at location 'http://source.url' ""
-                        },
-                        {
-                            ""objectId"": ""ord_829398"",
-                            ""errorCode"": ""RequiresPaymentAuthorisation"",
-                            ""description"": ""Payment authorisation required for 'ord_829398' (195.02USD) please use the following URL to make payment: https://beta-dashboard.pwinty.com/payment/97323"",
-                            ""authorisationDetails"": {
-                                ""authorisationUrl"": ""https://beta-dashboard.pwinty.com/payment/97323"",
-                                ""paymentDetails"": {
-                                    ""amount"": ""195.02"",
-                                    ""currency"": ""USD""
-                                }
-                            }
-                        }
-                    ],
-                    ""details"": {
-                        ""downloadAssets"": ""NotStarted"",
-                        ""printReadyAssetsPrepared"": ""NotStarted"",
-                        ""allocateProductionLocation"": ""NotStarted"",
-                        ""inProduction"": ""NotStarted"",
-                        ""shipping"": ""NotStarted""
-                    }
-                },
-                ""charges"": [],
-                ""shipments"": [],
-                ""recipient"": {
-                    ""name"": ""Mr Test"",
-                    ""email"": ""test@test.com"",
-                    ""phoneNumber"": ""440000000000"",
-                    ""address"": {
-                        ""line1"": ""1 Test Place"",
-                        ""line2"": ""Testville"",
-                        ""postalOrZipCode"": ""N1 2EF"",
-                        ""countryCode"": ""GB"",
-                        ""townOrCity"": ""Testington"",
-                        ""stateOrCounty"": null
-                    }
-                },
-                ""items"": [
-                    {
-                        ""id"": ""ori_1426359"",
-                        ""status"": ""NotYetDownloaded"",
-                        ""merchantReference"": ""MyItemId"",
-                        ""sku"": ""GLOBAL-FAP-16X24"",
-                        ""copies"": 1,
-                        ""sizing"": ""fillPrintArea"",
-                        ""thumbnailUrl"": null,
-                        ""attributes"": {},
-                        ""assets"": [
-                            {
-                                ""id"": ""ast_189"",
-                                ""printArea"": ""default"",
-                                ""md5Hash"": null,
-                                ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg"",
-                                ""thumbnailUrl"": null,
-                                ""status"": ""InProgress""
-                            }
-                        ],
-                        ""recipientCost"": null,
-                        ""correlationIdentifier"": ""23989788686705152""
-                    }
-                ],
-                ""packingSlip"": null,
-                ""metadata"": {
-                    ""mycustomkey"": ""some-guid""
-                }
-            },
-            ""traceParent"": ""sent_from_mock_ProdigiPrintApiServer""
-        }";
-    }
+    //private static string GenerateOrderCreatedWithIssuesResponseBody(string idempotencyKey)
+    //{
+    //    return @"{
+    //        ""outcome"": ""CreatedWithIssues"",
+    //        ""order"": {
+    //            ""id"": ""ord_1103294"",
+    //            ""created"": ""2023-10-16T14:14:51.02Z"",
+    //            ""lastUpdated"": ""2023-10-16T14:14:51.7746508Z"",
+    //            ""callbackUrl"": ""https://localhost:7200/callbacks"",
+    //            ""merchantReference"": ""MyMerchantReference940e45"",
+    //            ""shippingMethod"": ""Standard"",
+    //            ""idempotencyKey"": """ + idempotencyKey + @""",
+    //            ""status"": {
+    //                ""stage"": ""InProgress"",
+    //                ""issues"": [
+    //                    {
+    //                        ""objectId"": ""ori_12345"",
+    //                        ""errorCode"" : ""items.assets.NotDownloaded"",
+    //                        ""description"" : ""Warning: Download attempt 1 of 10 failed for 'default' asset on item 'ori_12345' at location 'http://source.url' ""
+    //                    },
+    //                    {
+    //                        ""objectId"": ""ord_829398"",
+    //                        ""errorCode"": ""RequiresPaymentAuthorisation"",
+    //                        ""description"": ""Payment authorisation required for 'ord_829398' (195.02USD) please use the following URL to make payment: https://beta-dashboard.pwinty.com/payment/97323"",
+    //                        ""authorisationDetails"": {
+    //                            ""authorisationUrl"": ""https://beta-dashboard.pwinty.com/payment/97323"",
+    //                            ""paymentDetails"": {
+    //                                ""amount"": ""195.02"",
+    //                                ""currency"": ""USD""
+    //                            }
+    //                        }
+    //                    }
+    //                ],
+    //                ""details"": {
+    //                    ""downloadAssets"": ""NotStarted"",
+    //                    ""printReadyAssetsPrepared"": ""NotStarted"",
+    //                    ""allocateProductionLocation"": ""NotStarted"",
+    //                    ""inProduction"": ""NotStarted"",
+    //                    ""shipping"": ""NotStarted""
+    //                }
+    //            },
+    //            ""charges"": [],
+    //            ""shipments"": [],
+    //            ""recipient"": {
+    //                ""name"": ""Mr Test"",
+    //                ""email"": ""test@test.com"",
+    //                ""phoneNumber"": ""440000000000"",
+    //                ""address"": {
+    //                    ""line1"": ""1 Test Place"",
+    //                    ""line2"": ""Testville"",
+    //                    ""postalOrZipCode"": ""N1 2EF"",
+    //                    ""countryCode"": ""GB"",
+    //                    ""townOrCity"": ""Testington"",
+    //                    ""stateOrCounty"": null
+    //                }
+    //            },
+    //            ""items"": [
+    //                {
+    //                    ""id"": ""ori_1426359"",
+    //                    ""status"": ""NotYetDownloaded"",
+    //                    ""merchantReference"": ""MyItemId"",
+    //                    ""sku"": ""GLOBAL-FAP-16X24"",
+    //                    ""copies"": 1,
+    //                    ""sizing"": ""fillPrintArea"",
+    //                    ""thumbnailUrl"": null,
+    //                    ""attributes"": {},
+    //                    ""assets"": [
+    //                        {
+    //                            ""id"": ""ast_189"",
+    //                            ""printArea"": ""default"",
+    //                            ""md5Hash"": null,
+    //                            ""url"": ""https://photoportfolioimgs.blob.core.windows.net/repo/DavidAJohn_SevernBridge.jpg"",
+    //                            ""thumbnailUrl"": null,
+    //                            ""status"": ""InProgress""
+    //                        }
+    //                    ],
+    //                    ""recipientCost"": null,
+    //                    ""correlationIdentifier"": ""23989788686705152""
+    //                }
+    //            ],
+    //            ""packingSlip"": null,
+    //            ""metadata"": {
+    //                ""mycustomkey"": ""some-guid""
+    //            }
+    //        },
+    //        ""traceParent"": ""sent_from_mock_ProdigiPrintApiServer""
+    //    }";
+    //}
 
     private static string GenerateOrderAlreadyExistsResponseBody(string idempotencyKey)
     {
