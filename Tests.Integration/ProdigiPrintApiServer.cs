@@ -74,6 +74,35 @@ public class ProdigiPrintApiServer : IDisposable
                 )
             );
 
+        server
+            .Given(Request.Create()
+            .WithPath("/quotes")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-unexpected-quote-structure") // generates a 200 OK response with a quote that can't be deserialized
+            .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(
+                    @"{
+                        ""outcome"": ""Created"",
+                        ""unexpectedfield"": ""unexpectedvalue""
+                    "
+                )
+            );
+
+        server
+            .Given(Request.Create()
+            .WithPath("/quotes")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-unexpected-outcome") // generates a 200 OK response with an unexpected 'outcome' value
+            .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(GenerateQuoteUnexpectedOutcomeResponseBody())
+                .WithTransformer()
+            );
+
+
         // "/orders" endpoint responses
         //
 
@@ -362,34 +391,34 @@ public class ProdigiPrintApiServer : IDisposable
         );
 
         server
-           .Given(Request.Create()
-           .WithPath("/orders")
-           .WithHeader("X-API-Key", "00000000-0000-0000-0000-unexpectedorderstructure") // generates a 200 OK response with an order that can't be deserialized
-           .UsingPost())
-           .RespondWith(Response.Create().WithStatusCode(200)
-           .WithHeader("Content-Type", "application/json")
-           .WithBody(
+            .Given(Request.Create()
+            .WithPath("/orders")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-unexpectedorderstructure") // generates a 200 OK response with an order that can't be deserialized
+            .UsingPost())
+            .RespondWith(Response.Create().WithStatusCode(200)
+            .WithHeader("Content-Type", "application/json")
+            .WithBody(
                 @"{
                     ""outcome"": ""Created"",
                     ""unexpectedfield"": ""unexpectedvalue""
                 "
             )
-       );
+        );
 
-       server
-           .Given(Request.Create()
-           .WithPath("/orders")
-           .WithHeader("X-API-Key", "00000000-0000-0000-0000-unexpectedoutcome") // generates a 200 OK response with an unexpected outcome
-           .UsingPost())
-           .RespondWith(Response.Create().WithStatusCode(200)
-           .WithHeader("Content-Type", "application/json")
-           .WithBody(
+        server
+            .Given(Request.Create()
+            .WithPath("/orders")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-unexpectedoutcome") // generates a 200 OK response with an unexpected outcome
+            .UsingPost())
+            .RespondWith(Response.Create().WithStatusCode(200)
+            .WithHeader("Content-Type", "application/json")
+            .WithBody(
                 GenerateOrderCreatedWithUnexpectedOutcomeResponse(
                     "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
                 )
             )
             .WithTransformer()
-       );
+        );
     }
     
     public void Dispose()
@@ -559,6 +588,84 @@ public class ProdigiPrintApiServer : IDisposable
         ],
         ""traceParent"": ""sent_from_mock_ProdigiPrintApiServer""
     }";
+    }
+
+    private static string GenerateQuoteUnexpectedOutcomeResponseBody()
+    {
+        return @"{
+            ""outcome"": ""UnexpectedOutcome"",
+            ""issues"": null,
+            ""quotes"": [
+                {
+                    ""shipmentMethod"": ""Standard"",
+                    ""costSummary"": {
+                        ""items"": {
+                            ""amount"": ""19.00"",
+                            ""currency"": ""GBP""
+                        },
+                        ""shipping"": {
+                            ""amount"": ""9.95"",
+                            ""currency"": ""GBP""
+                        },
+                        ""totalCost"": {
+                            ""amount"": ""34.74"",
+                            ""currency"": ""GBP""
+                        },
+                        ""totalTax"": {
+                            ""amount"": ""5.79"",
+                            ""currency"": ""GBP""
+                        }
+                    },
+                    ""shipments"": [
+                        {
+                            ""carrier"": {
+                                ""name"": ""DPD Local"",
+                                ""service"": ""DPD Local Next Day""
+                            },
+                            ""fulfillmentLocation"": {
+                                ""countryCode"": ""GB"",
+                                ""labCode"": ""prodigi_gb2""
+                            },
+                            ""cost"": {
+                                ""amount"": ""9.95"",
+                                ""currency"": ""GBP""
+                            },
+                            ""items"": [
+                                ""1""
+                            ],
+                            ""tax"": {
+                                ""amount"": ""1.99"",
+                                ""currency"": ""GBP""
+                            }
+                        }
+                    ],
+                    ""items"": [
+                        {
+                            ""id"": ""1"",
+                            ""sku"": ""ECO-CAN-16x24"",
+                            ""copies"": 1,
+                            ""unitCost"": {
+                                ""amount"": ""19.00"",
+                                ""currency"": ""GBP""
+                            },
+                            ""attributes"": {
+                                ""wrap"": ""MirrorWrap""
+                            },
+                            ""assets"": [
+                                {
+                                    ""printArea"": ""default""
+                                }
+                            ],
+                            ""taxUnitCost"": {
+                                ""amount"": ""3.80"",
+                                ""currency"": ""GBP""
+                            }
+                        }
+                    ]
+                }
+            ],
+            ""traceParent"": ""sent_from_mock_ProdigiPrintApiServer""
+        }";
     }
 
     //private static string GenerateOrderCreatedResponseBody(Order request)

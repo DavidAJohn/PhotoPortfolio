@@ -207,4 +207,52 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
         // Clean up
         await _photoRepository.DeleteAsync(createdPhoto.Id!);
     }
+
+    [Fact]
+    public async Task GetBasketQuote_ShouldReturnNull_WhenAnExceptionIsThrown()
+    {
+        // Arrange
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-unexpected-quote-structure"; // should return a 200 Ok response with an unexpected response structure
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
+
+        var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
+
+        var photo = CreatePhoto();
+        var createdPhoto = await _photoRepository.AddAsync(photo);
+
+        var orderBasketDto = CreateOrderBasketDto();
+
+        // Act
+        var orderBasketReturned = await quoteService.GetBasketQuote(orderBasketDto, false);
+
+        // Assert
+        orderBasketReturned.Should().BeNull();
+
+        // Clean up
+        await _photoRepository.DeleteAsync(createdPhoto.Id!);
+    }
+
+    [Fact]
+    public async Task GetBasketQuote_ShouldReturnNull_WhenResponseOutcomeIsUnexpected()
+    {
+        // Arrange
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-unexpected-outcome"; // should return a 200 Ok response with an unexpected response structure
+        _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
+
+        var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
+
+        var photo = CreatePhoto();
+        var createdPhoto = await _photoRepository.AddAsync(photo);
+
+        var orderBasketDto = CreateOrderBasketDto();
+
+        // Act
+        var orderBasketReturned = await quoteService.GetBasketQuote(orderBasketDto, false);
+
+        // Assert
+        orderBasketReturned.Should().BeNull();
+
+        // Clean up
+        await _photoRepository.DeleteAsync(createdPhoto.Id!);
+    }
 }
