@@ -167,14 +167,147 @@ public class ProdigiPrintApiServer : IDisposable
         server
             .Given(Request.Create()
             .WithPath("/quotes")
-            .WithHeader("X-API-Key", "00000000-0000-0000-0000-createdwithissues")
+            .WithHeader("X-API-Key", "00000000-0000-0000-0000-createdwithissues") // generates a "CreatedWithIssues" outcome
             .WithBody(quoteRequestMatchers, MatchOperator.And)
             .UsingPost())
             .RespondWith(Response.Create()
-                .WithStatusCode(200)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody(GenerateQuoteCreatedWithIssuesResponseBody())
-            );
+                .WithCallback(req =>
+                {
+                    var request = JsonSerializer.Deserialize<CreateQuoteDto>(req.Body,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    var issues = new List<object>
+                    {
+                        new
+                        {
+                            errorCode = "destinationCountryCode.UsSalesTaxWarning",
+                            description = "Price may be subject to US sales tax"
+                        }
+                    };
+
+                    var items = new List<object>();
+                    var unitCostTotal = 0.0m;
+                    var totalTax = 0.0m;
+                    var currency = request!.CurrencyCode;
+
+                    foreach (var item in request!.Items)
+                    {
+                        var assets = new List<object>();
+                        foreach (var asset in item.Assets)
+                        {
+                            assets.Add(new
+                            {
+                                printArea = asset.GetValueOrDefault("printArea"),
+                            });
+                        }
+
+                        // generate a random unit cost amount
+                        var rand = new Random();
+                        var unitCostAmount = new decimal(Math.Round(rand.NextDouble() * 100, 2));
+                        unitCostAmount = unitCostAmount < 10 ? unitCostAmount + 10 : unitCostAmount;
+
+                        items.Add(new
+                        {
+                            id = "1234567",
+                            sku = item.Sku,
+                            copies = item.Copies,
+                            unitCost = new
+                            {
+                                amount = unitCostAmount.ToString(),
+                                currency
+                            },
+                            attributes = item.Attributes,
+                            assets,
+                            taxUnitCost = new
+                            {
+                                amount = Math.Round(unitCostAmount * 0.2m, 2).ToString(),
+                                currency
+                            }
+                        });
+
+                        unitCostTotal += unitCostAmount;
+                    }
+
+                    totalTax = Math.Round((unitCostTotal + 9.95m) * 0.2m, 2);
+
+                    var responseMessage = new ResponseMessage
+                    {
+                        StatusCode = 200,
+                        Headers = new Dictionary<string, WireMockList<string>> { { "Content-Type", new WireMockList<string>("application/json") } },
+                        BodyData = new BodyData
+                        {
+                            DetectedBodyType = BodyType.Json,
+                            BodyAsJson = new
+                            {
+                                outcome = "CreatedWithIssues",
+                                issues,
+                                quotes = new[]
+                                {
+                                    new
+                                    {
+                                        shipmentMethod = request!.ShippingMethod,
+                                        costSummary = new
+                                        {
+                                            items = new
+                                            {
+                                                amount = unitCostTotal.ToString(),
+                                                currency
+                                            },
+                                            shipping = new
+                                            {
+                                                amount = "9.95",
+                                                currency
+                                            },
+                                            totalCost = new
+                                            {
+                                                amount = (unitCostTotal + 9.95m + totalTax).ToString(),
+                                                currency
+                                            },
+                                            totalTax = new
+                                            {
+                                                amount = totalTax.ToString(),
+                                                currency
+                                            }
+                                        },
+                                        shipments = new[]
+                                        {
+                                            new
+                                            {
+                                                carrier = new
+                                                {
+                                                    name = "DPD Local",
+                                                    service = "DPD Local Next Day"
+                                                },
+                                                fulfillmentLocation = new
+                                                {
+                                                    countryCode = "GB",
+                                                    labCode = "prodigi_gb2"
+                                                },
+                                                cost = new
+                                                {
+                                                    amount = "9.95",
+                                                    currency = "GBP"
+                                                },
+                                                items = new[] { items.Count.ToString() },
+                                                tax = new
+                                                {
+                                                    amount = "1.99",
+                                                    currency = "GBP"
+                                                }
+                                            }
+                                        },
+                                        items,
+                                    },
+                                },
+                                traceParent = "sent_from_mock_ProdigiPrintApiServer"
+                            }
+                        }
+                    };
+
+                    return Task.FromResult(responseMessage);
+                }
+            ).WithTransformer()
+        );
 
         server
             .Given(Request.Create()
