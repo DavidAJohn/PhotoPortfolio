@@ -153,8 +153,8 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
         orderBasketReturned.Should().NotBeNull();
         orderBasketReturned.Should().BeOfType<OrderBasketDto>();
         orderBasketReturned.BasketItems.Should().NotBeEmpty();
-        // also check the markup percentage hasn't been applied
-        // orderBasketReturned.BasketItems.First().Product.MarkupPercentage.Should().Be(0);
+        // also check the markup percentage HAS NOT been applied
+        orderBasketReturned.BasketItems.First().Product.MarkupPercentage.Should().Be(0);
 
         // Clean up
         await _photoRepository.DeleteAsync(createdPhoto.Id!);
@@ -236,7 +236,7 @@ public class QuoteServiceTests : IClassFixture<PhotoApiFactory>
     public async Task GetBasketQuote_ShouldReturnNull_WhenResponseOutcomeIsUnexpected()
     {
         // Arrange
-        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-unexpected-outcome"; // should return a 200 Ok response with an unexpected response structure
+        _configuration["Prodigi:ApiKey"] = "00000000-0000-0000-0000-unexpected-outcome"; // should return a 200 Ok response with an unexpected 'outcome' value
         _configuration["Prodigi:ApiUri"] = _prodigiWireMockUri;
 
         var quoteService = new QuoteService(_httpClientFactory, _configService, _logger, _photoRepository);
