@@ -791,14 +791,107 @@ public class ProdigiPrintApiServer : IDisposable
             .WithPath("/orders")
             .WithHeader("X-API-Key", "00000000-0000-0000-0000-unexpectedoutcome") // generates a 200 OK response with an unexpected outcome
             .UsingPost())
-            .RespondWith(Response.Create().WithStatusCode(200)
-            .WithHeader("Content-Type", "application/json")
-            .WithBody(
-                GenerateOrderCreatedWithUnexpectedOutcomeResponse(
-                    "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
-                )
-            )
-            .WithTransformer()
+            .RespondWith(Response.Create()
+                .WithCallback(req =>
+                {
+                    var request = JsonSerializer.Deserialize<Order>(req.Body,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    var items = new List<object>();
+
+                    foreach (var item in request!.Items)
+                    {
+                        var assets = new List<object>();
+                        foreach (var asset in item.Assets)
+                        {
+                            assets.Add(new
+                            {
+                                id = "ast_123",
+                                printArea = asset.GetValueOrDefault("printArea"),
+                                md5Hash = (string?)null,
+                                url = asset.GetValueOrDefault("url"),
+                                thumbnailUrl = (string?)null,
+                                status = "InProgress"
+                            });
+                        }
+
+                        items.Add(new
+                        {
+                            id = "ori_1234567",
+                            status = "NotYetDownloaded",
+                            merchantReference = item.MerchantReference,
+                            sku = item.Sku,
+                            copies = item.Copies,
+                            sizing = item.Sizing,
+                            thumbnailUrl = (string?)null,
+                            attributes = item.Attributes,
+                            assets,
+                            recipientCost = (string?)null,
+                            correlationIdentifier = "23989788686705152"
+                        });
+                    }
+
+                    var responseMessage = new ResponseMessage
+                    {
+                        StatusCode = 200,
+                        Headers = new Dictionary<string, WireMockList<string>> { { "Content-Type", new WireMockList<string>("application/json") } },
+                        BodyData = new BodyData
+                        {
+                            DetectedBodyType = BodyType.Json,
+                            BodyAsJson = new
+                            {
+                                outcome = "UnexpectedOutcome", // this is the unexpected outcome value
+                                order = new
+                                {
+                                    id = "ord_1234567",
+                                    created = "2023-10-16T14:14:51.02Z",
+                                    lastUpdated = "2023-10-16T14:14:51.7746508Z",
+                                    callbackUrl = request!.CallbackUrl,
+                                    merchantReference = request.MerchantReference,
+                                    shippingMethod = request.ShippingMethod,
+                                    idempotencyKey = request.IdempotencyKey,
+                                    status = new
+                                    {
+                                        stage = "InProgress",
+                                        issues = Array.Empty<string>(),
+                                        details = new
+                                        {
+                                            downloadAssets = "NotStarted",
+                                            printReadyAssetsPrepared = "NotStarted",
+                                            allocateProductionLocation = "NotStarted",
+                                            inProduction = "NotStarted",
+                                            shipping = "NotStarted"
+                                        }
+                                    },
+                                    charges = Array.Empty<string>(),
+                                    shipments = Array.Empty<string>(),
+                                    recipient = new
+                                    {
+                                        name = request.Recipient.Name,
+                                        email = request.Recipient.Email,
+                                        phoneNumber = request.Recipient.PhoneNumber,
+                                        address = new
+                                        {
+                                            line1 = request.Recipient.Address.Line1,
+                                            line2 = request.Recipient.Address.Line2,
+                                            postalOrZipCode = request.Recipient.Address.PostalOrZipCode,
+                                            countryCode = request.Recipient.Address.CountryCode,
+                                            townOrCity = request.Recipient.Address.TownOrCity,
+                                            stateOrCounty = request.Recipient.Address.StateOrCounty
+                                        }
+                                    },
+                                    items,
+                                    packingSlip = (string?)null,
+                                    metadata = request.Metadata
+                                },
+                                traceParent = "sent_from_mock_ProdigiPrintApiServer"
+                            }
+                        }
+                    };
+
+                    return Task.FromResult(responseMessage);
+                }
+            ).WithTransformer()
         );
     }
     
