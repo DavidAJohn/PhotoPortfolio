@@ -739,17 +739,192 @@ public class ProdigiPrintApiServer : IDisposable
             .WithBody(orderRequestMatchers, MatchOperator.And)
             .UsingPost())
             .RespondWith(Response.Create()
-                .WithStatusCode(200)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody(
-                    GenerateOrderAlreadyExistsResponseBody(
-                        "{{ JsonPath.SelectToken request.body \"$.idempotencyKey\" }}"
-                    )
-                )
-                .WithTransformer()
-            );
+                .WithCallback(req =>
+                {
+                    var request = JsonSerializer.Deserialize<Order>(req.Body,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-       server
+                    var items = new List<object>();
+
+                    foreach (var item in request!.Items)
+                    {
+                        var assets = new List<object>();
+                        foreach (var asset in item.Assets)
+                        {
+                            assets.Add(new
+                            {
+                                id = "ast_123",
+                                printArea = asset.GetValueOrDefault("printArea"),
+                                md5Hash = (string?)null,
+                                url = asset.GetValueOrDefault("url"),
+                                thumbnailUrl = (string?)null,
+                                status = "InProgress"
+                            });
+                        }
+
+                        items.Add(new
+                        {
+                            id = "ori_1234567",
+                            status = "Ok",
+                            merchantReference = item.MerchantReference,
+                            sku = item.Sku,
+                            copies = item.Copies,
+                            sizing = item.Sizing,
+                            thumbnailUrl = (string?)null,
+                            attributes = item.Attributes,
+                            assets,
+                            recipientCost = (string?)null,
+                            correlationIdentifier = "23989788686705152"
+                        });
+                    }
+
+                    var charges = new List<object>();
+                    var itemsInCharges = new List<object>();
+
+                    itemsInCharges.Add(new
+                    {
+                        id = "chi_992753",
+                        itemId = (string?)null,
+                        cost = new
+                        {
+                            amount = "9.95",
+                            currency = "GBP"
+                        },
+                        shipmentId = "shp_665175",
+                        chargeType = "Shipping"
+                    });
+
+                    foreach (var item in request!.Items)
+                    {
+                        itemsInCharges.Add(new
+                        {
+                            id = "chi_992753",
+                            itemId = (string?)null,
+                            cost = new
+                            {
+                                amount = "10.00",
+                                currency = "GBP"
+                            },
+                            shipmentId = (string?)null,
+                            chargeType = "Item"
+                        });
+                    }
+
+                    charges.Add(new
+                    {
+                        id = "chg_465100",
+                        prodigiInvoiceNumber = (string?)null,
+                        totalCost = new
+                        {
+                            amount = "18.30",
+                            currency = "GBP"
+                        },
+                        totalTax = new
+                        {
+                            amount = "3.05",
+                            currency = "GBP"
+                        },
+                        items = itemsInCharges
+                    });
+
+                    var shipments = new List<object>();
+                    var itemsInShipment = new List<object>();
+
+                    foreach (var item in request!.Items)
+                    {
+                        itemsInShipment.Add(new
+                        {
+                            itemId = "ori_1426359"
+                        });
+                    }
+
+                    shipments.Add(new
+                    {
+                        id = "shp_665175",
+                        dispatchDate = "2023-10-16T14:29:10.283Z",
+                        carrier = new
+                        {
+                            name = "EVRi",
+                            service = "Evri Standard 48"
+                        },
+                        fulfillmentLocation = new
+                        {
+                            countryCode = "GB",
+                            labCode = "prodigi_gb3"
+                        },
+                        tracking = new
+                        {
+                            number = "PH000000000GB",
+                            url = "https://www.royalmail.com/portal/rm/track?trackNumber=PH000000000GB"
+                        },
+                        items = itemsInShipment,
+                        status = "Shipped"
+                    });
+                    
+                    var responseMessage = new ResponseMessage
+                    {
+                        StatusCode = 200,
+                        Headers = new Dictionary<string, WireMockList<string>> { { "Content-Type", new WireMockList<string>("application/json") } },
+                        BodyData = new BodyData
+                        {
+                            DetectedBodyType = BodyType.Json,
+                            BodyAsJson = new
+                            {
+                                outcome = "AlreadyExists",
+                                order = new
+                                {
+                                    id = "ord_1234567",
+                                    created = "2023-10-16T14:14:51.02Z",
+                                    lastUpdated = "2023-10-16T14:14:51.7746508Z",
+                                    callbackUrl = request!.CallbackUrl,
+                                    merchantReference = request.MerchantReference,
+                                    shippingMethod = request.ShippingMethod,
+                                    idempotencyKey = request.IdempotencyKey,
+                                    status = new
+                                    {
+                                        stage = "Complete",
+                                        issues = Array.Empty<string>(),
+                                        details = new
+                                        {
+                                            downloadAssets = "Complete",
+                                            printReadyAssetsPrepared = "Complete",
+                                            allocateProductionLocation = "Complete",
+                                            inProduction = "Complete",
+                                            shipping = "Complete"
+                                        }
+                                    },
+                                    charges = Array.Empty<string>(),
+                                    shipments,
+                                    recipient = new
+                                    {
+                                        name = request.Recipient.Name,
+                                        email = request.Recipient.Email,
+                                        phoneNumber = request.Recipient.PhoneNumber,
+                                        address = new
+                                        {
+                                            line1 = request.Recipient.Address.Line1,
+                                            line2 = request.Recipient.Address.Line2,
+                                            postalOrZipCode = request.Recipient.Address.PostalOrZipCode,
+                                            countryCode = request.Recipient.Address.CountryCode,
+                                            townOrCity = request.Recipient.Address.TownOrCity,
+                                            stateOrCounty = request.Recipient.Address.StateOrCounty
+                                        }
+                                    },
+                                    items,
+                                    packingSlip = (string?)null,
+                                    metadata = request.Metadata
+                                },
+                                traceParent = "sent_from_mock_ProdigiPrintApiServer"
+                            }
+                        }
+                    };
+
+                    return Task.FromResult(responseMessage);
+                }
+            ).WithTransformer()
+        );
+
+        server
             .Given(Request.Create()
             .WithPath("/orders")
             .WithHeader("X-API-Key", "00000000-0000-0000-0000-badrequest") // generates a 400 Bad Request response
