@@ -1,4 +1,5 @@
 ﻿using PhotoPortfolio.Shared.Models;
+using PhotoPortfolio.Shared.Models.Prodigi.Common;
 using PhotoPortfolio.Shared.Models.Prodigi.Orders;
 
 namespace PhotoPortfolio.Server.Mapping;
@@ -29,6 +30,11 @@ public static class OrderDetailsToProdigiOrderMapper
                 Copies = item.Quantity,
                 Sizing = "fillPrintArea",
                 Attributes = item.Product.Options.ToAttributes(),
+                RecipientCost = new Cost
+                {
+                    Amount = item.Total.ToString(),
+                    Currency = "GBP"
+                },
                 Assets = new List<Dictionary<string, string>>
                 {
                     new Dictionary<string, string>
