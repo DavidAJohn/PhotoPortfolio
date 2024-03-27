@@ -291,6 +291,7 @@ public class OrderServiceTests : IClassFixture<PhotoApiFactory>
         updatedOrderDetailsDto.ProdigiDetails!.Order!.Status.Issues.Should().BeEmpty();
         updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Should().NotBeNullOrEmpty();
         updatedOrderDetailsDto.ProdigiDetails!.Order!.Metadata.Values.Should().Contain(paymentIntentId);
+        updatedOrderDetailsDto.ProdigiDetails!.Order!.CallbackUrl.Should().Be($"{_configuration["ApplicationBaseUri"]}/api/callbacks/{orderId}");
 
         // Clean up
         await _orderRepository.DeleteAsync(orderId);

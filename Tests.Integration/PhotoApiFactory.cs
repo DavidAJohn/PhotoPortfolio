@@ -55,7 +55,8 @@ public class PhotoApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
                         { "SitePreferencesId", SitePreferencesId },
                         { "Stripe:SecretKey", "sk_test_123" },
                         { "Stripe:ApiBase", $"http://localhost:{_stripeContainer.GetMappedPublicPort(12111)}" },
-                        { "Stripe:WhSecret", $"whsec_{Guid.NewGuid()}" }
+                        { "Stripe:WhSecret", $"whsec_{Guid.NewGuid()}" },
+                        { "ApplicationBaseUri", "https://localhost:7200" }
                     })
                     .Build());
     }
