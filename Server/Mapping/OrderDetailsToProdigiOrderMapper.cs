@@ -6,10 +6,10 @@ namespace PhotoPortfolio.Server.Mapping;
 
 public static class OrderDetailsToProdigiOrderMapper
 {
-    public static Order ToProdigiOrder(this OrderDetailsDto orderDetailsDto)
+    public static Order ToProdigiOrder(this OrderDetailsDto orderDetailsDto, string baseUri)
     {
         string merchantReference = $"PhotoPortfolio_{orderDetailsDto.Id![16..]}";
-        string callbackUrl = $"https://localhost:7200/callbacks";
+        string callbackUrl = $"{baseUri}/api/callbacks/{orderDetailsDto.Id}";
 
         return new Order
         {

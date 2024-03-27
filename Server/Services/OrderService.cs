@@ -329,9 +329,16 @@ public class OrderService : IOrderService
     {
         try
         {
-            var prodigiOrder = order.ToProdigiOrder();
-
             var config = _configService.GetConfiguration();
+            var baseUri = config["ApplicationBaseUri"] ?? "";
+
+            if (string.IsNullOrWhiteSpace(baseUri))
+            {
+                _logger.LogWarning("--> ApplicationBaseUri in config was null or empty when creating Prodigi order");
+            }
+
+            var prodigiOrder = order.ToProdigiOrder(baseUri);
+
             var prodigiApiKey = config["Prodigi:ApiKey"];
             var prodigiApiUri = config["Prodigi:ApiUri"];
 
