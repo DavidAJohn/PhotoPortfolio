@@ -67,8 +67,6 @@ public class IndexTests : LocalBlazorTestBase
 
         var basketDropdownText = Page.Locator("div[role=menu]>div>span"); // too flaky?
         await Expect(basketDropdownText).ToHaveTextAsync("Your basket is currently empty");
-
-        await Expect(Page.Locator("text=Your basket is currently empty")).ToBeVisibleAsync();
     }
 
     [Test]

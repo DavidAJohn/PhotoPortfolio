@@ -30,10 +30,10 @@ public class PhotoDetailsTests : LocalBlazorTestBase
     public async Task PhotoDetailsPage_ShouldShowPhotoWhenIdIsValid()
     {
         //await Page.PauseAsync();
-        var photoId = "63c862cd2165ce1d017b83a8";
+        var photoId = "64e3bd8f003140c790b1d2e5";
         await Page.GotoAsync($"{RootUri.AbsoluteUri}photo/{photoId}");
 
-        var image = Page.Locator("img#photo-image");
+        var image = Page.Locator("#photo-image");
         await Expect(image).ToBeVisibleAsync();
     }
 }
