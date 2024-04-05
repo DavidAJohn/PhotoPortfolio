@@ -12,9 +12,11 @@ public class IndexTests
         _testContext = testContext;
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task IndexPage_ShouldHaveExpectedTitle()
     {
+        Skip.If(true, "This test is duplicated in the e2e project");
+
         var page = await _testContext.Browser.NewPageAsync();
 
         await page.PauseAsync();
@@ -26,9 +28,11 @@ public class IndexTests
         title.Should().MatchRegex("PhotoPortfolio");
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task IndexPage_ClickingGalleryLink_ShouldGoToGalleryPage()
     {
+        Skip.If(true, "This test is duplicated in the e2e project");
+
         var page = await _testContext.Browser.NewPageAsync();
 
         //await page.PauseAsync();
@@ -43,9 +47,11 @@ public class IndexTests
         page.Url.Should().EndWith("/gallery");
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task IndexPage_ClickingAboutLink_ShouldGoToAboutPage()
     {
+        Skip.If(true, "This test is duplicated in the e2e project");
+
         var page = await _testContext.Browser.NewPageAsync();
 
         //await page.PauseAsync();
@@ -60,9 +66,11 @@ public class IndexTests
         page.Url.Should().EndWith("/about");
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task IndexPage_BasketShouldInitiallyBeZero()
     {
+        Skip.If(true, "This test is duplicated in the e2e project");
+
         var page = await _testContext.Browser.NewPageAsync();
 
         //await page.PauseAsync();
@@ -73,9 +81,11 @@ public class IndexTests
         text.Should().Be("0");
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task IndexPage_ClickingBasket_ShouldShowEmptyBasketDropdown()
     {
+        Skip.If(true, "This test is duplicated in the e2e project");
+
         var page = await _testContext.Browser.NewPageAsync();
 
         //await page.PauseAsync();
