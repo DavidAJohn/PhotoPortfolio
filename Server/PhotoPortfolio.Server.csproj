@@ -10,9 +10,9 @@
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.5" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
-    <PackageReference Include="LinqKit" Version="1.2.4" />
-    <PackageReference Include="MediatR" Version="12.1.1" />
-    <PackageReference Include="MetadataExtractor" Version="2.8.0" />
+    <PackageReference Include="LinqKit" Version="1.2.5" />
+    <PackageReference Include="MediatR" Version="12.2.0" />
+    <PackageReference Include="MetadataExtractor" Version="2.8.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.4" />
