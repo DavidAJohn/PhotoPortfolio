@@ -459,3 +459,4 @@ $RECYCLE.BIN/
 .logs/*
 /Server/appsettings.Test.json
 /.runsettings
+/Client/tailwindcss.exe

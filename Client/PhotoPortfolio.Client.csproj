@@ -26,4 +26,16 @@
     <ProjectReference Include="..\Shared\PhotoPortfolio.Shared.csproj" />
   </ItemGroup>
 
+	<!-- 
+	    If you're developing on Windows, you can use the following PostBuild event to automatically build the Tailwind CSS file.
+	    Either download the standalone Tailwind CLI, rename it 'tailwindcss.exe' and place it in the Client root folder, 
+	    or remove/comment out the following section. Download the CLI here: https://github.com/tailwindlabs/tailwindcss/releases 
+	-->
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' ">
+		<Exec Command="powershell &quot;Start-Process $(ProjectDir)tailwindwatch.bat&quot; " ContinueOnError="true">
+			<Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+		</Exec>
+		<Error Condition="'$(ErrorCode)' != '0'" Text="Error building Tailwind CSS file"/>
+	</Target>
+
 </Project>
