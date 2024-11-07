@@ -8,4 +8,4 @@ It is a work-in-progress, personal project with the ultimate goal of removing th
 
 ##
 
-<kbd><img src="https://photoportfolioimgs.blob.core.windows.net/repo/photo_portfolio_screenshot_composite.jpg"></kbd>
+<kbd><img src="https://res.cloudinary.com/dd3bpecid/image/upload/v1730980727/photoportfolio/photo_portfolio_screenshot_composite_ye6erp.jpg"></kbd>
